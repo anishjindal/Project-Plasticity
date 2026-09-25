@@ -1,0 +1,370 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Project Plasticity — Inter</title>
+<meta name="description" content="Your brain rewires around what you do. One path a day, chosen from the research.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--ease:cubic-bezier(.4,0,.2,1);--dur:.6s;--bg:#fff;--bg2:#f5f5f3;--ink:#111318;--ink2:#5a5e68;--line:#1b2a5c;--accent:#e4572e;--w:1120px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#fff;--bg2:#f5f5f3}}
+:root[data-theme="dark"]{--bg:#fff;--bg2:#f5f5f3}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Inter",system-ui,sans-serif;font-size:18px;line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.in{max-width:var(--w);margin:0 auto;padding:0 clamp(16px,4vw,48px)}
+
+/* ---------- one brain, pinned ---------- */
+.story{height:1180svh;position:relative}
+html{overscroll-behavior:none}
+.snaps i{position:absolute;left:0;height:1px;width:1px;scroll-snap-align:start}
+.snaps i:nth-child(1){top:0}.snaps i:nth-child(2){top:120svh}.snaps i:nth-child(3){top:240svh}.snaps i:nth-child(4){top:360svh}.snaps i:nth-child(5){top:480svh}.snaps i:nth-child(6){top:600svh}.snaps i:nth-child(7){top:720svh}.snaps i:nth-child(8){top:840svh}.snaps i:nth-child(9){top:960svh}
+.stage{position:sticky;top:0;height:100svh;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 16px;overflow:hidden}
+.brain{position:relative;width:min(880px,94vw,calc((100svh - 170px) * 1.2857));aspect-ratio:720/560}
+.brain canvas{position:absolute;inset:0;width:100%;height:100%}
+.title{position:absolute;left:50%;top:50%;transform:translate(-50%,-58%);transition:opacity var(--dur) var(--ease);width:74%;text-align:center;margin:0;font-weight:500;font-size:calc(var(--bw,800px) * .068);line-height:1.04;letter-spacing:-.03em;transition:opacity .25s}
+.caption{position:relative;margin-top:8px;height:5.6em;text-align:center;width:min(640px,92vw)}
+.caption p{position:absolute;inset:0;margin:0;opacity:0;transform:translateY(10px);transition:opacity var(--dur) var(--ease),transform var(--dur) var(--ease);font-weight:500;font-size:clamp(20px,2.4vw,28px);line-height:1.25;letter-spacing:-.015em}
+.caption p small{display:block;font-weight:400;font-size:clamp(16px,1.6vw,19px);color:var(--ink2);margin-top:8px;letter-spacing:0}
+.caption p.on{opacity:1;transform:none}
+.caption p.out{transform:translateY(-8px)}
+/* the last step: everything settles into the ask */
+.final{position:absolute;left:clamp(16px,5vw,72px);top:50%;transform:translateY(-50%) translateY(14px);width:min(420px,34%);text-align:left;opacity:0;pointer-events:none;transition:opacity var(--dur) var(--ease),transform var(--dur) var(--ease)}
+.stage.done .final{opacity:1;transform:translateY(-50%);pointer-events:auto}
+.final h2{margin:0;font-weight:500;font-size:clamp(26px,2.9vw,38px);letter-spacing:-.03em;line-height:1.05}
+.final .foot{margin-top:48px;font-size:14px;color:var(--ink2)}
+.stage.done .brain{transform:translateX(15vw) scale(.84)}
+.stage.done .panel{opacity:0;pointer-events:none}
+.btn{display:inline-block;margin-top:32px;background:var(--ink);color:#fff;text-decoration:none;padding:16px 26px;font-weight:500;font-size:18px}
+/* when the story turns to the product, the brain moves aside and the three moves stay */
+.brain{transition:transform var(--dur) var(--ease),opacity var(--dur) var(--ease)}
+.caption{transition:opacity var(--dur) var(--ease)}
+.stage.product .caption{opacity:0}
+.stage.product .brain{transform:translateX(15vw) scale(.84)}
+.panel{position:absolute;left:clamp(16px,5vw,72px);top:50%;transform:translateY(-50%) translateX(-12px);width:min(360px,30%);opacity:0;pointer-events:none;transition:opacity var(--dur) var(--ease),transform var(--dur) var(--ease)}
+.stage.product .panel{opacity:1;transform:translateY(-50%)}
+.panel .k{font-size:13px;color:var(--accent);margin-bottom:10px}
+.panel h2{margin:0 0 22px;font-weight:500;font-size:clamp(26px,3vw,38px);line-height:1.08;letter-spacing:-.025em}
+.panel ol{list-style:none;margin:0;padding:0}
+.panel li{display:grid;grid-template-columns:2em 1fr;gap:2px 8px;padding:12px 0;border-top:1px solid #e6e6e3;opacity:.18;transition:opacity var(--dur) var(--ease)}
+.panel li.shown{opacity:.55}.panel li.on{opacity:1}
+.panel .n{font-size:13px;color:var(--accent);padding-top:5px;font-variant-numeric:tabular-nums}
+.panel .w{font-weight:500;font-size:clamp(19px,1.9vw,24px);letter-spacing:-.015em;line-height:1.2}
+.panel .d{grid-column:2;color:var(--ink2);font-size:15px;line-height:1.4;max-height:0;overflow:hidden;transition:max-height var(--dur) var(--ease)}
+.panel li.on .d{max-height:6em}
+@media (max-width:760px){
+  .stage.product .brain{transform:translateY(-17svh) scale(.68)}
+  .stage.done .brain{transform:translateY(-17svh) scale(.68)}
+  .final{left:16px;right:16px;top:auto;bottom:24px;width:auto;text-align:center;transform:translateY(12px)}.stage.done .final{transform:none}.final .foot{margin-top:20px}
+  .snd{top:16px;bottom:auto;right:16px}
+  .panel{left:16px;right:16px;top:auto;bottom:24px;width:auto;transform:translateY(12px)}
+  .stage.product .panel{transform:none}
+  .panel h2{font-size:24px;margin-bottom:12px}.panel li{padding:8px 0}.panel .d{font-size:14px}
+}
+.cue{position:absolute;bottom:26px;left:0;right:0;text-align:center;font-size:16px;color:var(--ink);transition:opacity var(--dur) var(--ease)}
+.cue a{text-decoration:none;font-weight:500;border-bottom:1.5px solid var(--accent);padding-bottom:3px;cursor:pointer}
+.cue a:hover{color:var(--accent)}
+.mark{position:absolute;left:20px;bottom:20px;font-size:13px;font-weight:500;color:var(--ink2);letter-spacing:.01em}
+.snd{position:absolute;right:20px;bottom:20px;background:none;border:0;padding:4px 0;font:inherit;font-size:13px;color:var(--ink2);cursor:pointer;border-bottom:1px solid transparent}
+.snd:hover{border-bottom-color:currentColor}
+
+
+footer{padding:28px 0 40px;font-size:14px;color:var(--ink2)}
+footer .in{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+footer a{text-decoration:none}
+
+@media (max-width:760px){
+    .caption{height:6.4em}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto;scroll-snap-type:none}
+  .story{height:auto}.snaps{display:none}.stage{position:static;height:auto;padding:80px 16px 40px}
+  .caption p{position:static;opacity:1;transform:none;margin-bottom:14px}.cue{display:none}
+  .final{position:static;opacity:1;transform:none;margin-top:48px;pointer-events:auto;width:auto;text-align:center}.stage.done .brain{transform:none}
+  .panel{position:static;opacity:1;transform:none;width:auto;max-width:520px;margin:32px auto 0}.panel li{opacity:1}.panel .d{max-height:none}.stage.product .brain{transform:none}
+}
+</style>
+</head>
+<body>
+
+<section class="story" id="top" aria-label="How your brain rewires">
+  <div class="snaps" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="stage">
+    <div class="brain" id="brain">
+      <canvas id="cv" aria-hidden="true"></canvas>
+      <h1 class="title" id="title">Your brain rewires around what you do</h1>
+    </div>
+    <div class="caption" aria-live="polite">
+      <p class="on" data-i="0"></p>
+      <p data-i="1">Try something new.<small>Choose a skill you haven’t practiced before.</small></p>
+      <p data-i="2">Brain cells send signals.<small>These cells, called neurons, communicate as you learn.</small></p>
+      <p data-i="3">Keep practicing.<small>Repeating the skill can strengthen the connections you use.</small></p>
+      <p data-i="4">Learn different skills.<small>Different activities involve different networks in your brain.</small></p>
+      <p data-i="5">This is neuroplasticity.<small>Your brain can change its connections through learning and experience.</small></p>
+    </div>
+    <div class="panel" id="panel" aria-live="polite">
+      <h2>Put it into practice.</h2>
+      <ol>
+        <li data-i="6"><span class="n">01</span><span class="w">Stimulate</span><span class="d">Try a new activity and give it your attention.</span></li>
+        <li data-i="7"><span class="n">02</span><span class="w">Challenge</span><span class="d">Practice something you can’t do easily yet.</span></li>
+        <li data-i="8"><span class="n">03</span><span class="w">Consolidate</span><span class="d">Make time for sleep to help retain what you’ve learned.</span></li>
+      </ol>
+    </div>
+    <div class="final" id="final">
+      <h2 id="h-cta">Project Plasticity turns neuroplasticity into a simple daily practice.</h2>
+      <a class="btn" href="#start" id="start">Build a new connection →</a>
+    </div>
+    <div class="cue" id="cue"><a href="#moves">Scroll to see how your brain rewires</a></div>
+    <button class="snd" id="snd" type="button" aria-pressed="true">Sound on</button>
+  </div>
+</section>
+
+
+
+<script>
+(function(){
+const sm=t=>{t=Math.min(1,Math.max(0,t));return t*t*(3-2*t);};
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));const lerp=(a,b,t)=>a+(b-a)*t;
+const W=720,H=560;
+const NAVY='#131E4A',NAVY2='#1B2A5C',EDGE='#0B1233';
+let seed=91;const rnd=()=>{seed=(seed*16807)%2147483647;return (seed-1)/2147483646;};const rb=(a,b)=>a+rnd()*(b-a);
+const scratch=document.createElement('canvas').getContext('2d');
+function smooth(pts){const p=new Path2D();const n=pts.length;p.moveTo(pts[0][0],pts[0][1]);for(let i=0;i<n;i++){const p0=pts[(i-1+n)%n],p1=pts[i],p2=pts[(i+1)%n],p3=pts[(i+2)%n];p.bezierCurveTo(p1[0]+(p2[0]-p0[0])/6,p1[1]+(p2[1]-p0[1])/6,p2[0]-(p3[0]-p1[0])/6,p2[1]-(p3[1]-p1[1])/6,p2[0],p2[1]);}p.closePath();return p;}
+const base=[[92,300],[98,232],[124,166],[170,116],[232,82],[302,62],[382,56],[458,66],[528,92],[584,138],[622,198],[636,266],[626,336],[590,396],[532,436],[474,456],[446,470],[440,522],[400,526],[388,470],[350,462],[282,450],[212,426],[152,386],[110,340]];
+const brain=smooth(base);
+{for(let i=0;i<16;i++){const a=base[i],b=base[i+1];for(let k=0;k<2;k++){const t=(k+.5)/2;const x=a[0]+(b[0]-a[0])*t,y=a[1]+(b[1]-a[1])*t;const r=19+((i*7+k*3)%5)*2.6;brain.moveTo(x+r,y);brain.arc(x,y,r,0,Math.PI*2);}}
+  for(const [x,y,r] of [[130,372,17],[180,412,16],[250,442,15],[320,457,14],[560,420,14],[610,364,15]]){brain.moveTo(x+r,y);brain.arc(x,y,r,0,Math.PI*2);}}
+const inside=(x,y)=>scratch.isPointInPath(brain,x,y);
+const C={red:'#E8472E',orange:'#F28C28',yellow:'#F5C63C',green:'#4CAF6E',green2:'#2F8F5B',blue:'#2E86DE',sky:'#7ED0E0',purple:'#8E5BD6',pink:'#E8508A',cream:'#F7EEDD'};
+const CL=Object.values(C);
+
+function drawMotif(g,m){g.save();g.translate(m.x,m.y);g.rotate(m.rot||0);const s=m.s,c=m.c||C.red,c2=m.c2||C.yellow;g.lineJoin='round';g.lineCap='round';
+  switch(m.kind){
+    case 'leaf':g.fillStyle=c;g.beginPath();g.moveTo(0,-s);g.quadraticCurveTo(s*.9,-s*.3,0,s);g.quadraticCurveTo(-s*.9,-s*.3,0,-s);g.fill();g.strokeStyle=NAVY;g.globalAlpha=.55;g.lineWidth=Math.max(1,s*.07);g.beginPath();g.moveTo(0,-s*.75);g.lineTo(0,s*.75);g.stroke();break;
+    case 'sprig':{g.strokeStyle=c;g.lineWidth=Math.max(1.2,s*.09);g.beginPath();g.moveTo(0,s);g.quadraticCurveTo(s*.2,0,0,-s);g.stroke();g.fillStyle=c;for(let i=0;i<6;i++){const y=s*.8-i*s*.3;const d=i%2?1:-1;g.beginPath();g.ellipse(d*s*.22,y,s*.24,s*.1,d*.5,0,7);g.fill();}break;}
+    case 'frond':{g.fillStyle=c;for(let i=0;i<7;i++){const y=s*.9-i*s*.3;g.beginPath();g.ellipse(0,y,s*.5-i*s*.05,s*.11,0,0,7);g.fill();}break;}
+    case 'flower':g.fillStyle=c;for(let i=0;i<6;i++){g.save();g.rotate(i*Math.PI/3);g.beginPath();g.ellipse(0,-s*.6,s*.32,s*.55,0,0,7);g.fill();g.restore();}g.fillStyle=c2===c?C.yellow:c2;g.beginPath();g.arc(0,0,s*.3,0,7);g.fill();break;
+    case 'petal':g.fillStyle=c;for(let i=0;i<5;i++){g.save();g.rotate(i*Math.PI*2/5);g.beginPath();g.moveTo(0,0);g.quadraticCurveTo(s*.55,-s*.6,0,-s);g.quadraticCurveTo(-s*.55,-s*.6,0,0);g.fill();g.restore();}g.fillStyle=c2;g.beginPath();g.arc(0,0,s*.2,0,7);g.fill();break;
+    case 'tulip':{g.fillStyle=c;g.beginPath();g.moveTo(-s*.5,s*.2);g.quadraticCurveTo(-s*.55,-s*.6,-s*.2,-s*.9);g.lineTo(0,-s*.55);g.lineTo(s*.2,-s*.9);g.quadraticCurveTo(s*.55,-s*.6,s*.5,s*.2);g.quadraticCurveTo(0,s*.5,-s*.5,s*.2);g.fill();g.strokeStyle=C.green;g.lineWidth=Math.max(1.5,s*.1);g.beginPath();g.moveTo(0,s*.3);g.lineTo(0,s);g.stroke();break;}
+    case 'gear':g.fillStyle=c;g.beginPath();for(let i=0;i<16;i++){const a=i*Math.PI/8,rr=(i%2?s:s*.78);g.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);}g.closePath();g.fill();g.fillStyle=NAVY;g.beginPath();g.arc(0,0,s*.32,0,7);g.fill();break;
+    case 'bolt':g.fillStyle=c;g.beginPath();g.moveTo(-s*.1,-s);g.lineTo(s*.45,-s*.15);g.lineTo(s*.05,-s*.1);g.lineTo(s*.2,s);g.lineTo(-s*.45,s*.1);g.lineTo(-s*.02,s*.05);g.closePath();g.fill();break;
+    case 'spark':g.strokeStyle=c;g.lineWidth=Math.max(1.2,s*.16);for(let i=0;i<8;i++){g.save();g.rotate(i*Math.PI/4);g.beginPath();g.moveTo(0,s*.35);g.lineTo(0,s*(i%2?.7:1));g.stroke();g.restore();}g.fillStyle=c2;g.beginPath();g.arc(0,0,s*.22,0,7);g.fill();break;
+    case 'heart':g.fillStyle=c;g.beginPath();g.moveTo(0,s*.8);g.bezierCurveTo(-s*1.1,s*.1,-s*.7,-s*.9,0,-s*.35);g.bezierCurveTo(s*.7,-s*.9,s*1.1,s*.1,0,s*.8);g.fill();break;
+    case 'dots':g.fillStyle=c;for(let i=0;i<5;i++){g.beginPath();g.arc(Math.cos(i*1.26)*s*.6,Math.sin(i*1.26)*s*.6,s*.2,0,7);g.fill();}break;
+    case 'squig':g.strokeStyle=c;g.lineWidth=Math.max(1.5,s*.18);g.beginPath();g.moveTo(-s,0);for(let i=1;i<=6;i++){g.quadraticCurveTo(-s+(i-.5)*s/3,(i%2?-1:1)*s*.5,-s+i*s/3,0);}g.stroke();break;
+    case 'bulb':{g.fillStyle=C.yellow;g.beginPath();g.arc(0,-s*.3,s*.62,0,7);g.fill();g.beginPath();g.moveTo(-s*.34,s*.1);g.lineTo(s*.34,s*.1);g.lineTo(s*.28,s*.4);g.lineTo(-s*.28,s*.4);g.closePath();g.fill();g.fillStyle=C.red;g.fillRect(-s*.28,s*.42,s*.56,s*.14);g.fillRect(-s*.22,s*.6,s*.44,s*.12);g.strokeStyle=NAVY;g.lineWidth=Math.max(1.4,s*.07);g.beginPath();g.moveTo(-s*.18,s*.1);g.lineTo(-s*.18,-s*.2);g.quadraticCurveTo(0,-s*.45,s*.18,-s*.2);g.lineTo(s*.18,s*.1);g.stroke();
+      g.strokeStyle=C.yellow;g.lineWidth=Math.max(1.5,s*.09);for(let i=0;i<7;i++){const a=-Math.PI*.9+i*Math.PI*.8/6;g.beginPath();g.moveTo(Math.cos(a)*s*.85,-s*.3+Math.sin(a)*s*.85);g.lineTo(Math.cos(a)*s*1.05,-s*.3+Math.sin(a)*s*1.05);g.stroke();}break;}
+    case 'rainbow':{const cs=[C.red,C.orange,C.yellow,C.green,C.blue,C.purple];for(let i=0;i<6;i++){g.strokeStyle=cs[i];g.lineWidth=s*.13;g.beginPath();g.arc(0,s*.35,s*(1-i*.13),Math.PI,0);g.stroke();}
+      g.fillStyle=C.cream;for(const [cx,cy,r] of [[-s*.95,s*.4,s*.28],[-s*.72,s*.32,s*.22],[s*.92,s*.42,s*.26],[s*.7,s*.34,s*.2]]){g.beginPath();g.arc(cx,cy,r,0,7);g.fill();}break;}
+    case 'cloud':{g.fillStyle=c;for(const [cx,cy,r] of [[-s*.45,s*.1,s*.32],[0,-s*.1,s*.42],[s*.45,s*.12,s*.3]]){g.beginPath();g.arc(cx,cy,r,0,7);g.fill();}g.fillRect(-s*.6,s*.05,s*1.2,s*.35);break;}
+    case 'plane':{g.fillStyle=C.cream;g.beginPath();g.moveTo(s,-s*.9);g.lineTo(-s*.9,s*.1);g.lineTo(-s*.1,s*.25);g.closePath();g.fill();g.fillStyle=C.pink;g.beginPath();g.moveTo(s,-s*.9);g.lineTo(-s*.1,s*.25);g.lineTo(s*.2,s*.9);g.closePath();g.fill();g.strokeStyle=C.red;g.lineWidth=Math.max(1.2,s*.06);g.setLineDash([s*.15,s*.12]);g.beginPath();g.moveTo(-s*1.1,s*.5);g.quadraticCurveTo(-s*1.4,s*.9,-s*1.9,s*.7);g.stroke();break;}
+    case 'bubble':{g.fillStyle=c;g.beginPath();g.ellipse(0,-s*.15,s,s*.72,0,0,7);g.fill();g.beginPath();g.moveTo(-s*.5,s*.4);g.lineTo(-s*.7,s*.95);g.lineTo(-s*.05,s*.5);g.closePath();g.fill();g.fillStyle=C.cream;for(let i=-1;i<=1;i++){g.beginPath();g.arc(i*s*.32,-s*.15,s*.1,0,7);g.fill();}break;}
+    case 'key':{g.strokeStyle=c;g.lineWidth=Math.max(2,s*.16);g.beginPath();g.arc(0,-s*.55,s*.4,0,7);g.stroke();g.beginPath();g.moveTo(0,-s*.15);g.lineTo(0,s);g.moveTo(0,s*.55);g.lineTo(s*.35,s*.55);g.moveTo(0,s*.85);g.lineTo(s*.3,s*.85);g.stroke();break;}
+    case 'magnifier':{g.strokeStyle=c;g.lineWidth=Math.max(2,s*.16);g.beginPath();g.arc(-s*.2,-s*.2,s*.55,0,7);g.stroke();g.fillStyle=C.sky;g.globalAlpha=.55;g.beginPath();g.arc(-s*.2,-s*.2,s*.5,0,7);g.fill();g.globalAlpha=1;g.beginPath();g.moveTo(s*.2,s*.2);g.lineTo(s*.75,s*.75);g.stroke();g.fillStyle=C.cream;g.beginPath();g.arc(-s*.32,-s*.05,s*.14,0,7);g.arc(-s*.15,-s*.12,s*.16,0,7);g.arc(0,-s*.02,s*.12,0,7);g.fill();break;}
+    case 'puzzle':{g.fillStyle=c;const h=s*.55;g.beginPath();g.moveTo(-h,-h);g.lineTo(-s*.2,-h);g.arc(0,-h,s*.22,Math.PI,0,true);g.lineTo(h,-h);g.lineTo(h,-s*.2);g.arc(h,0,s*.22,-Math.PI/2,Math.PI/2);g.lineTo(h,h);g.lineTo(-h,h);g.lineTo(-h,s*.2);g.arc(-h,0,s*.22,Math.PI/2,-Math.PI/2);g.closePath();g.fill();break;}
+    case 'pencil':{g.save();g.rotate(-.7);g.fillStyle=c;g.fillRect(-s,-s*.18,s*1.5,s*.36);g.fillStyle=C.cream;g.beginPath();g.moveTo(s*.5,-s*.18);g.lineTo(s*.9,0);g.lineTo(s*.5,s*.18);g.closePath();g.fill();g.fillStyle=NAVY;g.beginPath();g.moveTo(s*.78,-s*.06);g.lineTo(s*.9,0);g.lineTo(s*.78,s*.06);g.closePath();g.fill();g.fillStyle=C.pink;g.fillRect(-s*1.15,-s*.18,s*.18,s*.36);g.restore();break;}
+    case 'question':{g.strokeStyle=c;g.lineWidth=Math.max(2,s*.2);g.beginPath();g.arc(0,-s*.45,s*.4,Math.PI*1.1,Math.PI*.35);g.quadraticCurveTo(0,s*.05,0,s*.3);g.stroke();g.fillStyle=c;g.beginPath();g.arc(0,s*.75,s*.14,0,7);g.fill();break;}
+    case 'scribble':{g.strokeStyle=c;g.lineWidth=Math.max(1.5,s*.09);g.beginPath();for(let i=0;i<=40;i++){const t=i/40;const a=t*Math.PI*7;const r=s*(.25+.6*Math.sin(t*Math.PI));g.lineTo(Math.cos(a)*r+t*s*.3-s*.15,Math.sin(a)*r*.7);}g.stroke();break;}
+    case 'arrow':{g.strokeStyle=c;g.lineWidth=Math.max(2,s*.18);g.beginPath();g.moveTo(-s,s*.4);g.quadraticCurveTo(-s*.2,-s*.6,s*.7,-s*.5);g.stroke();g.fillStyle=c;g.beginPath();g.moveTo(s,-s*.55);g.lineTo(s*.45,-s*.85);g.lineTo(s*.55,-s*.15);g.closePath();g.fill();break;}
+    case 'star':{g.fillStyle=c;g.beginPath();for(let i=0;i<10;i++){const a=i*Math.PI/5-Math.PI/2,rr=i%2?s*.45:s;g.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);}g.closePath();g.fill();break;}
+    case 'egg':{g.fillStyle=c;g.beginPath();g.ellipse(0,0,s*.65,s*.9,.3,0,7);g.fill();g.strokeStyle=C.cream;g.lineWidth=Math.max(1.2,s*.08);for(let i=0;i<4;i++){g.save();g.rotate(i*Math.PI/4);g.beginPath();g.moveTo(-s*.4,0);g.lineTo(s*.4,0);g.stroke();g.restore();}break;}
+  }
+  g.restore();}
+
+/* hero elements from the drawing, placed by hand, then the gaps filled */
+const motifs=[
+  {kind:'rainbow',x:196,y:300,s:52,rot:0},
+  {kind:'bulb',x:566,y:340,s:40,rot:0},
+  {kind:'gear',x:334,y:312,s:36,rot:.2,c:C.yellow},
+  {kind:'flower',x:428,y:212,s:36,rot:.3,c:C.purple,c2:C.sky},
+  {kind:'plane',x:470,y:120,s:26,rot:0},
+  {kind:'bubble',x:565,y:186,s:30,rot:0,c:C.orange},
+  {kind:'key',x:246,y:150,s:24,rot:-.8,c:C.orange},
+  {kind:'magnifier',x:306,y:196,s:26,rot:0,c:C.cream},
+  {kind:'puzzle',x:172,y:400,s:26,rot:.2,c:C.pink},
+  {kind:'puzzle',x:430,y:392,s:22,rot:-.4,c:C.sky},
+  {kind:'pencil',x:462,y:440,s:26,rot:0,c:C.pink},
+  {kind:'question',x:522,y:248,s:22,rot:0,c:C.sky},
+  {kind:'scribble',x:492,y:300,s:24,rot:.2,c:C.yellow},
+  {kind:'heart',x:130,y:230,s:28,rot:-.2,c:C.red},
+  {kind:'arrow',x:222,y:112,s:22,rot:0,c:C.orange},
+  {kind:'egg',x:392,y:100,s:26,rot:0,c:C.pink},
+  {kind:'frond',x:275,y:238,s:36,rot:.9,c:C.orange},
+  {kind:'frond',x:600,y:266,s:30,rot:-.6,c:C.pink},
+  {kind:'sprig',x:365,y:430,s:34,rot:.3,c:C.green},
+  {kind:'sprig',x:120,y:320,s:28,rot:-.4,c:C.green2},
+  {kind:'tulip',x:560,y:420,s:26,rot:.1,c:C.blue},
+  {kind:'tulip',x:300,y:400,s:24,rot:-.2,c:C.red},
+  {kind:'cloud',x:405,y:340,s:26,rot:0,c:C.sky},
+  {kind:'star',x:335,y:120,s:16,rot:0,c:C.yellow},
+  {kind:'bolt',x:352,y:250,s:20,rot:.3,c:C.red},
+  {kind:'heart',x:250,y:445,s:20,rot:.1,c:C.purple},
+  {kind:'leaf',x:520,y:110,s:22,rot:.8,c:C.green},
+  {kind:'leaf',x:598,y:200,s:20,rot:-.9,c:C.red},
+  {kind:'petal',x:245,y:360,s:22,rot:0,c:C.blue,c2:C.yellow},
+  {kind:'flower',x:520,y:400,s:18,rot:0,c:C.pink,c2:C.yellow},
+];
+{const FILL=['leaf','leaf','sprig','petal','flower','tulip','heart','bolt','dots','squig','spark','star','frond','gear'];let tries=0;
+  while(tries<30000&&motifs.length<210){tries++;const s=rb(8,17);const x=rb(90,650),y=rb(50,480);if(!inside(x,y))continue;
+    let ok=true;for(const d of [[s,0],[-s,0],[0,s],[0,-s]]){if(!inside(x+d[0]*.8,y+d[1]*.8)){ok=false;break;}}if(!ok)continue;
+    if(motifs.some(m=>Math.hypot(m.x-x,m.y-y)<(m.s+s)*.86))continue;
+    motifs.push({kind:FILL[Math.floor(rnd()*FILL.length)],x,y,s,rot:rb(0,6.28),c:CL[Math.floor(rnd()*CL.length)],c2:CL[Math.floor(rnd()*CL.length)]});}}
+const dots=[];{let tries=0;while(tries<20000&&dots.length<160){tries++;const x=rb(90,650),y=rb(50,480);if(!inside(x,y))continue;if(motifs.some(m=>Math.hypot(m.x-x,m.y-y)<m.s*1.05+3))continue;if(dots.some(d=>Math.hypot(d.x-x,d.y-y)<10))continue;dots.push({x,y,r:rb(1.6,3.2),c:CL[Math.floor(rnd()*CL.length)]});}}
+
+const plate=document.createElement('canvas');const pg=plate.getContext('2d');let plateScale=0;const plateBase=document.createElement('canvas');
+function buildPlate(scale){if(plateScale===scale)return;plateScale=scale;plate.width=W*scale;plate.height=H*scale;pg.setTransform(scale,0,0,scale,0,0);pg.clearRect(0,0,W,H);
+  pg.save();pg.fillStyle=EDGE;pg.globalAlpha=.95;for(let a=0;a<10;a++){pg.save();pg.translate(Math.cos(a*Math.PI/5)*2.6,Math.sin(a*Math.PI/5)*2.6);pg.fill(brain);pg.restore();}pg.restore();
+  pg.fillStyle=NAVY;pg.fill(brain);pg.save();pg.clip(brain);
+  const grd=pg.createRadialGradient(360,260,40,360,260,380);grd.addColorStop(0,NAVY2);grd.addColorStop(1,NAVY);pg.fillStyle=grd;pg.fillRect(0,0,W,H);
+  /* faint resting wiring under the art */
+  pg.strokeStyle='rgba(244,241,232,.07)';pg.lineWidth=1;for(let i=0;i<motifs.length;i++){const a=motifs[i];for(let j=i+1;j<motifs.length;j++){const b=motifs[j];if(Math.hypot(a.x-b.x,a.y-b.y)<62){pg.beginPath();pg.moveTo(a.x,a.y);pg.lineTo(b.x,b.y);pg.stroke();}}}
+  for(const d of dots){pg.fillStyle=d.c;pg.globalAlpha=.9;pg.beginPath();pg.arc(d.x,d.y,d.r,0,7);pg.fill();}pg.globalAlpha=1;
+  pg.restore();plateBase.width=plate.width;plateBase.height=plate.height;plateBase.getContext('2d').drawImage(plate,0,0);
+  pg.save();pg.clip(brain);for(const m of motifs)drawMotif(pg,m);pg.restore();}
+const PART={seeing:[600,250],hearing:[250,372],memory:[380,330],deciding:[165,215],move:[392,150],balance:[586,420]};
+function fitCanvas(cv){const dpr=Math.min(2,devicePixelRatio||1);const w=cv.clientWidth,h=cv.clientHeight||w*H/W;if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);}return dpr;}
+
+/* ---- the line drawing: a gently wavy version of the same contour ---- */
+function cr(pts,i,t){const n=pts.length;const p0=pts[(i-1+n)%n],p1=pts[i],p2=pts[(i+1)%n],p3=pts[(i+2)%n];const t2=t*t,t3=t2*t;
+  return [.5*((2*p1[0])+(-p0[0]+p2[0])*t+(2*p0[0]-5*p1[0]+4*p2[0]-p3[0])*t2+(-p0[0]+3*p1[0]-3*p2[0]+p3[0])*t3),.5*((2*p1[1])+(-p0[1]+p2[1])*t+(2*p0[1]-5*p1[1]+4*p2[1]-p3[1])*t2+(-p0[1]+3*p1[1]-3*p2[1]+p3[1])*t3)];}
+const wav=[];{const samp=[];for(let i=0;i<base.length;i++)for(let k=0;k<6;k++)samp.push(cr(base,i,k/6));
+  const N=samp.length;for(let i=0;i<N;i++){const q=samp[i],q2=samp[(i+1)%N];const dx=q2[0]-q[0],dy=q2[1]-q[1],len=Math.hypot(dx,dy)||1;const stem=q[1]>452&&q[0]>372&&q[0]<468;const amp=stem?0:9*(.5+.5*Math.sin(i*.9));wav.push([q[0]-dy/len*amp,q[1]+dx/len*amp]);}}
+const wavPath=smooth(wav);
+const FOLDS=[[[150,330],[240,318],[330,352],[430,420]],[[478,398],[505,384],[540,382],[575,394]],[[484,418],[512,404],[546,404],[578,414]],[[494,438],[520,426],[548,426],[574,434]]];
+const ORANGE='228,87,46',CREAM='255,240,190';
+/* paths: day one, then the ones that follow */
+const ROUTES=[[[600,250],[460,330],[300,300],[165,215],[230,130],[320,150],[392,150]],
+  [[250,372],[330,340],[380,330],[470,380],[586,420]],
+  [[600,250],[500,300],[380,330],[300,360],[250,372]],
+  [[165,215],[260,280],[380,330],[480,380],[586,420]]];
+function strokeRoute(g,R,width,rgb,alpha,frac){if(alpha<=0||frac<=0)return;g.save();g.globalAlpha=alpha;g.strokeStyle='rgb('+rgb+')';g.lineWidth=width;g.lineCap='round';g.lineJoin='round';g.beginPath();
+  const pts=[];for(let i=0;i<R.length-1;i++)for(let k=0;k<12;k++)pts.push(cr2(R,i,k/12));pts.push(R[R.length-1]);const n=Math.max(2,Math.round(pts.length*frac));
+  g.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<n;i++)g.lineTo(pts[i][0],pts[i][1]);g.stroke();g.restore();return pts[n-1];}
+function cr2(R,i,t){const p0=R[Math.max(0,i-1)],p1=R[i],p2=R[Math.min(R.length-1,i+1)],p3=R[Math.min(R.length-1,i+2)];const t2=t*t,t3=t2*t;
+  return [.5*((2*p1[0])+(-p0[0]+p2[0])*t+(2*p0[0]-5*p1[0]+4*p2[0]-p3[0])*t2+(-p0[0]+3*p1[0]-3*p2[0]+p3[0])*t3),.5*((2*p1[1])+(-p0[1]+p2[1])*t+(2*p0[1]-5*p1[1]+4*p2[1]-p3[1])*t2+(-p0[1]+3*p1[1]-3*p2[1]+p3[1])*t3)];}
+/* motifs appear nearest the first path first */
+const R0=ROUTES[0];const ord=motifs.map((m,i)=>{let d=1e9;for(const p of R0)d=Math.min(d,Math.hypot(m.x-p[0],m.y-p[1]));return [d+(i%7)*9,i];}).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
+const rank=new Array(motifs.length);ord.forEach((mi,r)=>rank[mi]=r/motifs.length);
+
+const cv=document.getElementById('cv'),g=cv.getContext('2d');const mk=document.createElement('canvas'),mg=mk.getContext('2d');
+const title=document.getElementById('title'),cue=document.getElementById('cue');
+const caps=[...document.querySelectorAll('.caption p')];const items=[...document.querySelectorAll('.panel li')];
+const story=document.querySelector('.story'),stage=document.querySelector('.stage'),brainEl=document.getElementById('brain');
+const ro=new ResizeObserver(()=>{brainEl.style.setProperty('--bw',brainEl.clientWidth+'px');render();});ro.observe(brainEl);
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* a small mechanical tick on each step */
+let ac=null,soundOn=true;const sndBtn=document.getElementById('snd');
+sndBtn.addEventListener('click',()=>{soundOn=!soundOn;sndBtn.textContent=soundOn?'Sound on':'Sound off';sndBtn.setAttribute('aria-pressed',soundOn);if(soundOn)unlock();});
+function unlock(){if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return;}}if(ac.state==='suspended')ac.resume();}
+['pointerdown','keydown','wheel','touchstart'].forEach(ev=>addEventListener(ev,unlock,{passive:true,once:false}));
+function tick(){if(!soundOn||!ac||ac.state!=='running')return;const t=ac.currentTime;
+  const o=ac.createOscillator(),gn=ac.createGain();o.type='sine';o.frequency.setValueAtTime(1800,t);o.frequency.exponentialRampToValueAtTime(700,t+.03);
+  gn.gain.setValueAtTime(.0001,t);gn.gain.exponentialRampToValueAtTime(.18,t+.003);gn.gain.exponentialRampToValueAtTime(.0001,t+.045);
+  const n=ac.createBufferSource(),buf=ac.createBuffer(1,ac.sampleRate*.02,ac.sampleRate),d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*(1-i/d.length);n.buffer=buf;
+  const ng=ac.createGain();ng.gain.setValueAtTime(.08,t);ng.gain.exponentialRampToValueAtTime(.0001,t+.02);
+  o.connect(gn).connect(ac.destination);n.connect(ng).connect(ac.destination);o.start(t);o.stop(t+.05);n.start(t);}
+let cur=-1,started=false;
+const RP=[];{const R=ROUTES[1];for(let i=0;i<R.length-1;i++)for(let k=0;k<16;k++)RP.push(cr2(R,i,k/16));RP.push(R[R.length-1]);}
+let animating=false,t0=performance.now();function loop(now){if(!animating)return;render(now);requestAnimationFrame(loop);}
+let uDisp=null,twFrom=0,twTo=null,twT0=0;
+function render(now){now=now||performance.now();
+  const r=story.getBoundingClientRect();
+  const p=reduced?1:clamp(-r.top/(story.offsetHeight-stage.offsetHeight),0,1);
+  const uT=Math.min(8,p*9);if(uDisp===null||reduced)uDisp=uT;else if(uT!==twTo){twFrom=uDisp;twTo=uT;twT0=now;}
+  if(!reduced&&uDisp!==uT){const k=clamp((now-twT0)/640,0,1);const e=k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;uDisp=twFrom+(twTo-twFrom)*e;if(k>=1)uDisp=uT;}
+  const u=uDisp;
+  const a=sm(u-.3), draw=sm(u-1), cross=clamp(u-2,0,1), grow=sm(u-3), more=sm(u-4), fill=sm((u-4.3)/.7), reveal=clamp((u-2.8)/2.2,0,1);
+  title.style.opacity=1-sm(u*1.6);cue.style.opacity=1-sm(u*3);
+  const dpr=fitCanvas(cv);g.setTransform(dpr,0,0,dpr,0,0);const w=cv.clientWidth,h=cv.clientHeight;g.clearRect(0,0,w,h);
+  const fit=Math.min(w/W,h/H)*.96;const ox=(w-W*fit)/2,oy=(h-H*fit)/2;buildPlate(Math.min(3,dpr*fit*1.15));
+  /* navy comes in last */
+  /* the navy grows too: it spreads out from the path with the drawings, and only completes on the last step */
+  if(fill>=1){g.drawImage(plateBase,ox,oy,W*fit,H*fit);}
+  else if(grow>0||reveal>0){mk.width=cv.width;mk.height=cv.height;mg.setTransform(dpr,0,0,dpr,0,0);mg.clearRect(0,0,w,h);
+    mg.save();mg.translate(ox,oy);mg.scale(fit,fit);
+    const blob=(x,y,r,k)=>{const gr=mg.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,'rgba(0,0,0,'+k+')');gr.addColorStop(.55,'rgba(0,0,0,'+k+')');gr.addColorStop(1,'rgba(0,0,0,0)');mg.fillStyle=gr;mg.beginPath();mg.arc(x,y,r,0,7);mg.fill();};
+    if(grow>0){const pts=[];for(let i=0;i<R0.length-1;i++)for(let k=0;k<12;k++)pts.push(cr2(R0,i,k/12));for(let i=0;i<pts.length;i+=3)blob(pts[i][0],pts[i][1],10+grow*34+more*40,Math.min(1,grow*1.5));}
+    motifs.forEach((m,i)=>{const k=sm((reveal*1.3-rank[i])/.3);if(k<=0)return;blob(m.x,m.y,m.s*2.4+more*30,k);});
+    if(fill>0){mg.fillStyle='rgba(0,0,0,'+fill+')';mg.fillRect(-ox/fit,-oy/fit,w/fit,h/fit);}
+    mg.restore();
+    mg.globalCompositeOperation='source-in';mg.drawImage(plateBase,ox,oy,W*fit,H*fit);mg.globalCompositeOperation='source-over';
+    g.save();g.setTransform(1,0,0,1,0,0);g.drawImage(mk,0,0);g.restore();}
+  g.save();g.translate(ox,oy);g.scale(fit,fit);
+  /* the line drawing */
+  g.save();g.globalAlpha=1-fill;g.strokeStyle='#1b2a5c';g.lineWidth=2.2/Math.max(.6,fit);g.lineJoin='round';g.stroke(wavPath);
+  g.globalAlpha=(1-fill)*.55;g.lineWidth=1.6/Math.max(.6,fit);for(const f of FOLDS){g.beginPath();g.moveTo(f[0][0],f[0][1]);g.bezierCurveTo(f[1][0],f[1][1],f[2][0],f[2][1],f[3][0],f[3][1]);g.stroke();}g.restore();
+  /* paths */
+  const rgb=[0,1,2].map(i=>Math.round(lerp(+ORANGE.split(',')[i],+CREAM.split(',')[i],fill))).join(',');
+  const quiet=1-sm(u-5)*.75; /* the story's paths step back once the product's neuron takes over */
+  const pathA=(1-fill*.7)*a*quiet;
+  const end=strokeRoute(g,R0,2+grow*9,rgb,pathA,draw);
+  for(let i=1;i<ROUTES.length;i++){const f=clamp((more-(i-1)*.18)/.5,0,1);strokeRoute(g,ROUTES[i],2+f*5,rgb,(1-fill*.7)*f*quiet,f);}
+  if(a>0&&draw<1){g.save();g.globalAlpha=a;g.fillStyle='rgb('+rgb+')';for(const q of [R0[0],R0[3],R0[6]]){g.beginPath();g.arc(q[0],q[1],5,0,7);g.fill();}g.restore();}
+  if(cross>0&&cross<1){const pts=[];for(let i=0;i<R0.length-1;i++)for(let k=0;k<12;k++)pts.push(cr2(R0,i,k/12));const q=pts[Math.min(pts.length-1,Math.floor(cross*pts.length))];g.save();g.fillStyle='rgb('+ORANGE+')';g.beginPath();g.arc(q[0],q[1],7,0,7);g.fill();g.restore();}
+  /* the drawing grows in */
+  if(reveal>0){g.save();g.clip(brain);motifs.forEach((m,i)=>{const k=sm((reveal*1.3-rank[i])/.3);if(k<=0)return;g.save();g.translate(m.x,m.y);g.scale(k,k);g.translate(-m.x,-m.y);g.globalAlpha=k;drawMotif(g,m);g.restore();});g.restore();}
+  /* three moves on the finished brain: one pathway, thin → defined → steady */
+  if(u>5.02){const v=Math.min(3,u-5);const on=sm((v)/.5), s1=1-sm(v-1), s2=sm(v-1)*(1-sm(v-2)), s3=sm(v-2);
+    g.save();g.globalAlpha=on;g.lineCap='round';g.lineJoin='round';
+    const width=3*s1+6.5*s2+11*s3, alpha=.7*s1+.9*s2+1*s3;
+    const trace=()=>{g.beginPath();g.moveTo(RP[0][0],RP[0][1]);for(const q of RP)g.lineTo(q[0],q[1]);g.stroke();};
+    /* dark underlay lifts the axon off the busy art */
+    g.strokeStyle='rgba(11,18,51,.85)';g.lineWidth=width+7;trace();
+    g.strokeStyle='rgba(255,240,190,'+alpha+')';g.lineWidth=width;trace();
+    /* cell bodies at both ends, with dendrites */
+    const soma=(x,y,r,bright)=>{g.fillStyle='rgba(11,18,51,.85)';g.beginPath();g.arc(x,y,r+5,0,7);g.fill();
+      g.strokeStyle='rgba(255,240,190,'+bright+')';g.lineWidth=3;for(let i=0;i<6;i++){const an=i*Math.PI/3+.4;g.beginPath();g.moveTo(x+Math.cos(an)*r*.8,y+Math.sin(an)*r*.8);g.lineTo(x+Math.cos(an)*(r+13),y+Math.sin(an)*(r+13));g.stroke();}
+      g.fillStyle='rgba(255,247,220,'+bright+')';g.beginPath();g.arc(x,y,r,0,7);g.fill();};
+    const tm=(now-t0)/1000;const beat=.5+.5*Math.sin(tm*4);
+    const A=RP[0],B=RP[RP.length-1];
+    soma(A[0],A[1],10+beat*2*(1-s3),.75+.25*beat*(1-s3)+.25*s3);
+    soma(B[0],B[1],9,.45+.3*s2+.55*s3);
+    /* the signal travels, then settles */
+    const move=1-s3;if(move>.02){const speed=s2>.5?1.6:1.1;const f=(tm*speed*.45)%1;const q=RP[Math.min(RP.length-1,Math.floor(f*RP.length))];g.globalAlpha=on*move;g.fillStyle='rgba(11,18,51,.9)';g.beginPath();g.arc(q[0],q[1],11,0,7);g.fill();g.fillStyle='#FFF7DC';g.beginPath();g.arc(q[0],q[1],8,0,7);g.fill();}
+    g.restore();}
+  g.restore();
+  const i=reduced?9:clamp(Math.round(p*9),0,9);
+  if(i!==cur){if(started)tick();cur=i;started=true;caps.forEach(c=>{const k=+c.dataset.i;c.classList.toggle('on',k===i);c.classList.toggle('out',k<i);});stage.classList.toggle('product',i>=6&&i<9);stage.classList.toggle('done',i>=9);items.forEach(li=>{const k=+li.dataset.i;li.classList.toggle('shown',k<=i);li.classList.toggle('on',k===i);});}
+  if((u>=5||u!==uT)&&!animating){animating=true;requestAnimationFrame(loop);}else if(u<5&&u===uT)animating=false;
+}
+let raf=false;addEventListener('scroll',()=>{if(!raf){raf=true;requestAnimationFrame(()=>{raf=false;render();});}},{passive:true});
+addEventListener('resize',render);render();
+
+
+/* ================= one gesture = one step ================= */
+if(!reduced){
+const vh=()=>stage.offsetHeight;
+const targets=()=>{const t=[];for(let k=0;k<=9;k++)t.push(Math.round(k*1.2*vh()));return t;};
+const nearest=()=>{const t=targets(),y=scrollY;let b=0;for(let i=1;i<t.length;i++)if(Math.abs(t[i]-y)<Math.abs(t[b]-y))b=i;return b;};
+let locked=false,lastWheel=0;
+function go(dir){const t=targets();const i=clamp(nearest()+dir,0,t.length-1);scrollTo({top:t[i],behavior:'instant'});render();if(!animating){animating=true;requestAnimationFrame(loop);}}
+/* gesture detection: a step fires on a fresh gesture (pause, direction change, or a delta that jumps
+   above the decaying momentum tail), and again on a long steady drag — never on the momentum tail itself */
+let lastD=0,lastDir=0,lastFire=-1e9,acc=0;
+addEventListener('wheel',e=>{e.preventDefault();const now=performance.now();const gap=now-lastWheel;lastWheel=now;
+  let dy=e.deltaY;if(e.deltaMode===1)dy*=40;else if(e.deltaMode===2)dy*=innerHeight;const d=Math.abs(dy);if(d<1)return;const dir=dy>0?1:-1;
+  const since=now-lastFire;let fire=false;
+  if(dir!==lastDir&&since>120)fire=true;                 /* changed direction */
+  else if(gap>220&&since>120)fire=true;                  /* new gesture after a pause */
+  else if(d>lastD*1.6&&d>12&&since>420)fire=true;        /* a fresh push, clearly above the tail */
+  else{ if(d>=lastD*.9)acc+=d;else acc=0; if(acc>300&&since>700)fire=true; } /* long steady drag */
+  lastD=d;lastDir=dir;
+  if(fire){lastFire=now;acc=0;go(dir);}
+},{passive:false});
+let ty=null,stepped=false;
+addEventListener('touchstart',e=>{ty=e.touches[0].clientY;stepped=false;},{passive:true});
+addEventListener('touchmove',e=>{e.preventDefault();if(ty===null||stepped||locked)return;const dy=ty-e.touches[0].clientY;if(Math.abs(dy)>28){stepped=true;go(dy>0?1:-1);}},{passive:false});
+addEventListener('touchend',()=>{ty=null;},{passive:true});
+addEventListener('keydown',e=>{if(e.target.matches('button,a,input,textarea'))return;if(['ArrowDown','PageDown',' '].includes(e.key)){e.preventDefault();if(!locked)go(1);}else if(['ArrowUp','PageUp'].includes(e.key)){e.preventDefault();if(!locked)go(-1);}});
+document.querySelector('.cue a').addEventListener('click',e=>{e.preventDefault();if(!locked)go(1);});
+}
+})();
+</script>
+</body>
+</html>
+
+</body></html>
