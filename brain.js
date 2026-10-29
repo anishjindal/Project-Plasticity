@@ -103,8 +103,9 @@ function renderer(cv){const g=cv.getContext('2d');const mk=document.createElemen
     return {fit,ox,oy};};}
 
 /* the same small mechanical tick as the landing page, with a pitch so taps can rise */
-let ac=null;const audio={on:true};
-function unlock(){if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return;}}if(ac.state==='suspended')ac.resume();}
+/* sound is switched off for now; the user will share ideas for it */
+let ac=null;const audio={on:false};
+function unlock(){if(!audio.on)return;if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return;}}if(ac.state==='suspended')ac.resume();}
 ['pointerdown','keydown','touchstart'].forEach(ev=>addEventListener(ev,unlock,{passive:true}));
 function tick(pitch=1,vol=.18){if(!audio.on||!ac||ac.state!=='running')return;const t=ac.currentTime;
   const o=ac.createOscillator(),gn=ac.createGain();o.type='sine';o.frequency.setValueAtTime(1800*pitch,t);o.frequency.exponentialRampToValueAtTime(700*pitch,t+.03);

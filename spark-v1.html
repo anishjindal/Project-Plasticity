@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Project Plasticity — Spark: Odd Time</title>
+<meta name="description" content="A rhythm you've never played. Tap it, lose the guide, keep it.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--ease:cubic-bezier(.4,0,.2,1);--dur:.6s;--bg:#fff;--bg2:#f5f5f3;--ink:#111318;--ink2:#5a5e68;--accent:#e4572e;--rule:#e6e6e3;--navy:#131E4A;--navy2:#1B2A5C;--edge:#0B1233;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#fff;--bg2:#f5f5f3}}
+:root[data-theme="dark"]{--bg:#fff;--bg2:#f5f5f3}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Inter",system-ui,sans-serif;font-size:18px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body.large{font-size:21px}
+button{font:inherit;color:inherit}
+a{color:inherit}
+.in{max-width:760px;margin:0 auto;padding:0 clamp(16px,4vw,32px)}
+.top{display:flex;justify-content:space-between;align-items:center;padding:18px clamp(16px,5vw,72px);font-size:13px;color:var(--ink2)}
+.top a{text-decoration:none;font-weight:500}
+.snd{position:fixed;right:clamp(16px,5vw,72px);bottom:20px;background:none;border:0;padding:4px 0;font-size:13px;color:var(--ink2);cursor:pointer;border-bottom:1px solid transparent;z-index:5}
+.snd:hover{border-bottom-color:currentColor}
+.screen{display:none;padding:clamp(8px,3svh,32px) 0 96px;animation:rise var(--dur) var(--ease)}
+.screen.on{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.k{font-size:13px;color:var(--accent);margin-bottom:10px;font-variant-numeric:tabular-nums}
+h2,h3{margin:0;font-weight:500;letter-spacing:-.03em;line-height:1.06}
+h2{font-size:clamp(28px,3.4vw,40px)}
+h3{font-size:clamp(20px,2vw,24px);letter-spacing:-.015em;line-height:1.2}
+.lede{color:var(--ink2);margin:16px 0 0;font-size:clamp(17px,1.6vw,20px);max-width:36em}
+.btn{display:inline-block;margin-top:24px;background:var(--ink);color:#fff;border:0;padding:15px 24px;font-weight:500;font-size:17px;cursor:pointer;text-decoration:none}
+.link{background:none;border:0;padding:0;font-size:15px;color:var(--ink2);cursor:pointer;border-bottom:1px solid var(--rule);text-decoration:none}
+.link:hover{color:var(--ink)}
+.row{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.sec{margin-top:48px}
+.rule{border:0;border-top:1px solid var(--rule);margin:40px 0}
+
+/* play */
+.hud{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.status{font-weight:500;font-size:clamp(20px,2.4vw,28px);letter-spacing:-.02em;min-height:1.3em}
+.meta{font-size:14px;color:var(--ink2);font-variant-numeric:tabular-nums}
+.wheelwrap{position:relative;margin:18px auto 0;width:min(100%,480px,max(280px,calc(100svh - 280px)));aspect-ratio:1}
+.wheelwrap canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.finger{position:absolute;left:50%;top:50%;width:52px;height:52px;margin:-26px 0 0 -26px;border-radius:50%;border:2px solid #fff;background:rgba(228,87,46,.85);opacity:0;pointer-events:none;transition:opacity .3s,transform .1s}
+.finger.on{opacity:1}.finger.press{transform:scale(.78)}
+.pat{text-align:center;font-size:14px;color:var(--ink2);margin-top:12px;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.pat b{color:var(--ink);font-weight:500}
+.go{text-align:center}
+.hint{text-align:center;font-size:13px;color:var(--ink2);margin-top:8px}
+
+/* impact */
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:clamp(12px,3vw,32px);margin-top:28px}
+.mini canvas{width:100%;max-width:300px;aspect-ratio:1;display:block}
+.mini .lbl{font-size:13px;color:var(--ink2)}
+.mini.now .lbl{color:var(--accent)}
+.mini .big{font-weight:500;font-size:clamp(28px,4vw,44px);letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums;margin-top:6px}
+.mini .big small{font-size:.42em;color:var(--ink2);letter-spacing:0;font-weight:400}
+.deltas{list-style:none;margin:28px 0 0;padding:0}
+.deltas li{display:grid;grid-template-columns:1fr auto auto auto;gap:14px;align-items:baseline;padding:12px 0;border-top:1px solid var(--rule);font-variant-numeric:tabular-nums}
+.deltas .n{font-weight:500}.deltas .a{color:var(--ink2)}.deltas .arrow{color:var(--accent)}.deltas .b{font-weight:500}
+.honest{font-size:15px;color:var(--ink2);margin-top:14px;max-width:38em}
+.next{margin-top:32px;padding:20px 22px;background:var(--bg2)}
+.find{list-style:none;margin:16px 0 0;padding:0}
+.find li{display:grid;padding:14px 0;border-top:1px solid var(--rule)}
+.find .c{font-weight:500;font-size:clamp(18px,1.7vw,20px);letter-spacing:-.01em}
+.find .u{color:var(--ink2);font-size:15px;margin-top:3px}
+.cite{font-size:13px;color:var(--ink2);margin-top:6px}
+.cite a{text-decoration:none;border-bottom:1px solid var(--rule)}
+.cite a:hover{color:var(--accent);border-bottom-color:var(--accent)}
+.story{background:var(--navy);color:#F7EEDD;padding:clamp(20px,3vw,32px);margin-top:28px}
+.story .k{color:#F5C63C}
+.story p{margin:8px 0 0;font-size:clamp(18px,1.8vw,22px);line-height:1.35;letter-spacing:-.01em}
+.story .cite{color:rgba(247,238,221,.7)}.story .cite a{border-bottom-color:rgba(247,238,221,.3)}
+@media (max-width:640px){.compare{grid-template-columns:1fr 1fr;gap:12px}.deltas li{gap:8px;font-size:16px}}
+@media (prefers-reduced-motion:reduce){.screen{animation:none}}
+</style>
+</head>
+<body>
+<div class="top"><a href="onboarding-v3.html">Project Plasticity</a><span>Spark · Stimulate</span></div>
+
+<main class="in">
+<!-- ============ play: opens straight onto the wheel ============ -->
+<section class="screen on" id="s-play" aria-labelledby="status">
+  <div class="hud"><div class="status" id="status" aria-live="polite">Watch.</div><div class="meta" id="meta"></div></div>
+  <div class="wheelwrap" id="wrap">
+    <canvas id="wheel" aria-label="Rhythm wheel. Tap anywhere on it, or press the space bar, on the big beats."></canvas>
+    <div class="finger" id="finger" aria-hidden="true"></div>
+  </div>
+  <div class="pat" id="pat"><b>2 + 2 + 3</b> · 7 beats</div>
+  <div class="go" id="go"><button class="btn" type="button" id="start">Play</button><div class="hint">Sound on · tap the wheel or press space</div></div>
+</section>
+
+<!-- ============ after: what changed, then why ============ -->
+<section class="screen" id="s-impact" aria-labelledby="h-impact">
+  <div class="k">What changed in a few minutes</div>
+  <h2 id="h-impact"></h2>
+  <p class="lede" id="imp-lede"></p>
+  <div class="compare">
+    <div class="mini"><div class="lbl">Your first taps</div><canvas id="m1" aria-hidden="true"></canvas><div class="big" id="m1-n"></div></div>
+    <div class="mini now"><div class="lbl">Your last taps</div><canvas id="m2" aria-hidden="true"></canvas><div class="big" id="m2-n"></div></div>
+  </div>
+  <ul class="deltas" id="deltas"></ul>
+  <p class="honest">One session teaches your brain a new pattern. It won’t rewire you overnight. The point is novelty: once this feels easy, Spark changes the pattern so it never becomes autopilot.</p>
+  <div class="next"><h3>Tomorrow: a new rhythm.</h3><p class="lede" style="margin-top:6px;font-size:16px">Same idea, a pattern you haven’t met yet. Your brain does its best learning on things it can’t predict.</p></div>
+  <div class="row"><a class="btn" href="#why" id="to-why">Why this works →</a><button class="link" type="button" id="again" style="margin-top:24px">Play again</button></div>
+
+  <div id="why" style="padding-top:40px">
+    <hr class="rule">
+    <div class="k">Stimulate vs. Challenge</div>
+    <h2>Wiring pushes what you can already do. Spark gives your brain something new.</h2>
+    <ul class="find">
+      <li><span class="c">Hearing and moving are wired together.</span><span class="u">Making music links the brain’s hearing and movement systems. Learning a new rhythm exercises that link in a way your brain hasn’t practised.</span><span class="cite">Zatorre, Chen &amp; Penhune, 2007 · <a href="https://doi.org/10.1038/nrn2152" target="_blank" rel="noopener">Nature Reviews Neuroscience</a></span></li>
+      <li><span class="c">New skills change the brain.</span><span class="u">Adults who learned to juggle showed grey-matter growth within three months. Older adults who spent three months learning demanding new skills, like digital photography or quilting, improved their memory more than people who kept to familiar activities.</span><span class="cite">Draganski et al., 2004 · <a href="https://doi.org/10.1038/427311a" target="_blank" rel="noopener">Nature</a> · Park et al., 2014 · <a href="https://doi.org/10.1177/0956797613499592" target="_blank" rel="noopener">Psychological Science</a></span></li>
+      <li><span class="c">Timing is a skill, not a gift.</span><span class="u">Musicians tap with much less timing error than non-musicians. Precision comes from practice, which is why you can watch your taps tighten.</span><span class="cite">Repp, 2005 · <a href="https://doi.org/10.3758/BF03206433" target="_blank" rel="noopener">Psychonomic Bulletin &amp; Review</a></span></li>
+      <li><span class="c">The guide fades on purpose.</span><span class="u">Following a click is easy. Holding the pattern without it makes your brain build the rhythm itself, and that’s the part that has to change.</span></li>
+    </ul>
+    <div class="story">
+      <div class="k">Five days to hear with your hands</div>
+      <p>Non-musicians learned to play a short piano piece by ear over five days. Afterwards, just listening to that piece lit up movement areas of their brains. A piece they hadn’t learned did much less.</p>
+      <div class="cite">Lahav, Saltzman &amp; Schlaug, 2007 · <a href="https://doi.org/10.1523/JNEUROSCI.4822-06.2007" target="_blank" rel="noopener">Journal of Neuroscience</a></div>
+    </div>
+    <div class="sec">
+      <div class="k">What it can’t do, honestly</div>
+      <ul class="find"><li><span class="c">You’ll get better at what you practise.</span><span class="u">Whether it spreads into everyday life is still being studied. This is a training activity, not a medical test.</span><span class="cite">Simons et al., 2016 · <a href="https://doi.org/10.1177/1529100616661983" target="_blank" rel="noopener">Psychological Science in the Public Interest</a></span></li></ul>
+    </div>
+    <div class="row"><button class="btn" type="button" id="again2">Play again</button><a class="link" href="wiring-v2.html" style="margin-top:24px">Next: Wiring</a></div>
+  </div>
+</section>
+</main>
+<button class="snd" id="snd" type="button" aria-pressed="true">Sound on</button>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const store={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d;}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
+const profile=store.get('pp3.profile',{});
+const reduced=(profile.a11y&&profile.a11y.motion)||matchMedia('(prefers-reduced-motion: reduce)').matches;
+let soundOn=!(profile.a11y&&profile.a11y.sound===false);document.body.classList.toggle('large',!!(profile.a11y&&profile.a11y.large));
+const sndBtn=$('#snd');const snd=()=>{sndBtn.textContent=soundOn?'Sound on':'Sound off';sndBtn.setAttribute('aria-pressed',soundOn);};snd();
+sndBtn.addEventListener('click',()=>{soundOn=!soundOn;snd();});
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const sm=t=>{t=Math.min(1,Math.max(0,t));return t*t*(3-2*t);};
+
+/* ---------- the rhythm ---------- */
+const N=7;
+const PATTERNS=[{name:'2 + 2 + 3',acc:[0,2,4]},{name:'3 + 2 + 2',acc:[0,3,5]}];
+/* each stage takes a little guide away. full: every beat, accents: only the big ones, alone: just the first */
+const STAGES=[
+  {say:'Tap the big beats.',guide:'full',pat:0},
+  {say:'Quieter now. Keep going.',guide:'accents',pat:0},
+  {say:'Hold it on your own.',guide:'alone',pat:0},
+  {say:'Flip it.',guide:'full',pat:1},
+  {say:'On your own again.',guide:'alone',pat:1}];
+const HIT=.08;          /* within 80 ms counts as on the beat */
+const MAX_STAGE=50;     /* seconds before a stage moves on regardless */
+const MAX_SESSION=270;  /* about 4½ minutes */
+
+/* ---------- sound ---------- */
+let ac=null;
+function audio(){if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}}if(ac&&ac.state==='suspended')ac.resume();return ac;}
+const lat=()=>ac?(ac.outputLatency||0)+(ac.baseLatency||0):0;
+function voice(t,kind){if(!soundOn||!ac)return;
+  if(kind==='big'){const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.setValueAtTime(190,t);o.frequency.exponentialRampToValueAtTime(55,t+.12);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.55,t+.004);g.gain.exponentialRampToValueAtTime(.0001,t+.18);o.connect(g).connect(ac.destination);o.start(t);o.stop(t+.2);}
+  const o=ac.createOscillator(),g=ac.createGain();o.type='sine';const f=kind==='big'?2100:1500;o.frequency.setValueAtTime(f,t);o.frequency.exponentialRampToValueAtTime(f*.4,t+.03);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(kind==='big'?.16:.07,t+.003);g.gain.exponentialRampToValueAtTime(.0001,t+.04);o.connect(g).connect(ac.destination);o.start(t);o.stop(t+.05);}
+function tapSound(){if(!soundOn||!ac)return;const t=ac.currentTime;const n=ac.createBufferSource(),b=ac.createBuffer(1,ac.sampleRate*.03,ac.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,3);n.buffer=b;const g=ac.createGain();g.gain.value=.25;n.connect(g).connect(ac.destination);n.start(t);}
+
+/* ---------- engine: a look-ahead scheduler, judged against what you hear ---------- */
+const S={running:false,stage:0,e:.3,slot:0,next:0,cycles:[],accents:[],judged:[],stageJudged:[],stageStart:0,start:0,flash:{},taps:[]};
+function stageCfg(){return STAGES[S.stage];}
+function schedule(){if(!S.running)return;const look=ac.currentTime+.12;
+  while(S.next<look){const st=stageCfg(),P=PATTERNS[st.pat],isAcc=P.acc.includes(S.slot);
+    if(S.slot===0)S.cycles.push({t:S.next,e:S.e,pat:st.pat});
+    const audible=st.guide==='full'||(st.guide==='accents'&&isAcc)||(st.guide==='alone'&&S.slot===0);
+    if(audible)voice(S.next,isAcc?'big':'small');
+    if(isAcc&&S.next>=S.listenUntil)S.accents.push({t:S.next,slot:S.slot,stage:S.stage,err:null,done:false});
+    S.next+=S.e;S.slot=(S.slot+1)%N;}
+  setTimeout(schedule,25);}
+function onTap(){if(!S.running)return;tapSound();const t=ac.currentTime-lat();
+  let best=null;for(const a of S.accents){if(a.err!=null)continue;const d=t-a.t;if(Math.abs(d)<S.e*.55&&(!best||Math.abs(d)<Math.abs(best.d)))best={a,d};}
+  if(best){best.a.err=best.d;}
+  S.taps.push({t,err:best?best.d:null});}
+/* an accent is judged once it can no longer be tapped */
+function judge(){const now=ac.currentTime-lat();
+  for(const a of S.accents){if(a.done||now<a.t+S.e*.55)continue;a.done=true;const hit=a.err!=null&&Math.abs(a.err)<=HIT;
+    const j={hit,err:a.err,stage:a.stage,slot:a.slot,pat:STAGES[a.stage].pat};S.judged.push(j);if(a.stage===S.stage)S.stageJudged.push(j);if(hit)S.flash[a.slot]=performance.now();}
+  S.accents=S.accents.filter(a=>!a.done||now<a.t+2);}
+function locked(){const w=S.stageJudged.slice(-8);return w.length?w.filter(j=>j.hit).length/8:0;}
+function advance(){const el=(ac.currentTime-S.stageStart);
+  if(S.stageJudged.length>=8&&locked()>=.75||el>MAX_STAGE){
+    if(S.stage>=STAGES.length-1||ac.currentTime-S.start>MAX_SESSION){finish();return;}
+    S.stage++;S.stageJudged=[];S.stageStart=ac.currentTime;S.e=Math.max(.22,S.e-.015);
+    setStatus(stageCfg().say);setPat();chime();}}
+function chime(){if(!soundOn||!ac)return;const t=ac.currentTime;[[660,0],[990,.09]].forEach(([f,d])=>{const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(.0001,t+d);g.gain.exponentialRampToValueAtTime(.08,t+d+.01);g.gain.exponentialRampToValueAtTime(.0001,t+d+.5);o.connect(g).connect(ac.destination);o.start(t+d);o.stop(t+d+.55);});}
+
+/* ---------- the wheel ---------- */
+const cv=$('#wheel'),g=cv.getContext('2d');
+function geom(c){const dpr=Math.min(2,devicePixelRatio||1),w=c.clientWidth;if(c.width!==Math.round(w*dpr)){c.width=c.height=Math.round(w*dpr);}const x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,w,w);return {x,w,c:w/2,R:w*.36};}
+const ang=s=>-Math.PI/2+s/N*Math.PI*2;
+function drawWheel(phase,pat,guide,lock,taps,now){const {x,w,c,R}=geom(cv);
+  /* navy disc, the same object as the brain and the board */
+  const gr=x.createRadialGradient(c,c*.9,10,c,c,c);gr.addColorStop(0,'#1B2A5C');gr.addColorStop(1,'#131E4A');x.fillStyle='#0B1233';x.beginPath();x.arc(c,c,c-1,0,7);x.fill();x.fillStyle=gr;x.beginPath();x.arc(c,c,c-4,0,7);x.fill();
+  /* lock-in arc */
+  x.strokeStyle='rgba(247,238,221,.12)';x.lineWidth=4;x.beginPath();x.arc(c,c,R*1.28,0,7);x.stroke();
+  if(lock>0){x.strokeStyle='#e4572e';x.lineCap='round';x.beginPath();x.arc(c,c,R*1.28,-Math.PI/2,-Math.PI/2+lock*Math.PI*2);x.stroke();}
+  x.strokeStyle='rgba(247,238,221,.18)';x.lineWidth=1.5;x.beginPath();x.arc(c,c,R,0,7);x.stroke();
+  /* the groups, drawn as arcs so 2+2+3 is visible */
+  const P=PATTERNS[pat];P.acc.forEach((s,i)=>{const e=P.acc[i+1]??N;x.strokeStyle='rgba(255,240,190,.55)';x.lineWidth=6;x.lineCap='round';x.beginPath();x.arc(c,c,R,ang(s)+.12,ang(e)-.12);x.stroke();});
+  /* playhead */
+  const a=ang(phase*N);x.strokeStyle='rgba(255,240,190,.9)';x.lineWidth=2.5;x.beginPath();x.moveTo(c,c);x.lineTo(c+Math.cos(a)*R*1.12,c+Math.sin(a)*R*1.12);x.stroke();
+  /* beats */
+  for(let s=0;s<N;s++){const isA=P.acc.includes(s);const px=c+Math.cos(ang(s))*R,py=c+Math.sin(ang(s))*R;
+    const near=Math.abs(((phase*N-s+N+.5)%N)-.5)<.18;const fl=now-(S.flash[s]||-1e9);const glow=fl<400?1-fl/400:0;
+    const r=isA?R*.12:R*.05;const faint=guide==='alone'&&s!==0;
+    if(glow>0){x.fillStyle=`rgba(228,87,46,${.35*glow})`;x.beginPath();x.arc(px,py,r*2.4,0,7);x.fill();}
+    x.fillStyle=isA?(near?'#FFF7DC':faint?'rgba(247,238,221,.35)':'#F7EEDD'):'rgba(247,238,221,.45)';x.beginPath();x.arc(px,py,r*(near&&!faint?1.2:1),0,7);x.fill();
+    if(isA&&glow>0){x.fillStyle='#e4572e';x.beginPath();x.arc(px,py,r*.45,0,7);x.fill();}}
+  /* your taps, fading, on an inner ring */
+  for(const t of taps){const age=(now-t.at)/1000;if(age>3.5)continue;const ta=ang(t.phase*N);x.fillStyle=`rgba(228,87,46,${1-age/3.5})`;x.beginPath();x.arc(c+Math.cos(ta)*R*.72,c+Math.sin(ta)*R*.72,5,0,7);x.fill();}
+  x.fillStyle='rgba(247,238,221,.9)';x.font=`500 ${Math.round(w*.05)}px Inter,system-ui`;x.textAlign='center';x.textBaseline='middle';x.fillText(lock>=.75?'Locked in':'',c,c+R*.35);}
+const tapMarks=[];
+function phaseNow(){const t=ac.currentTime-lat();let cyc=null;for(let i=S.cycles.length-1;i>=0;i--)if(S.cycles[i].t<=t){cyc=S.cycles[i];break;}if(!cyc)return {phase:0,pat:stageCfg().pat};return {phase:((t-cyc.t)/(N*cyc.e))%1,pat:cyc.pat};}
+function loop(){if(!S.running)return;judge();advance();if(!S.running)return;const {phase,pat}=phaseNow();drawWheel(phase,pat,stageCfg().guide,locked(),tapMarks,performance.now());
+  setMeta(`${S.stage+1} of ${STAGES.length} · ${Math.round(60/(S.e*2))} bpm`);requestAnimationFrame(loop);}
+function tapped(){if(!S.running)return;onTap();const {phase}=phaseNow();tapMarks.push({phase,at:performance.now()});if(tapMarks.length>30)tapMarks.shift();}
+cv.addEventListener('pointerdown',e=>{e.preventDefault();tapped();});
+addEventListener('keydown',e=>{if(e.code==='Space'||e.key==='Enter'&&S.running){if(e.target.closest('button,a')&&!S.running)return;e.preventDefault();if(e.repeat)return;tapped();}});
+const setStatus=s=>{$('#status').textContent=s;};const setMeta=s=>{$('#meta').textContent=s;};
+const setPat=()=>{const P=PATTERNS[stageCfg().pat];$('#pat').innerHTML=`<b>${P.name}</b> · 7 beats`;};
+
+/* ---------- tutorial: the wheel plays itself and a finger taps the big beats ---------- */
+const finger=$('#finger');let demoing=false;
+function demo(){demoing=true;const t0=performance.now(),e=.32;const marks=[];let lastTap=-1;
+  const f=now=>{if(!demoing){finger.classList.remove('on');return;}const t=(now-t0)/1000;const cyc=Math.floor(t/(N*e)),phase=(t/(N*e))%1;const slot=Math.floor(phase*N);
+    const tapping=cyc>=1;finger.classList.toggle('on',tapping);
+    if(tapping){const P=PATTERNS[0];const key=cyc*N+slot;if(P.acc.includes(slot)&&key!==lastTap&&(phase*N-slot)<.2){lastTap=key;finger.classList.add('press');setTimeout(()=>finger.classList.remove('press'),110);marks.push({phase:slot/N,at:now});S.flash[slot]=now;}}
+    setStatus(cyc<1?'Watch.':'Tap the big beats.');
+    drawWheel(phase,0,'full',Math.min(1,Math.max(0,(cyc-1)*.34)),marks,now);requestAnimationFrame(f);};requestAnimationFrame(f);}
+
+/* ---------- a session ---------- */
+async function start(){demoing=false;$('#go').hidden=true;audio();if(!ac){setStatus('Sound isn’t available in this browser.');return;}
+  Object.assign(S,{running:true,stage:0,e:.3,slot:0,cycles:[],accents:[],judged:[],stageJudged:[],flash:{},taps:[]});tapMarks.length=0;setPat();
+  setStatus('Listen first.');S.next=ac.currentTime+.25;S.listenUntil=S.next+S.e*N*1.6;S.start=S.stageStart=ac.currentTime;schedule();requestAnimationFrame(loop);
+  await wait(S.e*N*1000*1.6);if(S.running&&S.stage===0)setStatus(stageCfg().say);}
+$('#start').addEventListener('click',start);
+
+/* ---------- impact: first taps vs last taps ---------- */
+function stats(js){const m=js.filter(j=>j.err!=null);return {hit:js.filter(j=>j.hit).length,n:js.length,ms:m.length?Math.round(m.reduce((a,j)=>a+Math.abs(j.err),0)/m.length*1000):null};}
+function drawMini(c,js,pat){const {x,w,c:cc,R}=geom(c);x.fillStyle='#131E4A';x.beginPath();x.arc(cc,cc,cc-1,0,7);x.fill();
+  x.strokeStyle='rgba(247,238,221,.18)';x.lineWidth=1.5;x.beginPath();x.arc(cc,cc,R,0,7);x.stroke();
+  const P=PATTERNS[pat];P.acc.forEach(s=>{x.fillStyle='#F7EEDD';x.beginPath();x.arc(cc+Math.cos(ang(s))*R,cc+Math.sin(ang(s))*R,R*.1,0,7);x.fill();});
+  /* each tap is drawn off its beat by its timing error, magnified so you can see it */
+  js.forEach((j,i)=>{if(j.err==null)return;const a=ang(j.slot)+j.err/(S.e*N)*Math.PI*2*3;const r=R*(.8-((i%4)*.06));x.fillStyle=j.hit?'#e4572e':'rgba(228,87,46,.45)';x.beginPath();x.arc(cc+Math.cos(a)*r,cc+Math.sin(a)*r,4.5,0,7);x.fill();});}
+function finish(){S.running=false;const js=S.judged;const first=js.filter(j=>j.stage===0).slice(0,12),last=js.slice(-12);
+  const a=stats(first),b=stats(last);
+  store.set('pp3.spark',store.get('pp3.spark',[]).concat([{at:Date.now(),first:a,last:b,stages:S.stage+1,bpm:Math.round(60/(S.e*2))}]));
+  $$('.screen').forEach(s=>s.classList.toggle('on',s.id==='s-impact'));scrollTo({top:0});
+  const pa=a.n?Math.round(a.hit/a.n*100):0,pb=b.n?Math.round(b.hit/b.n*100):0;
+  $('#h-impact').textContent=b.ms!=null&&a.ms!=null&&b.ms<a.ms?`Your taps tightened from ${a.ms} ms off the beat to ${b.ms}.`:`You learned ${S.stage>=3?'two new rhythms':'a new rhythm'}. That’s the point.`;
+  $('#imp-lede').textContent=S.stage>=2?'And by the end you were holding it with almost no guide. Your brain was keeping the beat, not the speaker.':'Still following the guide, and that’s fine. New patterns take a few days to settle.';
+  $('#m1-n').innerHTML=`${pa}%<small> on the beat</small>`;$('#m2-n').innerHTML=`${pb}%<small> on the beat</small>`;
+  drawMini($('#m1'),first,0);drawMini($('#m2'),last,last.length?last[last.length-1].pat:0);
+  $('#deltas').innerHTML=[['On the beat',`${pa}%`,`${pb}%`],['Average timing error',a.ms!=null?a.ms+' ms':'–',b.ms!=null?b.ms+' ms':'–'],['Guide you needed','Every beat',['Every beat','Big beats only','Just the first beat','Every beat','Just the first beat'][S.stage]],['Patterns learned','',S.stage>=3?'2 + 2 + 3, 3 + 2 + 2':'2 + 2 + 3']]
+    .map(([n,x,y])=>`<li><span class="n">${n}</span><span class="a">${x}</span><span class="arrow">${x?'→':''}</span><span class="b">${y}</span></li>`).join('');
+  chime();}
+const $$=s=>[...document.querySelectorAll(s)];
+const again=()=>{location.hash='play';location.reload();};$('#again').addEventListener('click',again);$('#again2').addEventListener('click',again);
+$('#to-why').addEventListener('click',e=>{e.preventDefault();$('#why').scrollIntoView({behavior:reduced?'auto':'smooth'});});
+addEventListener('resize',()=>{if(!S.running&&!demoing)drawWheel(0,stageCfg().pat,'full',0,[],performance.now());});
+/* returning from "Play again" goes straight to the Play button; first visit gets the tutorial */
+if(location.hash==='#play'){history.replaceState(null,'',location.pathname);setStatus('Ready when you are.');drawWheel(0,0,'full',0,[],performance.now());}else demo();
+})();
+</script>
+</body>
+</html>

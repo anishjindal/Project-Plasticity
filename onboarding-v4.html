@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Project Plasticity — Your brain</title>
+<meta name="description" content="Your first five minutes: every answer grows something in your brain.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--ease:cubic-bezier(.4,0,.2,1);--dur:.6s;--bg:#fff;--bg2:#f5f5f3;--ink:#111318;--ink2:#5a5e68;--line:#1b2a5c;--accent:#e4572e;--rule:#e6e6e3;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#fff;--bg2:#f5f5f3}}
+:root[data-theme="dark"]{--bg:#fff;--bg2:#f5f5f3}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Inter",system-ui,sans-serif;font-size:18px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body.large{font-size:21px}
+button{font:inherit;color:inherit}
+.app{min-height:100svh;display:grid;grid-template-columns:minmax(320px,460px) 1fr;gap:clamp(16px,4vw,64px);padding:0 clamp(16px,5vw,72px);align-items:center}
+.top{position:fixed;left:0;right:0;top:0;display:flex;justify-content:space-between;align-items:center;padding:18px clamp(16px,5vw,72px);z-index:5;pointer-events:none;background:linear-gradient(#fff 70%,rgba(255,255,255,0))}
+.mark{font-size:13px;font-weight:500;color:var(--ink2)}
+.dots{display:flex;gap:8px}.dots i{width:22px;height:2px;background:var(--rule);transition:background var(--dur) var(--ease)}.dots i.on{background:var(--accent)}.dots i.done{background:var(--ink)}
+.snd{position:fixed;right:clamp(16px,5vw,72px);bottom:20px;background:none;border:0;padding:4px 0;font-size:13px;color:var(--ink2);cursor:pointer;border-bottom:1px solid transparent;z-index:5}
+.snd:hover{border-bottom-color:currentColor}
+
+/* left: one step at a time */
+.steps{display:grid;padding:64px 0}
+.step{grid-area:1/1;display:flex;flex-direction:column;justify-content:center;opacity:0;transform:translateY(12px);pointer-events:none;transition:opacity var(--dur) var(--ease),transform var(--dur) var(--ease)}
+.step.on{opacity:1;transform:none;pointer-events:auto}
+.step.gone{transform:translateY(-10px)}
+.step>.btn,.step>.link{align-self:flex-start}
+.k{font-size:13px;color:var(--accent);margin-bottom:10px;font-variant-numeric:tabular-nums}
+h1,h2{margin:0;font-weight:500;letter-spacing:-.03em;line-height:1.05}
+h1{font-size:clamp(34px,4vw,52px)}
+h2{font-size:clamp(28px,3.1vw,40px)}
+.lede{color:var(--ink2);margin:14px 0 0;font-size:clamp(17px,1.5vw,19px)}
+.brainnote{margin-top:22px;padding-top:14px;border-top:1px solid var(--rule);font-size:15px;color:var(--ink2);line-height:1.45}
+.brainnote b{display:block;font-weight:500;color:var(--accent);font-size:13px;margin-bottom:3px}
+.btn{display:inline-block;margin-top:26px;background:var(--ink);color:#fff;border:0;padding:15px 24px;font-weight:500;font-size:17px;cursor:pointer;transition:opacity .25s}
+.btn[disabled]{opacity:.25;cursor:default}
+.row{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.link{background:none;border:0;padding:0;margin-top:26px;font-size:15px;color:var(--ink2);cursor:pointer;border-bottom:1px solid var(--rule)}
+.link:hover{color:var(--ink)}
+.reveal{opacity:0;transform:translateY(8px);transition:opacity var(--dur) var(--ease),transform var(--dur) var(--ease)}
+.reveal.on{opacity:1;transform:none}
+input[type=text]{font:inherit;font-size:17px;width:100%;border:0;border-bottom:1.5px solid var(--ink);padding:10px 0;background:transparent;outline:none;border-radius:0}
+input[type=text]:focus{border-bottom-color:var(--accent)}
+label.q{display:block;font-size:14px;color:var(--ink2);margin-top:22px}
+
+/* sparks: interests that drift until you pick them */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.chip{border:1px solid var(--rule);background:#fff;padding:9px 14px;font-size:15px;cursor:pointer;animation:drift 5s ease-in-out infinite;transition:background .25s,color .25s,border-color .25s}
+.chip:nth-child(3n){animation-delay:-1.6s}.chip:nth-child(3n+1){animation-delay:-3.1s}.chip:nth-child(4n){animation-duration:6.2s}
+.chip:hover{border-color:var(--ink)}
+.chip[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink);animation:none}
+.chip[aria-pressed=true]::before{content:"";display:inline-block;width:6px;height:6px;background:var(--accent);border-radius:50%;margin-right:8px;vertical-align:2px}
+@keyframes drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.other{display:flex;gap:10px;margin-top:14px;align-items:flex-end}
+.other input{flex:1}
+.other button{background:none;border:1px solid var(--ink);padding:8px 14px;font-size:15px;cursor:pointer}
+.count{font-size:13px;color:var(--ink2);margin-top:10px;min-height:1.4em}
+
+/* goals: pathways */
+.goals{list-style:none;margin:20px 0 0;padding:0}
+.goals li{border-top:1px solid var(--rule)}
+.goals button{width:100%;display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;background:none;border:0;padding:12px 0;text-align:left;cursor:pointer}
+.goals .w{font-weight:500;font-size:19px;letter-spacing:-.01em}
+.goals .s{color:var(--ink2);font-size:15px;display:block;font-weight:400}
+.goals .wire{width:44px;height:2px;background:var(--rule);position:relative;transition:background var(--dur) var(--ease)}
+.goals .wire::after{content:"";position:absolute;right:-4px;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--rule);transition:background var(--dur) var(--ease)}
+.goals button[aria-pressed=true] .wire,.goals button[aria-pressed=true] .wire::after{background:var(--accent)}
+.goals .why{display:block;font-size:14px;color:var(--ink);margin-top:4px;font-weight:400}
+.goals .why[hidden]{display:none}
+.goals .why b{color:var(--accent);font-weight:500;font-size:13px;margin-right:4px}
+.goals li.others{border-top:0;padding-top:18px;font-size:13px;color:var(--ink2)}
+
+.fine{font-size:13px;color:var(--ink2);margin-top:12px}
+
+/* dose */
+.doses{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:20px}
+.dose{border:1px solid var(--rule);background:#fff;padding:12px;text-align:left;cursor:pointer}
+.dose b{font-weight:500;font-size:20px;letter-spacing:-.02em;display:block}
+.dose span{color:var(--ink2);font-size:14px}
+.dose[aria-pressed=true]{border-color:var(--ink);box-shadow:inset 0 -3px 0 var(--accent)}
+.whens{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.when{border:1px solid var(--rule);background:#fff;padding:7px 12px;font-size:15px;cursor:pointer}
+.when[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.reflect{margin-top:14px;padding:14px 16px;background:var(--bg2)}
+.reflect .rq{margin:0 0 6px;font-size:15px}.reflect .whens{margin:0 0 14px}
+.reflect .when{background:#fff}.reflect .when[aria-pressed=true]{background:var(--ink)}
+.lean{margin:0;font-size:15px;font-weight:500;min-height:1.4em}
+.brainnote .cite{display:block;margin-top:4px;font-size:13px}.brainnote .cite a{color:var(--ink2)}
+.toggles{display:flex;flex-wrap:wrap;gap:16px;margin-top:10px;font-size:15px}
+.toggles label{display:flex;gap:6px;align-items:center;cursor:pointer}
+.toggles input{accent-color:#111318}
+
+/* reveal */
+.plan{margin-top:22px;border-top:1px solid var(--rule)}
+.plan div{display:grid;grid-template-columns:5.2em 1fr;gap:10px;padding:12px 0;border-bottom:1px solid var(--rule)}
+.plan .when2{font-size:13px;color:var(--accent);padding-top:3px}
+.plan .what{font-weight:500}
+.plan .what small{display:block;font-weight:400;color:var(--ink2);font-size:15px;margin-top:2px}
+.plan .later{opacity:.55}
+
+/* right: the brain */
+.stage{position:sticky;top:calc(50svh - min(39svh,360px));align-self:start;height:min(78svh,720px)}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:manipulation}
+.stage.tappable canvas{cursor:crosshair}
+.tag{position:absolute;transform:translate(-50%,-150%);font-size:13px;font-weight:500;background:#fff;color:var(--ink);padding:3px 8px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity var(--dur) var(--ease);box-shadow:0 0 0 1px var(--rule)}
+.tag.on{opacity:1}
+.fly{position:fixed;left:0;top:0;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--accent);z-index:9;pointer-events:none;box-shadow:0 0 0 6px rgba(228,87,46,.18)}
+.hint{position:absolute;left:0;right:0;bottom:4%;text-align:center;font-size:15px;color:var(--ink2);transition:opacity var(--dur) var(--ease)}
+
+@media (max-width:860px){
+  .app{grid-template-columns:1fr;align-items:start;padding-top:52px;gap:0}
+  .stage{order:-1;height:34svh;margin:0 -16px;top:44px;z-index:3;background:#fff}
+  .steps{padding:8px 0 0}
+  .step{display:none;padding-bottom:64px}
+  .step.on{display:flex}
+  .doses{grid-template-columns:1fr}
+  .hint{bottom:0}
+}
+@media (prefers-reduced-motion:reduce){.chip{animation:none}.step,.reveal{transition:none}}
+body.calm .chip{animation:none}
+/* ---- no boxes: words, circles and lines only ---- */
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.sr:focus{position:static;width:auto;height:auto;clip:auto;margin-top:12px;background:none;border:0;border-bottom:1px solid var(--rule);font-size:15px;color:var(--ink2)}
+.btn,.btn:visited{align-self:flex-start;display:inline-block;margin-top:32px;background:none;color:var(--ink);border:0;border-bottom:1.5px solid var(--accent);padding:0 0 4px;font-weight:500;font-size:19px;cursor:pointer;text-decoration:none}
+.btn:hover{color:var(--accent)}
+.chips{gap:4px 22px;margin-top:24px}
+.chip,.when{border:0;background:none;padding:6px 0;font-size:17px;color:var(--ink2);cursor:pointer;animation:none}
+.chip::before,.when::before{content:"";display:inline-block;width:9px;height:9px;border-radius:50%;box-shadow:inset 0 0 0 1.5px currentColor;margin-right:9px;vertical-align:1px;transition:background .25s,box-shadow .25s}
+.chip:hover,.when:hover{color:var(--ink)}
+.chip[aria-pressed=true],.when[aria-pressed=true]{background:none;color:var(--ink)}
+.chip[aria-pressed=true]::before,.when[aria-pressed=true]::before{background:var(--accent);box-shadow:none;width:9px;height:9px;margin-right:9px}
+.whens{display:flex;flex-wrap:wrap;gap:4px 22px;margin-top:14px}
+.other{margin-top:20px}.other input{font-size:16px;border-bottom-width:1px}
+.other button{border:0;background:none;padding:0 0 2px;border-bottom:1.5px solid var(--accent);font-weight:500}
+.goals li{border-top:0}
+.goals button{padding:10px 0}
+.goals li.others{padding-top:14px}
+.q{font-size:15px;color:var(--ink2);margin:28px 0 0}
+.reflect{margin-top:16px;padding:0 0 0 16px;background:none;border-left:2px solid var(--accent)}
+.reflect .when{background:none}.reflect .when[aria-pressed=true]{background:none}
+.rq{margin:10px 0 0;font-size:15px;color:var(--ink2)}
+.note{font-size:14px;color:var(--ink2);margin:12px 0 0}.note a{color:var(--ink2)}
+#comfort{margin-top:28px}#comfort .when{font-size:15px}
+.tag{background:none;box-shadow:none;padding:0;color:#fff;text-shadow:0 0 3px #0B1233,0 0 6px #0B1233}
+.plan{list-style:none;margin:28px 0 0;padding:0;border:0}
+.plan li{padding:10px 0}
+.plan a{display:block;text-decoration:none;color:var(--ink)}
+.plan a .what{font-weight:500;font-size:clamp(22px,2.4vw,28px);letter-spacing:-.02em;border-bottom:1.5px solid var(--accent);padding-bottom:2px}
+.plan a:hover .what{color:var(--accent)}
+.plan .what::after{content:" →";color:var(--accent)}
+.plan .later .what{font-weight:500;font-size:17px;color:var(--ink2)}.plan .later .what::after{content:""}
+.plan .sub{display:block;font-size:15px;color:var(--ink2);margin-top:6px}
+.plan .later .sub{margin-top:0}
+.link{align-self:flex-start;margin-top:28px}
+</style>
+</head>
+<body>
+<div class="top"><a class="mark" href="v3.html" style="pointer-events:auto;text-decoration:none">Project Plasticity</a><span class="dots" id="dots" aria-hidden="true"><i></i><i></i><i></i><i></i></span></div>
+
+<main class="app">
+  <div class="steps" id="steps">
+
+    <!-- 0 · fire your first neuron -->
+    <section class="step on" data-step="0" aria-labelledby="h0">
+      <h1 id="h0">Let’s wire a brain around you.</h1>
+      <p class="lede" id="w-lede">Tap inside the brain.</p>
+      <button class="sr" id="fire-kb" type="button">Fire a neuron</button>
+      <div class="reveal" id="w-more">
+        <p class="lede" id="w-say">That’s a signal. Tap again.</p>
+        <label class="sr" for="name">Your name</label>
+        <input type="text" id="name" autocomplete="given-name" placeholder="Your name" maxlength="24">
+        <button class="btn" type="button" data-next>Begin →</button>
+      </div>
+    </section>
+
+    <!-- 1 · your world -->
+    <section class="step" data-step="1" aria-labelledby="h1">
+      <h2 id="h1">What lights you up?</h2>
+      <p class="lede">Pick up to three.</p>
+      <div class="chips" id="chips"></div>
+      <div class="other"><input type="text" id="other" placeholder="Something else…" maxlength="22"><button type="button" id="other-add">Add</button></div>
+      <div class="count" id="i-count" aria-live="polite"></div>
+      <button class="btn" type="button" data-next id="i-next" disabled>That’s me →</button>
+    </section>
+
+    <!-- 2 · recommended pathways -->
+    <section class="step" data-step="2" aria-labelledby="h2">
+      <h2 id="h2">Here’s where we’d start.</h2>
+      <p class="lede">Keep these, or pick your own.</p>
+      <ul class="goals" id="goals"></ul>
+      <button class="btn" type="button" data-next id="g-next" disabled>Wire them →</button>
+    </section>
+
+    <!-- 3 · rhythm -->
+    <section class="step" data-step="3" aria-labelledby="h4">
+      <h2 id="h4">How long, and when?</h2>
+      <div class="whens" id="doses"></div>
+      <p class="q">When are you sharpest?</p>
+      <div class="whens" id="whens"></div>
+      <div class="reflect" id="reflect" hidden>
+        <p class="rq">On a free day, you’d wake…</p>
+        <div class="whens" data-q="wake"></div>
+        <p class="rq">Ideas come most…</p>
+        <div class="whens" data-q="ideas"></div>
+        <p class="lean" id="lean" aria-live="polite"></p>
+      </div>
+      <p class="note" id="when-note" hidden>Most people think best near their own peak time. <a href="https://doi.org/10.1111/j.1467-9280.1993.tb00573.x" target="_blank" rel="noopener">May et al., 1993</a></p>
+      <div class="whens" id="comfort"><button type="button" class="when" id="t-motion" aria-pressed="false">Less motion</button><button type="button" class="when" id="t-large" aria-pressed="false">Larger text</button></div>
+      <button class="btn" type="button" data-next>Show me my brain →</button>
+    </section>
+
+    <!-- 4 · your plan: also where returning users land -->
+    <section class="step" data-step="4" aria-labelledby="h5">
+      <h2 id="h5">Here’s your brain.</h2>
+      <p class="lede" id="identity"></p>
+      <ol class="plan">
+        <li id="p-spark" hidden><a href="spark-v2.html"><span class="what">Spark</span><span class="sub">A rhythm you’ve never played · 3 min</span></a></li>
+        <li><a href="wiring-v3.html"><span class="what">Wiring</span><span class="sub">Light it, hold it, tap it back · <span id="p-min">5</span> min</span></a></li>
+        <li class="later"><span class="what">Tomorrow</span><span class="sub">See what stuck overnight</span></li>
+      </ol>
+      <button class="link" type="button" id="redo">Change my answers</button>
+    </section>
+  </div>
+
+  <div class="stage tappable" id="stage">
+    <canvas id="cv" aria-label="Your brain, filling in as you answer" role="img"></canvas>
+    <div id="tags"></div>
+  </div>
+</main>
+
+<script src="brain.js"></script>
+<script>
+(function(){
+const B=PPBrain,sm=B.sm,clamp=B.clamp;
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+let reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const D=ms=>reduced?1:ms;
+
+/* ---------- what we learn ---------- */
+const P={name:'',interests:[],other:'',goals:[],dose:5,doseSure:true,when:'',a11y:{motion:reduced,sound:false,large:false}};
+try{const saved=JSON.parse(localStorage.getItem('pp3.profile')||'null');if(saved&&saved.redo){Object.assign(P,saved);}}catch(e){}
+
+/* ---------- the brain ---------- */
+const cv=$('#cv'),stage=$('#stage'),draw=B.renderer(cv);let lay={fit:1,ox:0,oy:0};
+const motifs=[],paths=[],sparks=[];let fill={from:0,to:0,t0:0};
+function frame(now){
+  for(let i=motifs.length-1;i>=0;i--){const m=motifs[i];m.k=m.dying?1-sm((now-m.dying)/D(450)):sm((now-m.born)/D(650));if(m.dying&&m.k<=0)motifs.splice(i,1);}
+  for(let i=paths.length-1;i>=0;i--){const p=paths[i];p.frac=p.dying?1-sm((now-p.dying)/D(500)):sm((now-p.born)/D(p.slow||900));if(p.dying&&p.frac<=0)paths.splice(i,1);
+    if(p.wTo!=null){p.w+=(p.wTo-p.w)*.12;}}
+  for(const s of sparks){const t=(now-s.born)/1000;s.a=t<.15?t/.15:.85+.15*Math.sin(t*3+s.x);s.r=4+3*Math.exp(-t*3);}
+  const f=fill.from+(fill.to-fill.from)*sm((now-fill.t0)/D(1800));
+  const r=draw({motifs,paths,sparks,fill:f});if(r)lay=r;placeTags();
+  requestAnimationFrame(frame);}
+requestAnimationFrame(frame);
+const toScreen=([x,y])=>{const b=cv.getBoundingClientRect();return [b.left+lay.ox+x*lay.fit,b.top+lay.oy+y*lay.fit];};
+const toBrain=(cx,cy)=>{const b=cv.getBoundingClientRect();return [(cx-b.left-lay.ox)/lay.fit,(cy-b.top-lay.oy)/lay.fit];};
+function fly(fromEl,to,done){if(reduced){done();return;}const a=fromEl.getBoundingClientRect();const s=[a.left+a.width/2,a.top+a.height/2],e=toScreen(to);
+  const d=document.createElement('div');d.className='fly';document.body.appendChild(d);
+  const mid=[(s[0]+e[0])/2,Math.min(s[1],e[1])-80];
+  const an=d.animate([{transform:`translate(${s[0]}px,${s[1]}px)`},{transform:`translate(${mid[0]}px,${mid[1]}px)`,offset:.5},{transform:`translate(${e[0]}px,${e[1]}px) scale(.6)`}],{duration:620,easing:'cubic-bezier(.4,0,.2,1)'});
+  an.onfinish=()=>{d.remove();done();};}
+
+/* ---------- step machine ---------- */
+let step=0;const steps=$$('.step'),dots=$$('#dots i');
+function go(n){steps.forEach((s,i)=>{s.classList.toggle('on',i===n);s.classList.toggle('gone',i<n);});
+  dots.forEach((d,i)=>{d.classList.toggle('on',i===n-1||(n===0&&false));d.classList.toggle('done',i<n-1);});
+  step=n;stage.classList.toggle('tappable',n===0);
+  if(n===2)recommend();if(n===4)revealPlan();
+  const h=steps[n].querySelector('h1,h2');if(h&&n>0){h.setAttribute('tabindex','-1');h.focus({preventScroll:true});}
+  if(innerWidth<=860)scrollTo({top:0,behavior:reduced?'auto':'smooth'});
+  B.tick(.9);}
+document.addEventListener('click',e=>{if(e.target.closest('[data-next]')){save();go(step+1);}});
+
+/* 0 · fire */
+const lines=['That’s a signal. Tap again.','Connected. Fire together, wire together.','Each time a path fires, it gets easier. That’s neuroplasticity.','Now let’s build yours.'];
+function fire(pt){
+  sparks.push({x:pt[0],y:pt[1],r:6,a:0,born:performance.now()});
+  if(sparks.length>1){const a=sparks[sparks.length-2],b=sparks[sparks.length-1];const m=[(a.x+b.x)/2+(b.y-a.y)*.2,(a.y+b.y)/2-(b.x-a.x)*.2];paths.push({key:'w'+sparks.length,pts:B.route([[a.x,a.y],m,[b.x,b.y]],16),born:performance.now(),w:3+sparks.length,frac:0});}
+  B.tick(1+sparks.length*.08);
+  $('#w-more').classList.add('on');$('#w-lede').style.display='none';$('#fire-kb').style.display='none';
+  $('#w-say').textContent=lines[Math.min(lines.length-1,sparks.length-1)];}
+cv.addEventListener('click',e=>{if(step!==0)return;const p=toBrain(e.clientX,e.clientY);if(!B.inside(p[0],p[1]))return;fire(p);});
+const kbPts=[[300,250],[460,200],[420,360],[230,330]];
+$('#fire-kb').addEventListener('click',()=>fire(kbPts[sparks.length%kbPts.length]));
+$('#name').addEventListener('input',e=>{P.name=e.target.value.trim();});
+$('#name').addEventListener('keydown',e=>{if(e.key==='Enter'){save();go(1);}});
+
+/* 1 · interests grow drawings */
+const chipsEl=$('#chips');let seed=7;
+function setInterest(key,label,on,fromEl){
+  if(on){if(P.interests.length>=3)return false;P.interests.push(key);const I=B.INTERESTS[key];
+    const add=()=>{const ms=B.scatter(motifs.filter(m=>!m.dying),I.at,I.kinds,11,seed+=13,100);const now=performance.now();ms.forEach((m,i)=>{m.owner=key;m.born=now+i*55;m.k=0;motifs.push(m);});B.chime();};
+    fromEl?fly(fromEl,I.at,add):add();}
+  else{P.interests=P.interests.filter(k=>k!==key);const now=performance.now();motifs.forEach(m=>{if(m.owner===key&&!m.dying)m.dying=now;});B.tick(.7);}
+  updInterests();return true;}
+function updInterests(){const n=P.interests.length;$('#i-next').disabled=!n;
+  $('#i-count').textContent='';
+  $$('.chip').forEach(c=>{const k=c.dataset.k;c.setAttribute('aria-pressed',P.interests.includes(k));});}
+Object.entries(B.INTERESTS).forEach(([k,I])=>{if(k==='other')return;const b=document.createElement('button');b.type='button';b.className='chip';b.dataset.k=k;b.textContent=I.label;b.setAttribute('aria-pressed','false');
+  b.addEventListener('click',()=>{const on=!P.interests.includes(k);if(on&&P.interests.length>=3){$('#i-count').textContent='Three max. Tap one to swap.';return;}setInterest(k,I.label,on,b);});chipsEl.appendChild(b);});
+function addOther(){const v=$('#other').value.trim();if(!v)return;
+  if(P.interests.includes('other'))setInterest('other','',false);
+  if(P.interests.length>=3){$('#i-count').textContent='Three max. Tap one to swap.';return;}
+  P.other=v;let b=chipsEl.querySelector('[data-k=other]');if(!b){b=document.createElement('button');b.type='button';b.className='chip';b.dataset.k='other';b.addEventListener('click',()=>{setInterest('other','',!P.interests.includes('other'),b);});chipsEl.appendChild(b);}
+  b.textContent=v;setInterest('other',v,true,b);$('#other').value='';}
+$('#other-add').addEventListener('click',addOther);$('#other').addEventListener('keydown',e=>{if(e.key==='Enter')addOther();});
+
+/* 2 · goals wire pathways */
+const goalsEl=$('#goals'),tagsEl=$('#tags');
+Object.entries(B.GOALS).forEach(([k,G])=>{const li=document.createElement('li');li.dataset.g=k;li.innerHTML=`<button type="button" aria-pressed="false" data-g="${k}"><span><span class="w">${G.label}</span><span class="s">${G.sub}</span><span class="why" hidden></span></span><span class="wire"></span></button>`;goalsEl.appendChild(li);
+  const t=document.createElement('div');t.className='tag';t.dataset.g=k;t.textContent=G.label;tagsEl.appendChild(t);
+  li.querySelector('button').addEventListener('click',e=>{const on=!P.goals.includes(k);if(on&&P.goals.length>=3){$('#g-next').textContent='Three max';setTimeout(()=>$('#g-next').textContent='Wire them →',1400);return;}setGoal(k,on);});});
+function setGoal(k,on){const now=performance.now();
+  if(on){P.goals.push(k);paths.push({key:'g:'+k,pts:B.goalRoute(k),born:now,w:4,wTo:doseWidth(),frac:0});B.chime();}
+  else{P.goals=P.goals.filter(x=>x!==k);paths.forEach(p=>{if(p.key==='g:'+k&&!p.dying)p.dying=now;});B.tick(.7);}
+  $$('#goals button').forEach(b=>b.setAttribute('aria-pressed',P.goals.includes(b.dataset.g)));$('#g-next').disabled=!P.goals.length;}
+/* what each interest leans on, and why: the first goal counts double */
+const REC={
+  music:[['listening','music runs on hearing small differences in pitch and timing'],['memory','you hold phrases in mind while you play or listen']],
+  sport:[['speed','sport rewards fast reactions'],['seeing','you read movement before it happens']],
+  code:[['focus','code asks you to stay with one problem'],['reasoning','debugging is working things out step by step']],
+  startups:[['focus','founders juggle many threads at once'],['speed','decisions come fast and often']],
+  art:[['seeing','art trains noticing shape, colour and detail'],['focus','making things takes sustained attention']],
+  writing:[['memory','writers hold ideas and threads across pages'],['reasoning','structure is an argument you build']],
+  science:[['reasoning','science is testing ideas against evidence'],['seeing','you notice patterns in data']],
+  languages:[['listening','new languages start with catching new sounds'],['memory','vocabulary is memory, rep by rep']],
+  nature:[['seeing','outdoors trains noticing small changes'],['focus','it rewards calm, steady attention']],
+  food:[['memory','cooking means holding several steps in mind'],['speed','timing is everything in a kitchen']],
+  games:[['reasoning','games are puzzles about the next move'],['memory','you track what’s been played']],
+  wellbeing:[['focus','attention is the muscle behind calm'],['listening','you tune in to yourself and others']],
+  other:[['memory','new interests start with remembering the basics'],['focus','and staying with them long enough to stick']]};
+let recFor='';
+function recommend(){const key=P.interests.join(',');if(recFor===key)return;recFor=key;
+  const score={},why={};P.interests.forEach(i=>(REC[i]||REC.other).forEach(([g,r],n)=>{score[g]=(score[g]||0)+(n?1:2);if(!why[g])why[g]=[i==='other'?P.other:B.INTERESTS[i].label,r[0].toUpperCase()+r.slice(1)+'.'];}));
+  const top=Object.keys(score).sort((a,b)=>score[b]-score[a]).slice(0,P.interests.length>=3?3:2);
+  /* recommended first, the rest under "or wire your own" */
+  const ul=$('#goals');ul.querySelector('.others')?.remove();const lis=[...ul.children];
+  top.forEach(g=>ul.appendChild(lis.find(l=>l.dataset.g===g)));const sep=document.createElement('li');sep.className='others';sep.textContent='Or wire your own';ul.appendChild(sep);
+  lis.filter(l=>!top.includes(l.dataset.g)).forEach(l=>ul.appendChild(l));
+  $$('#goals .why').forEach(w=>{const g=w.closest('button').dataset.g;w.hidden=!top.includes(g);w.innerHTML='';if(why[g]){const b=document.createElement('b');b.textContent='For '+why[g][0]+' ·';w.append(b,why[g][1]);}});
+  P.goals.slice().forEach(g=>setGoal(g,false));top.forEach((g,i)=>setTimeout(()=>setGoal(g,true),reduced?0:500+i*450));}
+function placeTags(){$$('.tag').forEach(t=>{const k=t.dataset.g;const on=P.goals.includes(k)&&step>=2;t.classList.toggle('on',on);if(!on)return;const b=cv.getBoundingClientRect(),s=stage.getBoundingClientRect();const a=B.GOALS[k].at;t.style.left=(b.left-s.left+lay.ox+a[0]*lay.fit)+'px';t.style.top=(b.top-s.top+lay.oy+a[1]*lay.fit)+'px';});}
+
+/* 3 · dose and rhythm */
+const DOSES=[[3,'3 min'],[5,'5 min'],[10,'10 min'],[0,'Not sure']];
+function doseWidth(){return {3:4,5:6,10:8}[P.dose]||6;}
+DOSES.forEach(([m,t])=>{const b=document.createElement('button');b.type='button';b.className='when dose';b.textContent=t;b.dataset.m=m;b.setAttribute('aria-pressed',(m===0?!P.doseSure:(P.doseSure&&P.dose===m)));$('#doses').appendChild(b);
+  b.addEventListener('click',()=>{P.dose=m||5;P.doseSure=!!m;$$('.dose').forEach(x=>x.setAttribute('aria-pressed',x===b));paths.forEach(p=>{if(p.key.startsWith('g:'))p.wTo=doseWidth();});B.tick(1.1);});});
+function chips(el,opts,onPick){opts.forEach(w=>{const b=document.createElement('button');b.type='button';b.className='when';b.textContent=w;b.setAttribute('aria-pressed','false');el.appendChild(b);
+  b.addEventListener('click',()=>{[...el.children].forEach(x=>x.setAttribute('aria-pressed',x===b));B.tick(1.05);onPick(w);});});}
+chips($('#whens'),['Morning','Afternoon','Evening','Not sure'],w=>{const unsure=w==='Not sure';P.when=unsure?'':w;P.whenUnsure=unsure;$('#reflect').hidden=!unsure;$('#when-note').hidden=false;if(unsure)lean();});
+/* two reflective questions turn "not sure" into a first guess we can test */
+const R={};
+chips($('[data-q=wake]'),['Early','Mid-morning','Late'],w=>{R.wake=w;lean();});
+chips($('[data-q=ideas]'),['Before lunch','Afternoon','After dark','No pattern'],w=>{R.ideas=w;lean();});
+function lean(){let m=0;if(R.wake==='Early')m+=2;if(R.wake==='Late')m-=2;if(R.ideas==='Before lunch')m+=1;if(R.ideas==='After dark')m-=1;
+  const g=!R.wake&&!R.ideas?'':m>=2?'Morning':m<=-2?'Evening':'Afternoon';P.whenGuess=g;
+  $('#lean').textContent=g?`Sounds like ${g==='Afternoon'?'midday':g.toLowerCase()+'s'}. Week one will test it.`:'';}
+function a11y(){reduced=P.a11y.motion||matchMedia('(prefers-reduced-motion: reduce)').matches;document.body.classList.toggle('calm',reduced);document.body.classList.toggle('large',P.a11y.large);}
+$('#t-motion').addEventListener('click',e=>{P.a11y.motion=!P.a11y.motion;e.currentTarget.setAttribute('aria-pressed',P.a11y.motion);a11y();});
+$('#t-large').addEventListener('click',e=>{P.a11y.large=!P.a11y.large;e.currentTarget.setAttribute('aria-pressed',P.a11y.large);a11y();});
+
+/* 4 · reveal: the navy fills, like the end of the landing page */
+function identity(){const names=P.interests.map(k=>k==='other'?P.other.toLowerCase():B.INTERESTS[k].label.split(' ')[0].toLowerCase());
+  const world=names.length?names.join(names.length>2?', ':'-and-').replace(/, ([^,]*)$/,' and $1'):'curious';
+  const goals=P.goals.map(k=>B.GOALS[k].label.toLowerCase());const g=goals.length>1?goals.slice(0,-1).join(', ')+' and '+goals.at(-1):goals[0]||'new connections';
+  return `A ${world} brain, wiring ${g}.`;}
+function revealPlan(){fill={from:0,to:1,t0:performance.now()};$('#p-spark').hidden=!P.interests.includes('music');
+  /* like the landing page's ending: the gaps fill in with drawings of every kind */
+  if(!motifs.some(m=>m.owner==='fill')){const now=performance.now();B.scatter(motifs.filter(m=>!m.dying),[360,290],['leaf','sprig','petal','flower','tulip','heart','bolt','dots','squig','spark','star','frond','gear'],140,401,300)
+    .forEach((m,i)=>{m.s=Math.min(m.s,15);m.owner='fill';m.born=now+300+i*12;motifs.push(m);});}$('#h5').textContent=(P.name?P.name+', here’s':'Here’s')+' your brain.';$('#identity').textContent=identity();$('#p-min').textContent=P.dose;
+  setTimeout(()=>B.chime(),D(900));save();}
+$('#redo').addEventListener('click',()=>{fill={from:1,to:0,t0:performance.now()};const now=performance.now();motifs.forEach(m=>{if(m.owner==='fill'&&!m.dying)m.dying=now;});go(1);});
+
+function save(){try{localStorage.setItem('pp3.profile',JSON.stringify({...P,redo:false,at:Date.now()}));}catch(e){}}
+a11y();
+/* coming back: open on your plan, already drawn, instead of starting over */
+(function restore(){let saved=null;try{saved=JSON.parse(localStorage.getItem('pp3.profile')||'null');}catch(e){}
+  if(!saved||!saved.goals||!saved.goals.length||location.hash==='#new')return;
+  Object.assign(P,{name:saved.name||'',other:saved.other||'',dose:saved.dose||5,doseSure:saved.doseSure!==false,when:saved.when||'',whenGuess:saved.whenGuess||'',a11y:{...P.a11y,...(saved.a11y||{})}});
+  $('#name').value=P.name;
+  if(saved.interests.includes('other')&&P.other){const b=document.createElement('button');b.type='button';b.className='chip';b.dataset.k='other';b.textContent=P.other;b.addEventListener('click',()=>setInterest('other','',!P.interests.includes('other'),b));chipsEl.appendChild(b);}
+  saved.interests.forEach(k=>setInterest(k,'',true));recFor=saved.interests.join(',');
+  saved.goals.forEach(g=>setGoal(g,true));
+  $$('.dose').forEach(x=>x.setAttribute('aria-pressed',+x.dataset.m===0?!P.doseSure:(P.doseSure&&+x.dataset.m===P.dose)));
+  $('#t-motion').setAttribute('aria-pressed',!!P.a11y.motion);$('#t-large').setAttribute('aria-pressed',!!P.a11y.large);a11y();
+  go(4);})();
+})();
+</script>
+</body>
+</html>

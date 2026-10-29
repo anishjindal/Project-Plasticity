@@ -39,7 +39,8 @@ html{overscroll-behavior:none}
 .final .foot{margin-top:48px;font-size:14px;color:var(--ink2)}
 .stage.done .brain{transform:translateX(15vw) scale(.84)}
 .stage.done .panel{opacity:0;pointer-events:none}
-.btn{display:inline-block;margin-top:32px;background:var(--ink);color:#fff;text-decoration:none;padding:16px 26px;font-weight:500;font-size:18px}
+.btn{display:inline-block;margin-top:32px;color:var(--ink);text-decoration:none;padding:0 0 4px;border-bottom:1.5px solid var(--accent);font-weight:500;font-size:20px}
+.btn:hover{color:var(--accent)}
 /* when the story turns to the product, the brain moves aside and the three moves stay */
 .brain{transition:transform var(--dur) var(--ease),opacity var(--dur) var(--ease)}
 .caption{transition:opacity var(--dur) var(--ease)}
@@ -116,10 +117,9 @@ footer a{text-decoration:none}
     </div>
     <div class="final" id="final">
       <h2 id="h-cta">Project Plasticity turns neuroplasticity into a simple daily practice.</h2>
-      <a class="btn" href="onboarding-v2.html" id="start">Build a new connection →</a>
+      <a class="btn" href="onboarding-v4.html" id="start">Build a new connection →</a>
     </div>
     <div class="cue" id="cue"><a href="#moves">Scroll to see how your brain rewires</a></div>
-    <button class="snd" id="snd" type="button" aria-pressed="true">Sound on</button>
   </div>
 </section>
 
@@ -257,9 +257,9 @@ const story=document.querySelector('.story'),stage=document.querySelector('.stag
 const ro=new ResizeObserver(()=>{brainEl.style.setProperty('--bw',brainEl.clientWidth+'px');render();});ro.observe(brainEl);
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 /* a small mechanical tick on each step */
-let ac=null,soundOn=true;const sndBtn=document.getElementById('snd');
-sndBtn.addEventListener('click',()=>{soundOn=!soundOn;sndBtn.textContent=soundOn?'Sound on':'Sound off';sndBtn.setAttribute('aria-pressed',soundOn);if(soundOn)unlock();});
-function unlock(){if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return;}}if(ac.state==='suspended')ac.resume();}
+/* sound is off for now */
+let ac=null,soundOn=false;
+function unlock(){if(!soundOn)return;if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return;}}if(ac.state==='suspended')ac.resume();}
 ['pointerdown','keydown','wheel','touchstart'].forEach(ev=>addEventListener(ev,unlock,{passive:true,once:false}));
 function tick(){if(!soundOn||!ac||ac.state!=='running')return;const t=ac.currentTime;
   const o=ac.createOscillator(),gn=ac.createGain();o.type='sine';o.frequency.setValueAtTime(1800,t);o.frequency.exponentialRampToValueAtTime(700,t+.03);

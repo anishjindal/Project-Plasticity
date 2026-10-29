@@ -72,7 +72,8 @@ h3{font-size:clamp(20px,2vw,24px);letter-spacing:-.015em;line-height:1.2}
 .tile.ghost{box-shadow:inset 0 0 0 2px rgba(255,240,190,.55);color:rgba(255,240,190,.75);font-size:clamp(13px,2vw,16px)}
 .board.locked .tile{cursor:default}
 @keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
-.wires{position:absolute;inset:0;pointer-events:none;z-index:2}
+.wires{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
+.tile.got,.tile.lit{z-index:3}
 .wires path{fill:none;stroke:#FFF0BE;stroke-linecap:round;stroke-linejoin:round;transition:stroke-width .4s var(--ease)}
 .card{min-height:150px;margin-top:20px;border-top:1px solid var(--rule);padding-top:14px}
 .card .w{font-weight:500;font-size:clamp(24px,2.8vw,32px);letter-spacing:.06em}

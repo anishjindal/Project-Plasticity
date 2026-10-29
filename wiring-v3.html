@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Project Plasticity — Wiring</title>
+<meta name="description" content="Light it, hold it, tap it back. A memory exercise that shows you what changed.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--ease:cubic-bezier(.4,0,.2,1);--dur:.6s;--bg:#fff;--bg2:#f5f5f3;--ink:#111318;--ink2:#5a5e68;--accent:#e4572e;--rule:#e6e6e3;--navy:#131E4A;--navy2:#1B2A5C;--edge:#0B1233;--cream:#FFF0BE;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#fff;--bg2:#f5f5f3}}
+:root[data-theme="dark"]{--bg:#fff;--bg2:#f5f5f3}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Inter",system-ui,sans-serif;font-size:18px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body.large{font-size:21px}
+button{font:inherit;color:inherit}
+a{color:inherit}
+.in{max-width:760px;margin:0 auto;padding:0 clamp(16px,4vw,32px)}
+.top{display:flex;justify-content:space-between;align-items:center;padding:18px clamp(16px,5vw,72px);font-size:13px;color:var(--ink2)}
+.top a{text-decoration:none;font-weight:500}
+.snd{position:fixed;right:clamp(16px,5vw,72px);bottom:20px;background:none;border:0;padding:4px 0;font-size:13px;color:var(--ink2);cursor:pointer;border-bottom:1px solid transparent;z-index:5}
+.snd:hover{border-bottom-color:currentColor}
+.screen{display:none;padding:clamp(16px,5svh,56px) 0 96px;animation:rise var(--dur) var(--ease)}
+.screen.on{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.k{font-size:13px;color:var(--accent);margin-bottom:10px;font-variant-numeric:tabular-nums}
+h1,h2,h3{margin:0;font-weight:500;letter-spacing:-.03em;line-height:1.06}
+h1{font-size:clamp(36px,5vw,56px)}
+h2{font-size:clamp(28px,3.4vw,40px)}
+h3{font-size:clamp(20px,2vw,24px);letter-spacing:-.015em;line-height:1.2}
+.lede{color:var(--ink2);margin:16px 0 0;font-size:clamp(17px,1.6vw,20px);max-width:36em}
+.btn{display:inline-block;margin-top:28px;background:var(--ink);color:#fff;border:0;padding:15px 24px;font-weight:500;font-size:17px;cursor:pointer;text-decoration:none}
+.link{background:none;border:0;padding:0;font-size:15px;color:var(--ink2);cursor:pointer;border-bottom:1px solid var(--rule)}
+.link:hover{color:var(--ink)}
+.row{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.sec{margin-top:48px}
+.sec>.k{margin-bottom:6px}
+.rule{border:0;border-top:1px solid var(--rule);margin:40px 0}
+.flow{list-style:none;margin:28px 0 0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid var(--ink)}
+.flow li{padding:12px 12px 0 0;font-size:15px;color:var(--ink2)}
+.flow b{display:block;font-weight:500;color:var(--ink);font-size:16px}
+.flow span{font-size:13px;color:var(--accent);font-variant-numeric:tabular-nums}
+.find{list-style:none;margin:16px 0 0;padding:0}
+.find li{display:grid;grid-template-columns:1fr;padding:14px 0;border-top:1px solid var(--rule)}
+.find .c{font-weight:500;font-size:clamp(18px,1.7vw,20px);letter-spacing:-.01em}
+.find .u{color:var(--ink2);font-size:15px;margin-top:3px}
+.cite{font-size:13px;color:var(--ink2);margin-top:6px}
+.cite a{text-decoration:none;border-bottom:1px solid var(--rule)}
+.cite a:hover{color:var(--accent);border-bottom-color:var(--accent)}
+.story{background:var(--navy);color:#F7EEDD;padding:clamp(20px,3vw,32px);margin-top:28px;position:relative;overflow:hidden}
+.story .k{color:#F5C63C}
+.story p{margin:8px 0 0;font-size:clamp(18px,1.8vw,22px);line-height:1.35;letter-spacing:-.01em}
+.story .cite{color:rgba(247,238,221,.7)}
+.story .cite a{border-bottom-color:rgba(247,238,221,.3)}
+.quote{font-size:clamp(24px,3vw,34px);font-weight:500;letter-spacing:-.025em;line-height:1.15;margin:0}
+.quote+.cite{margin-top:10px}
+
+/* the board */
+.hud{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.status{font-weight:500;font-size:clamp(20px,2.2vw,26px);letter-spacing:-.02em;min-height:1.3em}
+.meta{font-size:14px;color:var(--ink2);font-variant-numeric:tabular-nums}
+.timer{height:2px;background:var(--rule);margin-top:12px;position:relative;overflow:hidden}
+.timer i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);width:0}
+.boardwrap{position:relative;margin-top:18px;width:min(100%,560px,max(300px,calc((100svh - 300px) * 1.2)))}
+.board{position:relative;display:grid;grid-template-columns:repeat(5,1fr);gap:clamp(6px,1.2vw,10px);padding:clamp(10px,2vw,18px);background:radial-gradient(circle at 50% 45%,var(--navy2),var(--navy) 70%);box-shadow:0 0 0 3px var(--edge)}
+.tile{aspect-ratio:1;border:0;background:rgba(247,238,221,.06);color:var(--navy);font-weight:500;font-size:clamp(20px,4vw,30px);letter-spacing:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .18s,transform .18s,box-shadow .18s;position:relative;z-index:1}
+.tile:hover{background:rgba(247,238,221,.12)}
+.tile.lit{background:#FFF7DC;transform:scale(1.04)}
+.tile.got{background:var(--cream);color:var(--navy)}
+.tile.miss{background:var(--accent);color:#fff;animation:shake .3s}
+.tile.ghost{box-shadow:inset 0 0 0 2px rgba(255,240,190,.55);color:rgba(255,240,190,.75);font-size:clamp(13px,2vw,16px)}
+.board.locked .tile{cursor:default}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.wires{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
+.tile.got,.tile.lit{z-index:3}
+.wires path{fill:none;stroke:#FFF0BE;stroke-linecap:round;stroke-linejoin:round;transition:stroke-width .4s var(--ease)}
+.finger{position:absolute;left:0;top:0;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;border:2px solid #fff;background:rgba(228,87,46,.85);z-index:3;opacity:0;pointer-events:none;transition:left .38s var(--ease),top .38s var(--ease),opacity .3s,transform .12s}
+.finger.on{opacity:1}.finger.press{transform:scale(.8)}
+.go{margin-top:4px}
+.card{min-height:150px;margin-top:20px;border-top:1px solid var(--rule);padding-top:14px}
+.card .w{font-weight:500;font-size:clamp(24px,2.8vw,32px);letter-spacing:.06em}
+.card .t{color:var(--ink);margin-top:4px;font-size:clamp(17px,1.6vw,19px);max-width:34em}
+.card .from{font-size:13px;color:var(--accent)}
+.card .next{margin-top:12px}
+.card.empty{opacity:.5;color:var(--ink2);font-size:15px}
+.wired{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.wired span{font-size:12px;letter-spacing:.06em;font-weight:500;border:1px solid var(--rule);padding:3px 8px}
+
+/* impact */
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:clamp(12px,3vw,32px);margin-top:28px}
+.brainbox{position:relative}
+.brainbox canvas{width:100%;aspect-ratio:720/560;display:block}
+.brainbox .lbl{font-size:13px;color:var(--ink2)}
+.brainbox .big{font-weight:500;font-size:clamp(28px,4vw,44px);letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+.brainbox .big small{font-size:.45em;color:var(--ink2);letter-spacing:0;font-weight:400}
+.brainbox.now .lbl{color:var(--accent)}
+.deltas{list-style:none;margin:28px 0 0;padding:0}
+.deltas li{display:grid;grid-template-columns:1fr auto auto auto;gap:14px;align-items:baseline;padding:12px 0;border-top:1px solid var(--rule);font-variant-numeric:tabular-nums}
+.deltas .n{font-weight:500}
+.deltas .a{color:var(--ink2)}
+.deltas .arrow{color:var(--accent)}
+.deltas .b{font-weight:500}
+.honest{font-size:15px;color:var(--ink2);margin-top:14px;max-width:38em}
+.sleep{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start;margin-top:36px;padding:22px;background:var(--bg2)}
+.moon{width:44px;height:44px;border-radius:50%;box-shadow:inset -12px -4px 0 0 var(--navy);transform:rotate(-20deg)}
+.clip{position:relative;margin-top:12px;background:var(--navy);aspect-ratio:16/9;overflow:hidden;box-shadow:0 0 0 3px var(--edge)}
+.clip canvas{position:absolute;inset:0;width:100%;height:100%}
+.clip .cap{position:absolute;left:0;right:0;bottom:0;margin:0;padding:14px 18px;color:#F7EEDD;font-weight:500;font-size:clamp(16px,2.2vw,22px);letter-spacing:-.01em;background:linear-gradient(transparent,rgba(11,18,51,.85))}
+.clip .play{position:absolute;inset:0;margin:auto;width:64px;height:64px;border-radius:50%;border:0;background:#F7EEDD;color:var(--navy);font-size:22px;cursor:pointer;padding-left:6px}
+.clip .play[hidden]{display:none}
+.talk{display:grid;gap:2px;margin-top:12px;padding:14px 16px;border:1px solid var(--rule);text-decoration:none}
+.talk:hover{border-color:var(--ink)}
+.talk .who{font-size:13px;color:var(--accent)}.talk b{font-weight:500;font-size:18px;letter-spacing:-.01em}.talk span:last-child{color:var(--ink2);font-size:15px}
+.stories{display:grid;grid-template-columns:1fr 1fr;gap:clamp(12px,2vw,20px);margin-top:18px}
+.person{border-top:2px solid var(--ink);padding-top:12px}
+.person .who{font-size:13px;color:var(--accent)}
+.person h3{margin-top:4px}
+.person p{color:var(--ink2);font-size:15px;margin:6px 0 0}
+
+@media (max-width:640px){
+  .flow{grid-template-columns:1fr 1fr;row-gap:12px}
+  .compare,.stories{grid-template-columns:1fr}
+  .deltas li{grid-template-columns:1fr auto auto auto;gap:8px;font-size:16px}
+}
+@media (prefers-reduced-motion:reduce){.screen{animation:none}.tile{transition:none}}
+/* ---- no boxes: a round board, words and circles only ---- */
+.top a{color:var(--ink)}
+.boardwrap{width:min(100%,520px,max(300px,calc(100svh - 200px)));margin:18px auto 0}
+.board{display:block;aspect-ratio:1;padding:0;gap:0;border-radius:50%;background:radial-gradient(circle at 50% 45%,var(--navy2),var(--navy) 70%);box-shadow:0 0 0 3px var(--edge)}
+.tile{position:absolute;width:12.5%;aspect-ratio:1;margin:-6.25% 0 0 -6.25%;border-radius:50%;font-size:clamp(15px,3.2vw,24px)}
+.tile.lit{transform:scale(1.12)}
+.tile.ghost{box-shadow:inset 0 0 0 2px rgba(255,240,190,.55)}
+.go{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:4;margin:0}
+.playc{width:84px;height:84px;border-radius:50%;border:0;background:#F7EEDD;color:var(--navy);font-size:26px;padding-left:6px;cursor:pointer}
+.playc:hover{background:#fff}
+.hud{max-width:520px;margin:0 auto}.timer{max-width:520px;margin:12px auto 0}
+.card{max-width:520px;margin:18px auto 0;border-top:0;padding-top:0;min-height:110px;text-align:center}
+.card .from{display:none}
+#s-impact{text-align:center}
+.big{font-weight:500;font-size:clamp(44px,8vw,88px);letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums;margin-top:clamp(24px,6svh,56px)}
+.big .arr{color:var(--accent);font-weight:400;margin:0 .15em}
+.sub{color:var(--ink2);margin-top:10px}
+.pair{display:flex;justify-content:center;gap:clamp(16px,6vw,64px);margin-top:28px}
+.pair figure{margin:0;width:min(42vw,300px)}
+.pair canvas{width:100%;aspect-ratio:720/560;display:block}
+.pair figcaption{font-size:13px;color:var(--ink2)}
+.pair figure:last-child figcaption{color:var(--accent)}
+.line{max-width:30em;margin:28px auto 0;font-size:clamp(18px,2vw,22px);letter-spacing:-.01em;line-height:1.35}
+.words{font-size:13px;letter-spacing:.08em;color:var(--ink2);max-width:36em;margin:16px auto 0}
+.sleep{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:10px;margin-top:32px;padding:0;background:none;font-size:16px}
+.sleep .moon{width:22px;height:22px;box-shadow:inset -6px -2px 0 0 var(--navy)}
+.sleep b{font-weight:500}
+.mini{background:none;border:0;padding:0;font-size:13px;color:var(--ink2);cursor:pointer;border-bottom:1px solid var(--rule)}
+.acts{display:flex;justify-content:center;gap:36px;margin-top:36px}
+.acts.left{justify-content:flex-start}
+.act{background:none;border:0;padding:0 0 3px;cursor:pointer;font-weight:500;font-size:17px;text-decoration:none;color:var(--ink);border-bottom:1.5px solid var(--accent)}
+.act:hover{color:var(--accent)}
+.why{text-align:left;margin-top:110px}
+.why p{margin:26px 0 0;font-size:clamp(18px,1.9vw,21px);line-height:1.4;letter-spacing:-.01em}
+.why .muted{color:var(--ink2)}
+.why .src{display:block;font-size:13px;color:var(--ink2);margin-top:4px;letter-spacing:0}
+.why .src a{text-decoration:none;color:var(--ink2);border:0}.why .src a:hover{color:var(--accent)}
+.why .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-right:10px;vertical-align:3px}
+.why .quote{font-size:clamp(24px,3vw,32px);font-weight:500;letter-spacing:-.025em;line-height:1.15;margin-top:48px}
+.talk{text-decoration:none;font-weight:500;border-bottom:1.5px solid var(--accent)}
+.clip{max-width:380px;margin:0 auto;aspect-ratio:auto;overflow:visible;background:none;box-shadow:none}
+.clip .disc{position:relative}
+.clip canvas{position:relative;display:block;width:100%;aspect-ratio:1;border-radius:50%;background:var(--navy);box-shadow:0 0 0 3px var(--edge)}
+.clip .play{position:absolute;inset:0;margin:auto;width:64px;height:64px;border-radius:50%;border:0;background:#F7EEDD;color:var(--navy);font-size:22px;cursor:pointer;padding-left:6px}
+.clip .play[hidden]{display:none}
+.clip .cap{position:static;background:none;padding:0;text-align:center;color:var(--ink);font-weight:500;font-size:clamp(16px,1.8vw,19px);margin:14px 0 0;min-height:1.5em}
+</style>
+</head>
+<body>
+<div class="top"><a href="onboarding-v4.html">← Today</a><span>Wiring</span></div>
+
+<main class="in">
+
+<!-- ============ play ============ -->
+<section class="screen on" id="s-play" aria-labelledby="status">
+  <div class="hud"><div class="status" id="status" aria-live="polite">Watch.</div><div class="meta" id="meta"></div></div>
+  <div class="timer" id="timer" hidden><i id="timer-i"></i></div>
+  <div class="boardwrap">
+    <div class="board locked" id="board" role="grid" aria-label="Pattern board"></div>
+    <svg class="wires" id="wires" aria-hidden="true"></svg>
+    <div class="finger" id="finger" aria-hidden="true"></div>
+    <div class="go" id="go"><button class="playc" type="button" id="start" aria-label="Play">▶</button></div>
+  </div>
+  <div class="card empty" id="card" aria-live="polite" hidden></div>
+</section>
+
+<!-- ============ after: what changed ============ -->
+<section class="screen" id="s-impact" aria-labelledby="big">
+  <div class="big" id="big"></div>
+  <div class="sub" id="sub"></div>
+  <div class="pair">
+    <figure><canvas id="b1" aria-hidden="true"></canvas><figcaption id="b1-l">first try</figcaption></figure>
+    <figure><canvas id="b2" aria-hidden="true"></canvas><figcaption id="b2-l">just now</figcaption></figure>
+  </div>
+  <p class="line" id="line"></p>
+  <p class="words" id="wired"></p>
+  <div class="sleep" id="sleep"><span class="moon" aria-hidden="true"></span><span><b>Sleep on it.</b> Tomorrow, see what stuck.</span> <button class="mini" type="button" id="tomorrow">Try tomorrow now</button></div>
+  <div class="acts"><button class="act" type="button" id="again">Again</button><a class="act" href="#why" id="to-why">Why it works</a></div>
+
+  <div class="why" id="why">
+    <div class="clip" id="clip"><div class="disc"><canvas id="clip-cv" aria-label="Animation: how practice strengthens a pathway between two neurons" role="img"></canvas><button class="play" id="clip-play" type="button" aria-label="Play the clip">▶</button></div><p class="cap" id="clip-cap" aria-live="polite"></p></div>
+    <p class="quote">“Every man can, if he so desires, become the sculptor of his own brain.”<span class="src">Santiago Ramón y Cajal, 1897</span></p>
+    <p><span class="dot"></span>Pulling a memory out strengthens it more than rereading.<span class="src"><a href="https://doi.org/10.1111/j.1467-9280.2006.01693.x" target="_blank" rel="noopener">Roediger &amp; Karpicke, 2006</a></span></p>
+    <p><span class="dot"></span>Spotting the word turned tiles into one chunk. A runner used that trick to go from 7 digits to 79.<span class="src"><a href="https://doi.org/10.1126/science.7375930" target="_blank" rel="noopener">Ericsson, Chase &amp; Faloon, 1980</a></span></p>
+    <p><span class="dot"></span>Weeks of memory training change brain activity.<span class="src"><a href="https://doi.org/10.1038/nn1165" target="_blank" rel="noopener">Olesen, Westerberg &amp; Klingberg, 2004</a></span></p>
+    <p><span class="dot"></span>After sleep, people tapped a practised sequence about 20% faster, with no extra practice.<span class="src"><a href="https://doi.org/10.1016/S0896-6273(02)00746-8" target="_blank" rel="noopener">Walker et al., 2002</a></span></p>
+    <p><span class="dot"></span>Taxi drivers, pianists and jugglers all showed brain changes from practice.<span class="src"><a href="https://doi.org/10.1073/pnas.070039597" target="_blank" rel="noopener">Maguire et al., 2000</a> · <a href="https://doi.org/10.1038/nn1516" target="_blank" rel="noopener">Bengtsson et al., 2005</a> · <a href="https://doi.org/10.1038/427311a" target="_blank" rel="noopener">Draganski et al., 2004</a></span></p>
+    <p class="muted">You get better at what you practise. Wider benefits are still being studied.<span class="src"><a href="https://doi.org/10.1037/a0028228" target="_blank" rel="noopener">Melby-Lervåg &amp; Hulme, 2013</a></span></p>
+    <p><a class="talk" href="https://www.youtube.com/results?search_query=After+watching+this+your+brain+will+not+be+the+same+Lara+Boyd+TEDxVancouver" target="_blank" rel="noopener">Watch Lara Boyd’s talk on neuroplasticity · 14 min ↗</a></p>
+    <div class="acts left"><button class="act" type="button" id="again2">Again</button><a class="act" href="onboarding-v4.html">Back to today</a></div>
+  </div>
+</section>
+</main>
+
+<script src="brain.js"></script>
+<script>
+(function(){
+const B=PPBrain;const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const store={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d;}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
+const profile=store.get('pp3.profile',{});
+const reduced=(profile.a11y&&profile.a11y.motion)||matchMedia('(prefers-reduced-motion: reduce)').matches;
+if(profile.a11y)document.body.classList.toggle('large',!!profile.a11y.large);
+
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+
+/* ---------- words ---------- */
+/* brain words: each one teaches something */
+const BRAIN={
+  AXON:'The long wire a neuron sends its signal down.',
+  GLIA:'Support cells. Some wrap your axons in myelin.',
+  FIRE:'A neuron fires when enough signal builds up. Practice makes the path easier to fire.',
+  WIRE:'Cells that fire together wire together. You just fired these tiles together.',
+  SLEEP:'Overnight, your brain replays and steadies what you practised today.',
+  SPINE:'Tiny bumps on a neuron’s branches where new connections form. They can grow with learning.',
+  PRUNE:'Connections you stop using get trimmed, so the busy ones run cleaner.',
+  CHUNK:'Grouping pieces into one unit. It’s why a word is easier to hold than five random tiles.',
+  RECALL:'Pulling a memory out strengthens it more than looking at it again. That’s every round of this game.',
+  MYELIN:'Insulation around axons. Pianists who practised more as children had more developed wiring.',
+  CORTEX:'The brain’s outer layer. In adults who learned to juggle, parts of it grew within three months.',
+  REPEAT:'Each repeat makes the same path a little easier to fire next time.',
+  SYNAPSE:'The tiny gap where one neuron passes its signal to the next. Learning changes how strong it is.',
+  NEURONS:'You have about 86 billion. What matters is how they connect.',
+  NOVELTY:'New things grab your attention, and attention helps decide what your brain keeps.',
+  SPACING:'Spreading practice over days beats cramming. That’s why tomorrow matters.',
+  PLASTIC:'From the Greek for “able to be shaped.” Your brain is, at any age.',
+  DENDRITE:'The branches that collect signals from other neurons. Use grows them.',
+  REWIRING:'Changing which connections carry the signal. You’ve been doing it all session.'
+};
+/* your world: words from the interests you picked */
+const WORLD={
+  music:['BEAT','TUNE','TEMPO','CHORD','RHYTHM','MELODY','HARMONY','CADENCE','BASSLINE'],
+  sport:['PACE','GOAL','SPRINT','STRIDE','STAMINA','TRAINING','RELAY','AGILE'],
+  code:['LOOP','BUILD','DEBUG','CACHE','COMMIT','BRANCH','COMPILE','FUNCTION'],
+  startups:['PLAN','PITCH','PIVOT','SCALE','LAUNCH','MARKET','ROADMAP','FOUNDER','INVESTOR'],
+  art:['LINE','PAINT','SKETCH','CANVAS','PALETTE','TEXTURE','CONTRAST'],
+  writing:['PLOT','DRAFT','NOVEL','STANZA','CHAPTER','METAPHOR','VERSE'],
+  science:['ATOM','CELL','GENE','ORBIT','PHOTON','THEORY','ENZYME','PARTICLE'],
+  languages:['WORD','VERB','IDIOM','ACCENT','SYNTAX','GRAMMAR','DIALECT','FLUENCY'],
+  nature:['LEAF','TREE','RIVER','FOREST','MEADOW','GLACIER','MOUNTAIN'],
+  food:['SALT','SPICE','BASIL','GARLIC','SIMMER','SAFFRON','FERMENT'],
+  games:['DICE','QUEST','LEVEL','PUZZLE','RIDDLE','GAMBIT','STRATEGY'],
+  wellbeing:['CALM','REST','FOCUS','BREATH','BALANCE','MINDFUL','GRATEFUL']
+};
+const WORLD_LINES=['Words from your world are easier to hold. That’s attention at work.','You care about this, so your brain flagged it as worth keeping.','Meaning turns separate tiles into one chunk.','Practice that looks like your real life is the kind that carries over best.'];
+const interests=(profile.interests||[]).filter(k=>WORLD[k]||k==='other');
+const worldBank=[];interests.forEach(k=>{if(WORLD[k])WORLD[k].forEach(w=>worldBank.push([w,k]));});
+if(profile.other&&/^[a-z]{4,8}$/i.test(profile.other))worldBank.push([profile.other.toUpperCase(),'other']);
+const worldName=k=>k==='other'?profile.other:B.INTERESTS[k].label;
+/* fixed tests: same lengths and speed each time, different words, so the comparison is fair */
+const TESTS={first:['GROW','SPARK','SIGNAL'],final:['PATH','FOCUS','STRONG'],replay:['LINK','LEARN','CHANGE']};
+const TEST_MS=600;
+/* levels: pattern length and how long each tile stays lit */
+const LEVELS=[[4,700],[4,560],[5,650],[5,520],[6,600],[6,480],[7,560],[7,440],[8,520],[8,400]];
+
+/* ---------- the board ---------- */
+const COLS=5,ROWS=4,N=COLS*ROWS;const board=$('#board'),wires=$('#wires');
+const tiles=[];for(let i=0;i<N;i++){const b=document.createElement('button');b.type='button';b.className='tile';b.dataset.i=i;b.setAttribute('aria-label','Neuron '+(i+1));
+  const inner=i<6,k=inner?i:i-6,n=inner?6:14,r=inner?.2:.385,a=-Math.PI/2+(k+(inner?.5:0))/n*Math.PI*2;b.style.left=(50+Math.cos(a)*r*100)+'%';b.style.top=(50+Math.sin(a)*r*100)+'%';
+  board.appendChild(b);tiles.push(b);}
+function clearBoard(){tiles.forEach(t=>{t.className='tile';t.textContent='';});wires.innerHTML='';}
+function centre(i){const r=tiles[i].getBoundingClientRect(),w=wires.getBoundingClientRect();return [r.left-w.left+r.width/2,r.top-w.top+r.height/2];}
+function wirePath(seq,width){const pts=seq.map(centre);if(pts.length<2)return;let d='M'+pts[0].join(',');for(let i=1;i<pts.length;i++)d+=' L'+pts[i].join(',');
+  wires.setAttribute('viewBox',`0 0 ${wires.clientWidth} ${wires.clientHeight}`);wires.innerHTML=`<path d="${d}" stroke-width="${width}" opacity=".9"/>`;}
+function pickCells(n){const all=[...Array(N).keys()];for(let i=all.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[all[i],all[j]]=[all[j],all[i]];}return all.slice(0,n);}
+
+/* one round: show the word's letters on random tiles in order, then ask for them back */
+let tapResolve=null,expect=[],tapped=0,tLast=0,times=[];
+board.addEventListener('click',e=>{const t=e.target.closest('.tile');if(!t||!tapResolve)return;tap(+t.dataset.i);});
+function tap(i){const now=performance.now();const want=expect[tapped];
+  if(i===want){times.push(now-tLast);tLast=now;tiles[i].classList.add('got');tiles[i].textContent=word[tapped];tapped++;B.tick(1+tapped*.09);
+    if(tapped>1)wirePath(expect.slice(0,tapped),3);
+    if(tapped===expect.length){const r=tapResolve;tapResolve=null;r({held:tapped,ok:true});}}
+  else{if(tiles[i].classList.contains('got'))return;tiles[i].classList.add('miss');B.tick(.5,.22);
+    expect.slice(tapped).forEach((c,k)=>{tiles[c].classList.add('ghost');tiles[c].textContent=k+tapped+1;});
+    const r=tapResolve;tapResolve=null;r({held:tapped,ok:false});}}
+let word='';
+async function round(w,ms){word=w;clearBoard();board.classList.add('locked');setStatus('Watch.');
+  expect=pickCells(w.length);await wait(reduced?250:500);
+  for(let k=0;k<w.length;k++){const t=tiles[expect[k]];t.classList.add('lit');t.textContent=w[k];B.tick(.8+k*.06,.12);await wait(ms);t.classList.remove('lit');t.textContent='';await wait(110);}
+  await wait(250);board.classList.remove('locked');setStatus('Your turn.');tapped=0;times=[];tLast=performance.now();
+  const res=await new Promise(r=>tapResolve=r);board.classList.add('locked');
+  res.ms=times.length?times.reduce((a,b)=>a+b,0)/times.length:0;
+  if(res.ok){wirePath(expect,7);setStatus('Wired.');B.chime();await wait(reduced?400:850);}
+  else{setStatus('Close.');await wait(1300);}
+  return res;}
+const setStatus=s=>{$('#status').textContent=s;};
+const setMeta=s=>{$('#meta').textContent=s;};
+
+/* ---------- a session ---------- */
+const S={first:null,final:null,replay:null,top:0,words:[],level:0};
+function show(id){$$('.screen').forEach(s=>s.classList.toggle('on',s.id===id));scrollTo({top:0,behavior:'auto'});}
+async function test(kind,label){let held=0,ms=[];const words=TESTS[kind];
+  for(let i=0;i<words.length;i++){setMeta(`${i+1} / ${words.length}`);const r=await round(words[i],TEST_MS);held+=r.held;if(r.ms)ms.push(r.ms);}
+  return {held,total:words.reduce((a,w)=>a+w.length,0),ms:ms.length?Math.round(ms.reduce((a,b)=>a+b,0)/ms.length):0};}
+function pickWord(len,i){const useWorld=worldBank.length&&i%3===2;
+  if(useWorld){const opts=worldBank.filter(([w])=>w.length===len&&!S.words.some(x=>x.w===w));if(opts.length){const [w,k]=opts[Math.floor(Math.random()*opts.length)];return {w,k};}}
+  const opts=Object.keys(BRAIN).filter(w=>w.length===len&&!S.words.some(x=>x.w===w));const pool=opts.length?opts:Object.keys(BRAIN).filter(w=>w.length===len);return {w:pool[Math.floor(Math.random()*pool.length)],k:'brain'};}
+function showCard(x){const c=$('#card');c.hidden=false;c.classList.remove('empty');
+  if(x.k==='brain')c.innerHTML=`<div class="w">${x.w}</div><div class="t">${BRAIN[x.w]}</div>`;
+  else c.innerHTML=`<div class="from">From your world · ${worldName(x.k)}</div><div class="w">${x.w}</div><div class="t">${WORLD_LINES[S.words.length%WORLD_LINES.length]}</div>`;}
+async function train(){const dose=profile.dose||5;const budget=(dose<=3?90:dose>=10?420:180)*1000;let used=0,streak=0,i=0;
+  $('#timer').hidden=false;const bar=$('#timer-i');
+  while(used<budget){const [len,ms]=LEVELS[S.level];const x=pickWord(len,i++);setMeta(`Level ${S.level+1}`);
+    const t0=performance.now();const r=await round(x.w,ms);used+=performance.now()-t0;bar.style.width=Math.min(100,used/budget*100)+'%';
+    if(r.ok){S.words.push(x);showCard(x);S.top=Math.max(S.top,S.level+1);if(++streak>=2){streak=0;if(S.level<LEVELS.length-1){S.level++;setStatus('Level up.');await wait(reduced?300:900);}}}
+    else{streak=0;if(S.level>0)S.level--;}}
+  $('#timer').hidden=true;}
+
+/* ---------- history: day 1, then the overnight replay ---------- */
+const dayKey=(d=new Date())=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const H=store.get('pp3.wiring',{sessions:[]});
+const last=H.sessions[H.sessions.length-1];
+const replayDue=last&&last.date<dayKey()&&!(H.replays||[]).some(r=>r.date===dayKey());
+
+/* ---------- the tutorial: the board shows how to play, no instructions to read ---------- */
+const finger=$('#finger');let demoing=false;
+async function demo(){demoing=true;const w='WIRE';
+  while(demoing){clearBoard();setStatus('Watch.');setMeta('');const cells=pickCells(4);await wait(500);if(!demoing)break;
+    for(let k=0;k<4&&demoing;k++){const t=tiles[cells[k]];t.classList.add('lit');t.textContent=w[k];B.tick(.8+k*.06,.08);await wait(650);t.classList.remove('lit');t.textContent='';await wait(110);}
+    if(!demoing)break;setStatus('Tap them back.');await wait(500);finger.classList.add('on');
+    for(let k=0;k<4&&demoing;k++){const [x,y]=centre(cells[k]);finger.style.left=x+'px';finger.style.top=y+'px';await wait(480);if(!demoing)break;finger.classList.add('press');const t=tiles[cells[k]];t.classList.add('got');t.textContent=w[k];B.tick(1+k*.09,.08);if(k)wirePath(cells.slice(0,k+1),3);await wait(140);finger.classList.remove('press');}
+    if(!demoing)break;finger.classList.remove('on');wirePath(cells,7);setStatus('Wired.');B.chime();await wait(1600);}
+  finger.classList.remove('on');clearBoard();}
+function begin(){demoing=false;$('#go').hidden=true;finger.classList.remove('on');}
+
+
+$('#start').addEventListener('click',async()=>{begin();await wait(300);clearBoard();
+  if(replayDue){S.replay=await test('replay','Overnight replay');H.replays=(H.replays||[]).concat([{date:dayKey(),...S.replay}]);store.set('pp3.wiring',H);showOvernight();return;}
+  await runSession();});
+async function runSession(){S.words=[];S.top=0;S.level=Math.max(0,Math.min(3,(last&&last.top?last.top-3:0)));
+  $('#card').hidden=true;
+  setStatus('First try.');S.first=await test('first','First try');
+  setStatus('Now train.');await wait(reduced?400:1200);await train();
+  setStatus('Last try.');await wait(reduced?400:1000);S.final=await test('final','Final try');
+  H.sessions.push({date:dayKey(),first:S.first,final:S.final,top:S.top,words:S.words.map(x=>x.w)});store.set('pp3.wiring',H);showImpact();}
+
+/* ---------- impact ---------- */
+const PROFILE_MOTIFS=(()=>{const ms=[];let seed=11;(profile.interests||['other']).forEach(k=>{const I=B.INTERESTS[k]||B.INTERESTS.other;ms.push(...B.scatter(ms,I.at,I.kinds,12,seed+=17,110).map(m=>({...m,k:1})));});
+  ms.push(...B.scatter(ms,[360,290],['leaf','sprig','petal','flower','tulip','heart','bolt','dots','squig','spark','star','frond','gear'],140,401,300).map(m=>({...m,s:Math.min(m.s,15),k:1})));return ms;})();
+/* the pathway the session strengthens: long enough to read at a glance */
+const SESSION_ROUTE=B.route([[165,215],[260,280],[380,330],[480,380],[586,420]],16);
+function brainWith(cv,width,frac){const draw=B.renderer(cv);const pts=SESSION_ROUTE;let t0=performance.now();
+  const f=now=>{const k=reduced?1:B.sm((now-t0)/1400);draw({motifs:PROFILE_MOTIFS,fill:1,paths:[{pts,frac:k*frac,w:width}]});if(k<1)requestAnimationFrame(f);};requestAnimationFrame(f);
+  addEventListener('resize',()=>draw({motifs:PROFILE_MOTIFS,fill:1,paths:[{pts,frac,w:width}]}));}
+const widthFor=r=>2+16*(r.held/r.total)**3;
+function showImpact(){show('s-impact');const a=S.first,b=S.final;
+  $('#big').innerHTML=`${a.held}<span class="arr">→</span>${b.held}`;$('#sub').textContent=`neurons held, of ${b.total}`;
+  brainWith($('#b1'),widthFor(a),1);brainWith($('#b2'),widthFor(b),1);
+  $('#line').textContent=b.held>a.held?'Same difficulty, new patterns. A stronger pathway.':b.held===a.held?`Steady, and you reached level ${S.top}.`:'Tired brains count too.';
+  $('#wired').textContent=[...new Set(S.words.map(x=>x.w))].join(' · ');
+  $('#sleep').hidden=false;B.chime();}
+function showOvernight(){show('s-impact');const y=last,r=S.replay;
+  $('#big').innerHTML=`${y.final.held}<span class="arr">→</span>${r.held}`;$('#sub').textContent='last night → this morning';
+  $('#b1-l').textContent='last night';$('#b2-l').textContent='this morning';
+  brainWith($('#b1'),widthFor(y.final),1);brainWith($('#b2'),widthFor(r),1);
+  $('#line').textContent=r.held>=y.final.held?'You kept all of it. That’s sleep at work.':r.held>y.first.held?'You kept most of it.':'Cold starts dip. It comes back fast.';
+  $('#wired').textContent='';$('#sleep').hidden=true;
+  $('#again').textContent='Train today';B.chime();}
+
+$('#tomorrow').addEventListener('click',()=>{const d=new Date();d.setDate(d.getDate()-1);H.sessions.forEach(s=>s.date=dayKey(d));store.set('pp3.wiring',H);location.reload();});
+const again=()=>{location.hash='play';location.reload();};
+$('#again').addEventListener('click',again);$('#again2').addEventListener('click',again);
+/* ---------- the clip: how practice wires a pathway, in five scenes ---------- */
+const clipCv=$('#clip-cv'),cg=clipCv.getContext('2d'),cap=$('#clip-cap'),playBtn=$('#clip-play');
+const SCENES=[[0,'Something new: a faint path.'],[4,'Practice fires it again and again.'],[9,'Myelin wraps the path. Signals speed up.'],[13.5,'Sleep steadies it overnight.'],[17,'Stop, and it fades. Keep at it, and it stays.']];
+const CLIP_LEN=21;let clipT0=null,clipRaf=0;
+function clipFrame(now){const dpr=Math.min(2,devicePixelRatio||1),w=clipCv.clientWidth,h=clipCv.clientHeight;if(clipCv.width!==Math.round(w*dpr)){clipCv.width=Math.round(w*dpr);clipCv.height=Math.round(h*dpr);}
+  cg.setTransform(dpr,0,0,dpr,0,0);cg.clearRect(0,0,w,h);const t=clipT0==null?0:(now-clipT0)/1000;const sm=B.sm;
+  const A=[w*.2,h*.48],Bp=[w*.8,h*.42],C1=[w*.42,h*.1],C2=[w*.58,h*.82];
+  const pt=u=>{const v=1-u;return [v*v*v*A[0]+3*v*v*u*C1[0]+3*v*u*u*C2[0]+u*u*u*Bp[0],v*v*v*A[1]+3*v*v*u*C1[1]+3*v*u*u*C2[1]+u*u*u*Bp[1]];};
+  const fade=t>17?1-.6*sm((t-17)/1.5)+.6*sm((t-19)/1.2):1;
+  const width=(1.5+4.5*sm((t-4)/5)+3*sm((t-9)/3))*fade;const alpha=(.35+.65*sm((t-4)/4))*fade;
+  const sleep=sm((t-13.5)/1)*(1-sm((t-16.5)/.6));
+  cg.fillStyle=`rgba(11,18,51,${.45*sleep})`;cg.fillRect(0,0,w,h);
+  if(sleep>0){cg.save();cg.globalAlpha=sleep;cg.translate(w*.5,h*.2);cg.fillStyle='#F5C63C';cg.beginPath();cg.arc(0,0,h*.07,0,7);cg.fill();cg.fillStyle='#131E4A';cg.beginPath();cg.arc(h*.035,-h*.02,h*.06,0,7);cg.fill();cg.restore();}
+  /* the axon */
+  cg.save();cg.lineCap='round';cg.strokeStyle=`rgba(255,240,190,${alpha})`;cg.lineWidth=width+(sleep?Math.sin(t*3)*.8*sleep:0);if(t<4)cg.setLineDash([6,8]);
+  cg.beginPath();cg.moveTo(...A);cg.bezierCurveTo(...C1,...C2,...Bp);cg.stroke();cg.restore();
+  /* myelin sheaths */
+  const my=sm((t-9)/2.5)*fade;if(my>0)for(let i=1;i<8;i++){const u=i/8,[x,y]=pt(u),[x2,y2]=pt(u+.001);const an=Math.atan2(y2-y,x2-x);cg.save();cg.translate(x,y);cg.rotate(an);cg.globalAlpha=my;cg.fillStyle='#F7EEDD';cg.beginPath();cg.ellipse(0,0,w*.03*Math.min(1,my*1.4),width/2+4,0,0,7);cg.fill();cg.restore();}
+  /* cell bodies with dendrites, same drawing as the landing page */
+  const soma=([x,y],r,b)=>{cg.strokeStyle=`rgba(255,240,190,${b})`;cg.lineWidth=3;for(let i=0;i<6;i++){const an=i*Math.PI/3+.4;cg.beginPath();cg.moveTo(x+Math.cos(an)*r*.8,y+Math.sin(an)*r*.8);cg.lineTo(x+Math.cos(an)*(r+14),y+Math.sin(an)*(r+14));cg.stroke();}cg.fillStyle=`rgba(255,247,220,${b})`;cg.beginPath();cg.arc(x,y,r,0,7);cg.fill();};
+  soma(A,h*.06,.95);soma(Bp,h*.055,.4+.6*sm((t-4)/5)*fade);
+  /* signals: one slow one, then many, then fast */
+  const sig=u=>{const [x,y]=pt(u);cg.fillStyle='#e4572e';cg.beginPath();cg.arc(x,y,6,0,7);cg.fill();cg.fillStyle='rgba(228,87,46,.25)';cg.beginPath();cg.arc(x,y,14,0,7);cg.fill();};
+  if(t<4)sig(Math.min(1,t/3.6));else if(t<9){const p=1.4;for(let k=0;k<3;k++){const u=((t-4)/p+k/3)%1;sig(u);}}else if(t<13.5){const p=.6;for(let k=0;k<2;k++)sig(((t-9)/p+k/2)%1);}else if(t>18.8&&t<CLIP_LEN)sig(((t-18.8)/.6)%1);
+  let line='';for(const [s,c] of SCENES)if(t>=s)line=c;cap.textContent=clipT0==null?'How practice wires a pathway':line;
+  if(clipT0!=null&&t<CLIP_LEN)clipRaf=requestAnimationFrame(clipFrame);else if(clipT0!=null){playBtn.hidden=false;playBtn.textContent='↻';playBtn.setAttribute('aria-label','Replay the clip');}}
+function playClip(){cancelAnimationFrame(clipRaf);playBtn.hidden=true;clipT0=performance.now();if(reduced){clipT0-=CLIP_LEN*1000;}requestAnimationFrame(clipFrame);}
+playBtn.addEventListener('click',playClip);
+let clipSeen=false;new IntersectionObserver(es=>{if(es[0].isIntersecting&&!clipSeen&&$('#s-impact').classList.contains('on')){clipSeen=true;playClip();}},{threshold:.6}).observe($('#clip'));
+addEventListener('resize',()=>{if(clipT0==null)requestAnimationFrame(clipFrame);});requestAnimationFrame(clipFrame);
+
+const returning=H.sessions.length>0;
+if(location.hash==='#play'&&!replayDue){history.replaceState(null,'',location.pathname);begin();setStatus('Ready.');wait(700).then(runSession);}
+else if(replayDue){setStatus('You slept on it.');$('#meta').textContent='';}
+else if(returning){setStatus('');}
+else demo();
+$('#to-why').addEventListener('click',e=>{e.preventDefault();$('#why').scrollIntoView({behavior:reduced?'auto':'smooth'});});
+})();
+</script>
+</body>
+</html>

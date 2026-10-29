@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Plasticity — Today</title>
+<meta name="description" content="One memory puzzle a day. Watch, remember, rebuild it.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--ease:cubic-bezier(.4,0,.2,1);--dur:.6s;--bg:#fff;--ink:#111318;--ink2:#5a5e68;--accent:#e4572e;--rule:#e6e6e3;--navy:#131E4A;--navy2:#1B2A5C;--edge:#0B1233;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#fff}}
+:root[data-theme="dark"]{--bg:#fff}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Inter",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body{font-size:18px;line-height:1.5;overflow-x:hidden}
+button,a{font:inherit;color:inherit}
+.top{display:flex;justify-content:space-between;padding:18px clamp(16px,5vw,72px);font-size:13px;color:var(--ink2)}
+.top b{font-weight:500;color:var(--ink)}
+main{max-width:620px;margin:0 auto;padding:0 16px 120px;text-align:center}
+h2{margin:0;font-weight:500;letter-spacing:-.03em;line-height:1.06;font-size:clamp(26px,3.4vw,36px);min-height:1.1em}
+.meta{font-size:13px;color:var(--ink2);margin-top:6px;min-height:1.5em;font-variant-numeric:tabular-nums}
+/* the round board */
+.boardwrap{position:relative;width:min(100%,440px,max(260px,calc(100svh - 300px)));margin:16px auto 0}
+.board{position:relative;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 50% 45%,var(--navy2),var(--navy) 70%);box-shadow:0 0 0 3px var(--edge)}
+.tile{position:absolute;width:12.5%;aspect-ratio:1;margin:-6.25% 0 0 -6.25%;padding:0;border:0;border-radius:50%;background:rgba(247,238,221,.08);color:var(--navy);font-weight:500;font-size:clamp(15px,3.2vw,22px);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .18s,transform .18s,box-shadow .18s;z-index:1}
+.tile:hover{background:rgba(247,238,221,.16)}
+.board.locked .tile{cursor:default}
+.tile.lit{background:#FFF7DC;transform:scale(1.12);z-index:3}
+.tile.pick{background:rgba(255,240,190,.5);z-index:3}
+.tile.exact{background:var(--accent);color:#fff;z-index:3}
+.tile.near{background:#F5C63C;color:var(--navy);z-index:3}
+.tile.off{background:rgba(247,238,221,.28);z-index:3}
+.tile.got{background:#FFF0BE;color:var(--navy);z-index:3}
+.wires{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
+.wires path{fill:none;stroke:#FFF0BE;stroke-linecap:round;stroke-linejoin:round}
+.playc{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:4;width:84px;height:84px;border-radius:50%;border:0;background:#F7EEDD;color:var(--navy);font-size:26px;padding-left:6px;cursor:pointer}
+.playc[hidden]{display:none}
+/* your tries: one line of dots each */
+.trace{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:20px;min-height:20px}
+.trace div{display:flex;gap:8px}
+.trace i{width:14px;height:14px;border-radius:50%}
+.trace i.exact{background:var(--accent)}.trace i.near{background:#F5C63C}.trace i.off{background:#d9d9d4}
+.key{font-size:13px;color:var(--ink2);margin-top:10px;display:flex;justify-content:center;gap:16px;flex-wrap:wrap}
+.key[hidden]{display:none}
+.key i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+/* after */
+#done[hidden]{display:none}
+.word{font-weight:500;font-size:clamp(40px,8vw,72px);letter-spacing:.12em;line-height:1;margin-top:36px}
+.mean{font-size:clamp(18px,2vw,21px);letter-spacing:-.01em;max-width:28em;margin:12px auto 0}
+.brain-text{font-size:clamp(18px,3vw,24px);line-height:1.3;width:max-content;max-width:100%;margin:44px auto 0 !important;display:block !important;margin:36px auto 0;white-space:pre;font-family:system-ui,"Apple Color Emoji","Segoe UI Emoji",sans-serif;display:inline-block;text-align:left}
+.sharehead{font-size:13px;color:var(--ink2);margin-top:6px}
+.shares{display:flex;justify-content:center;flex-wrap:wrap;gap:10px 26px;margin-top:20px}
+.shares button{background:none;border:0;padding:0 0 3px;border-bottom:1.5px solid var(--accent);font-weight:500;font-size:17px;cursor:pointer}
+.shares button:hover{color:var(--accent)}
+.shares .primary{font-size:20px}
+.stats{display:flex;justify-content:center;gap:clamp(20px,6vw,48px);margin-top:44px}
+.stats div{display:flex;flex-direction:column;align-items:center}
+.stats b{font-weight:500;font-size:clamp(32px,5vw,44px);letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+.stats span{font-size:13px;color:var(--ink2);margin-top:6px}
+.goal{margin-top:40px}
+.goal-dots{display:flex;justify-content:center;gap:10px}
+.goal-dots i{width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 1.5px #c9c9c4;transition:background .4s}
+.goal-dots i.on{background:var(--accent);box-shadow:none}
+.goal-dots i.today{box-shadow:0 0 0 3px rgba(228,87,46,.25)}
+.goal p{font-size:14px;color:var(--ink2);margin:10px 0 0}
+.dist{max-width:360px;margin:40px auto 0;display:grid;grid-template-columns:auto 1fr;gap:8px 12px;align-items:center}
+.dist .n{font-size:14px;color:var(--ink2);font-variant-numeric:tabular-nums}
+.dist .bar{height:22px;border-radius:11px;background:#d9d9d4;min-width:22px;display:flex;align-items:center;justify-content:flex-end;padding:0 9px;font-size:13px;font-weight:500;color:var(--ink);transition:width .6s var(--ease)}
+.dist .bar.me{background:var(--accent);color:#fff}
+.bigshare{display:flex;width:max-content;align-items:center;gap:10px;margin:24px auto 0;background:var(--accent);color:#fff;border:0;border-radius:999px;padding:16px 44px;font-weight:500;font-size:20px;cursor:pointer}
+.bigshare::after{content:"↗";font-size:18px}
+.bigshare:hover{background:#cf4a23}
+.wait{font-size:14px;color:var(--ink2);margin-top:28px;font-variant-numeric:tabular-nums}
+.yours{margin-top:72px}
+.yours canvas{width:min(100%,420px);aspect-ratio:720/560;display:block;margin:0 auto}
+.week{display:flex;justify-content:center;gap:14px;margin-top:14px}
+.week span{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;color:var(--ink2)}
+.week i{width:14px;height:14px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--ink2)}
+.week i.on{background:var(--accent);box-shadow:none}
+.week span.today{color:var(--ink)}
+.why{margin-top:64px;text-align:left}
+.whybtn{background:none;border:0;padding:0 0 3px;border-bottom:1.5px solid var(--accent);font-weight:500;font-size:17px;cursor:pointer;display:block;margin:0 auto}
+.why p{margin:22px 0 0;font-size:clamp(17px,1.8vw,20px);line-height:1.4}
+.why .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-right:10px;vertical-align:3px}
+.why .src{display:block;font-size:13px;margin-top:3px}.why .src a{color:var(--ink2);text-decoration:none}.why .src a:hover{color:var(--accent)}
+.restart{text-align:center;margin:0 0 48px;font-size:13px}.restart a{color:var(--ink2);text-decoration:none;border-bottom:1px solid var(--rule)}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);font-size:14px;color:var(--ink2);opacity:0;transition:opacity .3s}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div class="top"><b>Plasticity</b><span id="num"></span></div>
+<main>
+  <h2 id="say">Today’s puzzle</h2>
+  <div class="meta" id="meta"></div>
+  <div class="boardwrap" id="bw">
+    <div class="board" id="board" aria-label="Neurons"></div><svg class="wires" aria-hidden="true"></svg>
+    <button class="playc" type="button" id="play" aria-label="Play">▶</button>
+  </div>
+  <div class="trace" id="trace" aria-label="Your tries"></div>
+  <div class="key" id="key" hidden><span><i style="background:var(--accent)"></i>right spot</span><span><i style="background:#F5C63C"></i>wrong spot</span><span><i style="background:#d9d9d4"></i>not in it</span></div>
+
+  <section id="done" hidden>
+    <div class="word" id="word"></div>
+    <p class="mean" id="mean"></p>
+    <div class="stats" aria-label="Your stats">
+      <div><b id="st-played">0</b><span>played</span></div>
+      <div><b id="st-pct">0</b><span>wired %</span></div>
+      <div><b id="st-streak">0</b><span>streak</span></div>
+      <div><b id="st-best">0</b><span>best streak</span></div>
+    </div>
+    <div class="goal"><div class="goal-dots" id="goal-dots"></div><p id="goal-say"></p></div>
+    <div class="dist" id="dist" aria-label="How many tries you take"></div>
+    <div class="brain-text" id="brain-text" aria-label="What you’ll share"></div>
+    <button type="button" class="bigshare" id="bigshare">Share</button>
+    <div class="wait" id="wait"></div>
+  </section>
+
+  <section class="yours" aria-label="Your brain">
+    <canvas id="mine" aria-hidden="true"></canvas>
+  </section>
+
+  <section class="why">
+    <button class="whybtn" type="button" id="whybtn" aria-expanded="false">Why it works</button>
+    <div id="whytext" hidden>
+      <p><span class="dot"></span>Pulling a memory out strengthens it more than looking again. Every try is a recall.<span class="src"><a href="https://doi.org/10.1111/j.1467-9280.2006.01693.x" target="_blank" rel="noopener">Roediger &amp; Karpicke, 2006</a></span></p>
+      <p><span class="dot"></span>Spotting the word turns five neurons into one chunk. That’s how a runner learned to hold 79 digits.<span class="src"><a href="https://doi.org/10.1126/science.7375930" target="_blank" rel="noopener">Ericsson, Chase &amp; Faloon, 1980</a></span></p>
+      <p><span class="dot"></span>One puzzle a day, not ten. Spaced practice and sleep make it stick.<span class="src"><a href="https://doi.org/10.1037/0033-2909.132.3.354" target="_blank" rel="noopener">Cepeda et al., 2006</a> · <a href="https://doi.org/10.1016/S0896-6273(02)00746-8" target="_blank" rel="noopener">Walker et al., 2002</a></span></p>
+      <p style="color:var(--ink2)">You get better at what you practise. Wider benefits are still being studied.<span class="src"><a href="https://doi.org/10.1177/1529100616661983" target="_blank" rel="noopener">Simons et al., 2016</a></span></p>
+    </div>
+  </section>
+</main>
+<p class="restart"><a href="onboarding-v5.html#reset" id="restart">Start over</a></p>
+<div class="toast" id="toast" aria-live="polite"></div>
+
+<script src="brain.js"></script>
+<script src="board.js"></script>
+<script src="share.js"></script>
+<script>
+(function(){
+const B=PPBrain,W=PPBoard.wait,$=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const store={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d;}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
+let profile=store.get('pp4.profile',null);
+/* the profile arrives in the link from onboarding (pages opened from disk may not share storage) */
+let prof=profile;try{const q=new URLSearchParams(location.search).get('p');if(q){prof={...(profile||{}),...JSON.parse(atob(q))};store.set('pp4.profile',prof);history.replaceState(null,'',location.pathname);}}catch(e){}
+if(!prof){location.replace('onboarding-v5.html#new');return;}
+
+/* ---------- today's puzzle: the same for everyone, picked by the date ---------- */
+const WORDS={SLEEP:'Overnight, your brain replays and steadies what you practised.',SPINE:'Tiny bumps on neurons where new connections form.',PRUNE:'Connections you stop using get trimmed, so the busy ones run cleaner.',
+  CHUNK:'Grouping pieces into one. It’s why a word is easier to hold than five dots.',LEARN:'Every time you learn, connections between neurons change strength.',AXONS:'The long wires neurons send their signals down.',
+  FOCUS:'Attention helps decide what your brain keeps.',SPARK:'A neuron fires when enough signal builds up.',NERVE:'Bundles of axons that carry signals through your body.',
+  BRAIN:'About 86 billion neurons, and it never stops changing.',HABIT:'A path fired so often it runs on its own.',DREAM:'In sleep, the brain replays the day’s patterns.',
+  SENSE:'Your senses are where new connections start.',WIRED:'Cells that fire together wire together.',GLIAL:'Support cells. Some insulate your axons so signals travel faster.'};
+const dayKey=(d=new Date())=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const today=new Date();const midnight=new Date(today.getFullYear(),today.getMonth(),today.getDate());
+const NUM=Math.round((midnight-new Date(2026,9,1))/864e5)+1;
+const rnd=B.rng(NUM*7919+13);const keys=Object.keys(WORDS);const WORD=keys[Math.floor(rnd()*keys.length)];
+const SEQ=(()=>{const a=[...Array(20).keys()];for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a.slice(0,5);})();
+const SPEED=[900,760,650,560,480,420]; /* each try replays the flash a little faster */
+$('#num').textContent='#'+NUM;
+
+const H=store.get('pp4.daily',{});const mine=H[NUM]||{tries:0,solved:false,rows:[],over:false};
+const board=PPBoard.create($('#bw'));
+
+/* ---------- a try ---------- */
+function score(picks){return picks.map((p,k)=>p===SEQ[k]?'exact':SEQ.includes(p)?'near':'off');}
+function addRow(row){const d=document.createElement('div');row.forEach(c=>{const i=document.createElement('i');i.className=c;d.appendChild(i);});$('#trace').appendChild(d);}
+async function play(){$('#play').hidden=true;
+  while(!mine.over){const t=mine.tries;$('#meta').textContent=`try ${t+1} of 6`;board.clear();$('#say').textContent='Watch.';await W(500);
+    await board.flash(SEQ,WORD,SPEED[t]);$('#say').textContent='Rebuild it.';
+    const {picks}=await board.collect(5,i=>board.tiles[i].classList.add('pick'));
+    const row=score(picks);
+    /* show what each tap was: right spot, wrong spot, or not in it; the letters you found stay */
+    picks.forEach((p,k)=>{const tl=board.tiles[p];tl.classList.remove('pick');tl.classList.add(row[k]);if(row[k]!=='off')tl.textContent=WORD[SEQ.indexOf(p)];});
+    board.wire([],0);addRow(row);$('#key').hidden=false;mine.tries++;mine.rows.push(row);
+    mine.solved=row.every(c=>c==='exact');mine.over=mine.solved||mine.tries>=6;H[NUM]=mine;store.set('pp4.daily',H);
+    $('#say').textContent=mine.solved?'Wired.':mine.over?'Not today.':['Close.','Getting there.','Keep going.'][Math.min(2,row.filter(c=>c==='exact').length>2?0:row.some(c=>c!=='off')?1:2)];
+    await W(mine.over?400:1500);}
+  finish(true);}
+
+/* ---------- after: the word, your brain to share, your week ---------- */
+function finish(fresh){$('#play').hidden=true;$('#meta').textContent=mine.solved?`wired in ${mine.tries}/6`:'still wiring';$('#say').textContent=mine.solved?'Wired.':'Not today.';
+  board.clear();SEQ.forEach((p,k)=>{const t=board.tiles[p];t.classList.add('got');t.textContent=WORD[k];});requestAnimationFrame(()=>board.wire(SEQ,6));
+  if(!fresh){$('#trace').innerHTML='';mine.rows.forEach(addRow);}$('#key').hidden=true;
+  $('#done').hidden=false;$('#word').textContent=WORD;$('#mean').textContent=WORDS[WORD];
+  $('#brain-text').textContent=PPShare.text(info());
+  tick();setInterval(tick,30000);drawMine();drawStats();
+  if(fresh)setTimeout(()=>$('#done').scrollIntoView({behavior:'smooth',block:'start'}),500);}
+function tick(){const ms=new Date(today.getFullYear(),today.getMonth(),today.getDate()+1)-new Date();const h=Math.floor(ms/36e5),m=Math.floor(ms%36e5/6e4);$('#wait').textContent=`Next puzzle in ${h}h ${m}m`;}
+const info=()=>({num:NUM,tries:mine.tries,solved:mine.solved,motifs:MOTIFS,rows:mine.rows});
+const toast=t=>{const el=$('#toast');el.textContent=t;el.classList.add('on');setTimeout(()=>el.classList.remove('on'),2200);};
+$('#bigshare').addEventListener('click',()=>PPShare.sheet(info()));
+
+/* your brain: the drawings from your interests, today’s pathway as bright as you wired it */
+const MOTIFS=(()=>{const ms=[];let seed=11;(prof.interests||[]).forEach(k=>{const I=B.INTERESTS[k];if(I)ms.push(...B.scatter(ms,I.at,I.kinds,12,seed+=17,110));});
+  ms.push(...B.scatter(ms,[360,290],['leaf','sprig','petal','flower','tulip','heart','bolt','dots','squig','spark','star','frond','gear'],140,401,300).map(m=>({...m,s:Math.min(m.s,15)})));return ms;})();
+function drawMine(){const draw=B.renderer($('#mine'));const k=mine.over?(mine.solved?Math.max(.2,(7-mine.tries)/6):.1):.15;
+  const st={motifs:MOTIFS.map(m=>({...m,k:1})),fill:1,paths:[{pts:B.route([[165,215],[260,280],[380,330],[480,380],[586,420]],16),frac:Math.max(.25,k),w:3+12*k}]};draw(st);addEventListener('resize',()=>draw(st));}
+/* stats, the way daily puzzles keep them: played, wired %, streaks, and how many tries you usually need */
+function drawStats(){const days=Object.keys(H).map(Number).filter(n=>H[n].over).sort((a,b)=>a-b);const won=days.filter(n=>H[n].solved);
+  let streak=0;for(let n=NUM;H[n]&&H[n].solved;n--)streak++;
+  let best=0,run=0,prev=null;won.forEach(n=>{run=prev===n-1?run+1:1;best=Math.max(best,run);prev=n;});
+  $('#st-played').textContent=days.length;$('#st-pct').textContent=days.length?Math.round(won.length/days.length*100):0;$('#st-streak').textContent=streak;$('#st-best').textContent=best;
+  /* the next milestone: seven days in a row */
+  const goal=7,into=streak%goal||(streak?goal:0);$('#goal-dots').innerHTML=Array.from({length:goal},(_,i)=>`<i class="${i<into?'on':''}${i===into-1?' today':''}"></i>`).join('');
+  $('#goal-say').textContent=into===goal?'7-day pathway wired ✨':`${into}/${goal} to a 7-day pathway`;
+  const dist=[0,0,0,0,0,0];won.forEach(n=>dist[H[n].tries-1]++);const max=Math.max(1,...dist);
+  $('#dist').innerHTML=dist.map((v,i)=>`<span class="n">${i+1}</span><span class="bar${mine.solved&&mine.tries===i+1?' me':''}" style="width:${Math.max(8,v/max*100)}%">${v}</span>`).join('');}
+
+$('#restart').addEventListener('click',()=>{try{['pp4.profile','pp4.daily'].forEach(k=>localStorage.removeItem(k));}catch(e){}});
+$('#whybtn').addEventListener('click',e=>{const t=$('#whytext');t.hidden=!t.hidden;e.currentTarget.setAttribute('aria-expanded',!t.hidden);});
+$('#play').addEventListener('click',play);
+
+/* already played today: show the result; part-way through: carry on from the next try */
+if(mine.over)finish(false);
+else{mine.rows.forEach(addRow);if(mine.rows.length)$('#key').hidden=false;$('#meta').textContent=mine.tries?`try ${mine.tries+1} of 6`:'';drawMine();}
+})();
+</script>
+</body>
+</html>
