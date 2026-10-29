@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Project Plasticity — Wire your brain</title>
+<meta name="description" content="Your first five minutes: every answer grows something in your brain.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--ease:cubic-bezier(.4,0,.2,1);--dur:.6s;--bg:#fff;--bg2:#f5f5f3;--ink:#111318;--ink2:#5a5e68;--line:#1b2a5c;--accent:#e4572e;--rule:#e6e6e3;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#fff;--bg2:#f5f5f3}}
+:root[data-theme="dark"]{--bg:#fff;--bg2:#f5f5f3}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Inter",system-ui,sans-serif;font-size:18px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body.large{font-size:21px}
+button{font:inherit;color:inherit}
+.app{min-height:100svh;display:grid;grid-template-columns:minmax(320px,460px) 1fr;gap:clamp(16px,4vw,64px);padding:0 clamp(16px,5vw,72px);align-items:center}
+.top{position:fixed;left:0;right:0;top:0;display:flex;justify-content:space-between;align-items:center;padding:18px clamp(16px,5vw,72px);z-index:5;pointer-events:none;background:linear-gradient(#fff 70%,rgba(255,255,255,0))}
+.mark{font-size:13px;font-weight:500;color:var(--ink2)}
+.dots{display:flex;gap:8px}.dots i{width:22px;height:2px;background:var(--rule);transition:background var(--dur) var(--ease)}.dots i.on{background:var(--accent)}.dots i.done{background:var(--ink)}
+.snd{position:fixed;right:clamp(16px,5vw,72px);bottom:20px;background:none;border:0;padding:4px 0;font-size:13px;color:var(--ink2);cursor:pointer;border-bottom:1px solid transparent;z-index:5}
+.snd:hover{border-bottom-color:currentColor}
+
+/* left: one step at a time */
+.steps{display:grid;padding:64px 0}
+.step{grid-area:1/1;display:flex;flex-direction:column;justify-content:center;opacity:0;transform:translateY(12px);pointer-events:none;transition:opacity var(--dur) var(--ease),transform var(--dur) var(--ease)}
+.step.on{opacity:1;transform:none;pointer-events:auto}
+.step.gone{transform:translateY(-10px)}
+.step>.btn,.step>.link{align-self:flex-start}
+.k{font-size:13px;color:var(--accent);margin-bottom:10px;font-variant-numeric:tabular-nums}
+h1,h2{margin:0;font-weight:500;letter-spacing:-.03em;line-height:1.05}
+h1{font-size:clamp(34px,4vw,52px)}
+h2{font-size:clamp(28px,3.1vw,40px)}
+.lede{color:var(--ink2);margin:14px 0 0;font-size:clamp(17px,1.5vw,19px)}
+.brainnote{margin-top:22px;padding-top:14px;border-top:1px solid var(--rule);font-size:15px;color:var(--ink2);line-height:1.45}
+.brainnote b{display:block;font-weight:500;color:var(--accent);font-size:13px;margin-bottom:3px}
+.btn{display:inline-block;margin-top:26px;background:var(--ink);color:#fff;border:0;padding:15px 24px;font-weight:500;font-size:17px;cursor:pointer;transition:opacity .25s}
+.btn[disabled]{opacity:.25;cursor:default}
+.row{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.link{background:none;border:0;padding:0;margin-top:26px;font-size:15px;color:var(--ink2);cursor:pointer;border-bottom:1px solid var(--rule)}
+.link:hover{color:var(--ink)}
+.reveal{opacity:0;transform:translateY(8px);transition:opacity var(--dur) var(--ease),transform var(--dur) var(--ease)}
+.reveal.on{opacity:1;transform:none}
+input[type=text]{font:inherit;font-size:17px;width:100%;border:0;border-bottom:1.5px solid var(--ink);padding:10px 0;background:transparent;outline:none;border-radius:0}
+input[type=text]:focus{border-bottom-color:var(--accent)}
+label.q{display:block;font-size:14px;color:var(--ink2);margin-top:22px}
+
+/* sparks: interests that drift until you pick them */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.chip{border:1px solid var(--rule);background:#fff;padding:9px 14px;font-size:15px;cursor:pointer;animation:drift 5s ease-in-out infinite;transition:background .25s,color .25s,border-color .25s}
+.chip:nth-child(3n){animation-delay:-1.6s}.chip:nth-child(3n+1){animation-delay:-3.1s}.chip:nth-child(4n){animation-duration:6.2s}
+.chip:hover{border-color:var(--ink)}
+.chip[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink);animation:none}
+.chip[aria-pressed=true]::before{content:"";display:inline-block;width:6px;height:6px;background:var(--accent);border-radius:50%;margin-right:8px;vertical-align:2px}
+@keyframes drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.other{display:flex;gap:10px;margin-top:14px;align-items:flex-end}
+.other input{flex:1}
+.other button{background:none;border:1px solid var(--ink);padding:8px 14px;font-size:15px;cursor:pointer}
+.count{font-size:13px;color:var(--ink2);margin-top:10px;min-height:1.4em}
+
+/* goals: pathways */
+.goals{list-style:none;margin:20px 0 0;padding:0}
+.goals li{border-top:1px solid var(--rule)}
+.goals button{width:100%;display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;background:none;border:0;padding:12px 0;text-align:left;cursor:pointer}
+.goals .w{font-weight:500;font-size:19px;letter-spacing:-.01em}
+.goals .s{color:var(--ink2);font-size:15px;display:block;font-weight:400}
+.goals .wire{width:44px;height:2px;background:var(--rule);position:relative;transition:background var(--dur) var(--ease)}
+.goals .wire::after{content:"";position:absolute;right:-4px;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--rule);transition:background var(--dur) var(--ease)}
+.goals button[aria-pressed=true] .wire,.goals button[aria-pressed=true] .wire::after{background:var(--accent)}
+
+/* connectors */
+.conns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:20px}
+.conn{border:1px solid var(--rule);background:#fff;padding:12px;text-align:left;cursor:pointer;transition:border-color .25s}
+.conn:hover{border-color:var(--ink)}
+.conn .n{font-weight:500;font-size:16px;display:flex;justify-content:space-between;gap:6px}
+.conn .n em{font-style:normal;font-size:12px;color:var(--ink2);font-weight:400}
+.conn .d{display:block;color:var(--ink2);font-size:13px;line-height:1.35;margin-top:4px}
+.conn[aria-pressed=true]{border-color:var(--ink)}
+.conn[aria-pressed=true] .n em{color:var(--accent)}
+.fine{font-size:13px;color:var(--ink2);margin-top:12px}
+
+/* dose */
+.doses{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:20px}
+.dose{border:1px solid var(--rule);background:#fff;padding:12px;text-align:left;cursor:pointer}
+.dose b{font-weight:500;font-size:20px;letter-spacing:-.02em;display:block}
+.dose span{color:var(--ink2);font-size:14px}
+.dose[aria-pressed=true]{border-color:var(--ink);box-shadow:inset 0 -3px 0 var(--accent)}
+.whens{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.when{border:1px solid var(--rule);background:#fff;padding:7px 12px;font-size:15px;cursor:pointer}
+.when[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.toggles{display:flex;flex-wrap:wrap;gap:16px;margin-top:10px;font-size:15px}
+.toggles label{display:flex;gap:6px;align-items:center;cursor:pointer}
+.toggles input{accent-color:#111318}
+
+/* reveal */
+.plan{margin-top:22px;border-top:1px solid var(--rule)}
+.plan div{display:grid;grid-template-columns:5.2em 1fr;gap:10px;padding:12px 0;border-bottom:1px solid var(--rule)}
+.plan .when2{font-size:13px;color:var(--accent);padding-top:3px}
+.plan .what{font-weight:500}
+.plan .what small{display:block;font-weight:400;color:var(--ink2);font-size:15px;margin-top:2px}
+.plan .later{opacity:.55}
+
+/* right: the brain */
+.stage{position:sticky;top:calc(50svh - min(39svh,360px));align-self:start;height:min(78svh,720px)}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:manipulation}
+.stage.tappable canvas{cursor:crosshair}
+.tag{position:absolute;transform:translate(-50%,-150%);font-size:13px;font-weight:500;background:#fff;color:var(--ink);padding:3px 8px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity var(--dur) var(--ease);box-shadow:0 0 0 1px var(--rule)}
+.tag.on{opacity:1}
+.fly{position:fixed;left:0;top:0;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--accent);z-index:9;pointer-events:none;box-shadow:0 0 0 6px rgba(228,87,46,.18)}
+.hint{position:absolute;left:0;right:0;bottom:4%;text-align:center;font-size:15px;color:var(--ink2);transition:opacity var(--dur) var(--ease)}
+
+@media (max-width:860px){
+  .app{grid-template-columns:1fr;align-items:start;padding-top:52px;gap:0}
+  .stage{order:-1;height:34svh;margin:0 -16px;top:44px;z-index:3;background:#fff}
+  .steps{padding:8px 0 0}
+  .step{display:none;padding-bottom:64px}
+  .step.on{display:flex}
+  .conns,.doses{grid-template-columns:1fr}
+  .hint{bottom:0}
+}
+@media (prefers-reduced-motion:reduce){.chip{animation:none}.step,.reveal{transition:none}}
+body.calm .chip{animation:none}
+</style>
+</head>
+<body>
+<div class="top"><span class="mark">Project Plasticity</span><span class="dots" id="dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span></div>
+
+<main class="app">
+  <div class="steps" id="steps">
+
+    <!-- 0 · fire your first neuron -->
+    <section class="step on" data-step="0" aria-labelledby="h0">
+      <div class="k">Before we begin</div>
+      <h1 id="h0">Let’s wire a brain around you.</h1>
+      <p class="lede" id="w-lede">Tap inside the brain to fire your first neuron.</p>
+      <button class="link" id="fire-kb" type="button">Or fire it from here</button>
+      <div class="reveal" id="w-more">
+        <p class="lede" id="w-say">That’s a signal. Fire it again somewhere else.</p>
+        <label class="q" for="name">What should we call you?</label>
+        <input type="text" id="name" autocomplete="given-name" placeholder="Your first name" maxlength="24">
+        <button class="btn" type="button" data-next>Begin →</button>
+      </div>
+    </section>
+
+    <!-- 1 · your world -->
+    <section class="step" data-step="1" aria-labelledby="h1">
+      <div class="k">01 · Your world</div>
+      <h2 id="h1">What lights you up?</h2>
+      <p class="lede">Pick up to three. Each one grows inside your brain.</p>
+      <div class="chips" id="chips"></div>
+      <div class="other"><input type="text" id="other" placeholder="Something else? Type it" maxlength="22"><button type="button" id="other-add">Add</button></div>
+      <div class="count" id="i-count" aria-live="polite"></div>
+      <div class="brainnote"><b>In your brain</b>Attention helps decide which connections change. So your training starts with what you already care about.</div>
+      <button class="btn" type="button" data-next id="i-next" disabled>That’s me →</button>
+    </section>
+
+    <!-- 2 · wire your goals -->
+    <section class="step" data-step="2" aria-labelledby="h2">
+      <div class="k">02 · Your pathways</div>
+      <h2 id="h2">What do you want to get better at?</h2>
+      <p class="lede">Choose up to three. Each one wires a pathway.</p>
+      <ul class="goals" id="goals"></ul>
+      <div class="brainnote"><b>In your brain</b>Practice strengthens the skills you train. How far that spreads into everyday life is still being studied, and we’ll always tell you which is which.</div>
+      <button class="btn" type="button" data-next id="g-next" disabled>Wire them →</button>
+    </section>
+
+    <!-- 3 · plug in your world -->
+    <section class="step" data-step="3" aria-labelledby="h3">
+      <div class="k">03 · Bring your world in</div>
+      <h2 id="h3">Plug in what you already use.</h2>
+      <p class="lede">Optional. Each connection helps build exercises from your real life.</p>
+      <div class="conns" id="conns"></div>
+      <p class="fine">Prototype preview: nothing actually connects or leaves this device.</p>
+      <div class="row"><button class="btn" type="button" data-next id="c-next">Continue →</button><button class="link" type="button" data-next>Skip for now</button></div>
+    </section>
+
+    <!-- 4 · your dose -->
+    <section class="step" data-step="4" aria-labelledby="h4">
+      <div class="k">04 · Your rhythm</div>
+      <h2 id="h4">How much room does your day have?</h2>
+      <div class="doses" id="doses"></div>
+      <label class="q">When does your brain feel freshest?</label>
+      <div class="whens" id="whens"></div>
+      <label class="q">Comfort</label>
+      <div class="toggles">
+        <label><input type="checkbox" id="t-motion"> Less motion</label>
+        <label><input type="checkbox" id="t-sound" checked> Sound</label>
+        <label><input type="checkbox" id="t-large"> Larger text</label>
+      </div>
+      <div class="brainnote"><b>A first guess, not a contract</b>Not sure is a fine answer. After three sessions we’ll check in, and you can change this any time.</div>
+      <button class="btn" type="button" data-next>Show me my brain →</button>
+    </section>
+
+    <!-- 5 · the reveal -->
+    <section class="step" data-step="5" aria-labelledby="h5">
+      <div class="k">Day 1 of 7</div>
+      <h2 id="h5">Here’s your brain.</h2>
+      <p class="lede" id="identity"></p>
+      <div class="plan">
+        <div><span class="when2">Today</span><span class="what">Wiring · <span id="p-min">5</span> min<small>Light up a pattern, hold it, tap it back. Every pattern spells a word about how your brain changes, and you’ll see how much you improved.</small></span></div>
+        <div class="later"><span class="when2">Tomorrow</span><span class="what">Sleep on it, then replay<small>Your brain keeps working overnight. Tomorrow you’ll find out what stuck.</small></span></div>
+      </div>
+      <div class="row"><a class="btn" href="wiring-v1.html" id="go" style="text-decoration:none">Start day 1 →</a><button class="link" type="button" id="redo">Change my answers</button></div>
+    </section>
+  </div>
+
+  <div class="stage tappable" id="stage">
+    <canvas id="cv" aria-label="Your brain, filling in as you answer" role="img"></canvas>
+    <div id="tags"></div>
+    <div class="hint" id="hint">Tap inside</div>
+  </div>
+</main>
+<button class="snd" id="snd" type="button" aria-pressed="true">Sound on</button>
+
+<script src="brain.js"></script>
+<script>
+(function(){
+const B=PPBrain,sm=B.sm,clamp=B.clamp;
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+let reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const D=ms=>reduced?1:ms;
+
+/* ---------- what we learn ---------- */
+const P={name:'',interests:[],other:'',goals:[],connectors:[],dose:5,doseSure:true,when:'',a11y:{motion:reduced,sound:true,large:false}};
+try{const saved=JSON.parse(localStorage.getItem('pp3.profile')||'null');if(saved&&saved.redo){Object.assign(P,saved);}}catch(e){}
+
+/* ---------- the brain ---------- */
+const cv=$('#cv'),stage=$('#stage'),draw=B.renderer(cv);let lay={fit:1,ox:0,oy:0};
+const motifs=[],paths=[],sparks=[];let fill={from:0,to:0,t0:0};
+function frame(now){
+  for(let i=motifs.length-1;i>=0;i--){const m=motifs[i];m.k=m.dying?1-sm((now-m.dying)/D(450)):sm((now-m.born)/D(650));if(m.dying&&m.k<=0)motifs.splice(i,1);}
+  for(let i=paths.length-1;i>=0;i--){const p=paths[i];p.frac=p.dying?1-sm((now-p.dying)/D(500)):sm((now-p.born)/D(p.slow||900));if(p.dying&&p.frac<=0)paths.splice(i,1);
+    if(p.wTo!=null){p.w+=(p.wTo-p.w)*.12;}}
+  for(const s of sparks){const t=(now-s.born)/1000;s.a=t<.15?t/.15:.85+.15*Math.sin(t*3+s.x);s.r=4+3*Math.exp(-t*3);}
+  const f=fill.from+(fill.to-fill.from)*sm((now-fill.t0)/D(1800));
+  const r=draw({motifs,paths,sparks,fill:f});if(r)lay=r;placeTags();
+  requestAnimationFrame(frame);}
+requestAnimationFrame(frame);
+const toScreen=([x,y])=>{const b=cv.getBoundingClientRect();return [b.left+lay.ox+x*lay.fit,b.top+lay.oy+y*lay.fit];};
+const toBrain=(cx,cy)=>{const b=cv.getBoundingClientRect();return [(cx-b.left-lay.ox)/lay.fit,(cy-b.top-lay.oy)/lay.fit];};
+function fly(fromEl,to,done){if(reduced){done();return;}const a=fromEl.getBoundingClientRect();const s=[a.left+a.width/2,a.top+a.height/2],e=toScreen(to);
+  const d=document.createElement('div');d.className='fly';document.body.appendChild(d);
+  const mid=[(s[0]+e[0])/2,Math.min(s[1],e[1])-80];
+  const an=d.animate([{transform:`translate(${s[0]}px,${s[1]}px)`},{transform:`translate(${mid[0]}px,${mid[1]}px)`,offset:.5},{transform:`translate(${e[0]}px,${e[1]}px) scale(.6)`}],{duration:620,easing:'cubic-bezier(.4,0,.2,1)'});
+  an.onfinish=()=>{d.remove();done();};}
+
+/* ---------- step machine ---------- */
+let step=0;const steps=$$('.step'),dots=$$('#dots i');
+function go(n){steps.forEach((s,i)=>{s.classList.toggle('on',i===n);s.classList.toggle('gone',i<n);});
+  dots.forEach((d,i)=>{d.classList.toggle('on',i===n-1||(n===0&&false));d.classList.toggle('done',i<n-1);});
+  step=n;stage.classList.toggle('tappable',n===0);$('#hint').style.opacity=n===0&&!sparks.length?1:0;
+  if(n===5)revealPlan();
+  const h=steps[n].querySelector('h1,h2');if(h&&n>0){h.setAttribute('tabindex','-1');h.focus({preventScroll:true});}
+  if(innerWidth<=860)scrollTo({top:0,behavior:reduced?'auto':'smooth'});
+  B.tick(.9);}
+document.addEventListener('click',e=>{if(e.target.closest('[data-next]')){save();go(step+1);}});
+
+/* 0 · fire */
+const lines=['That’s a signal. Fire it again somewhere else.','Now they’re connected. Signals that travel together, wire together.','Every time a path fires, it gets a little easier to fire again. That’s neuroplasticity.','You’re a natural. Let’s build your real pathways.'];
+function fire(pt){
+  sparks.push({x:pt[0],y:pt[1],r:6,a:0,born:performance.now()});
+  if(sparks.length>1){const a=sparks[sparks.length-2],b=sparks[sparks.length-1];const m=[(a.x+b.x)/2+(b.y-a.y)*.2,(a.y+b.y)/2-(b.x-a.x)*.2];paths.push({key:'w'+sparks.length,pts:B.route([[a.x,a.y],m,[b.x,b.y]],16),born:performance.now(),w:3+sparks.length,frac:0});}
+  B.tick(1+sparks.length*.08);$('#hint').style.opacity=0;
+  $('#w-more').classList.add('on');$('#w-lede').style.display='none';$('#fire-kb').style.display='none';
+  $('#w-say').textContent=lines[Math.min(lines.length-1,sparks.length-1)];}
+cv.addEventListener('click',e=>{if(step!==0)return;const p=toBrain(e.clientX,e.clientY);if(!B.inside(p[0],p[1]))return;fire(p);});
+const kbPts=[[300,250],[460,200],[420,360],[230,330]];
+$('#fire-kb').addEventListener('click',()=>fire(kbPts[sparks.length%kbPts.length]));
+$('#name').addEventListener('input',e=>{P.name=e.target.value.trim();});
+$('#name').addEventListener('keydown',e=>{if(e.key==='Enter'){save();go(1);}});
+
+/* 1 · interests grow drawings */
+const chipsEl=$('#chips');let seed=7;
+function setInterest(key,label,on,fromEl){
+  if(on){if(P.interests.length>=3)return false;P.interests.push(key);const I=B.INTERESTS[key];
+    const add=()=>{const ms=B.scatter(motifs.filter(m=>!m.dying),I.at,I.kinds,11,seed+=13,100);const now=performance.now();ms.forEach((m,i)=>{m.owner=key;m.born=now+i*55;m.k=0;motifs.push(m);});B.chime();};
+    fromEl?fly(fromEl,I.at,add):add();}
+  else{P.interests=P.interests.filter(k=>k!==key);const now=performance.now();motifs.forEach(m=>{if(m.owner===key&&!m.dying)m.dying=now;});B.tick(.7);}
+  updInterests();return true;}
+function updInterests(){const n=P.interests.length;$('#i-next').disabled=!n;
+  $('#i-count').textContent=n===0?'':n===3?'Three picked. That’s a full brain to start with.':n+' picked. You can pick up to three.';
+  $$('.chip').forEach(c=>{const k=c.dataset.k;c.setAttribute('aria-pressed',P.interests.includes(k));});}
+Object.entries(B.INTERESTS).forEach(([k,I])=>{if(k==='other')return;const b=document.createElement('button');b.type='button';b.className='chip';b.dataset.k=k;b.textContent=I.label;b.setAttribute('aria-pressed','false');
+  b.addEventListener('click',()=>{const on=!P.interests.includes(k);if(on&&P.interests.length>=3){$('#i-count').textContent='Three is the most for now. Tap one to swap it out.';return;}setInterest(k,I.label,on,b);});chipsEl.appendChild(b);});
+function addOther(){const v=$('#other').value.trim();if(!v)return;
+  if(P.interests.includes('other'))setInterest('other','',false);
+  if(P.interests.length>=3){$('#i-count').textContent='Three is the most for now. Tap one to swap it out.';return;}
+  P.other=v;let b=chipsEl.querySelector('[data-k=other]');if(!b){b=document.createElement('button');b.type='button';b.className='chip';b.dataset.k='other';b.addEventListener('click',()=>{setInterest('other','',!P.interests.includes('other'),b);});chipsEl.appendChild(b);}
+  b.textContent=v;setInterest('other',v,true,b);$('#other').value='';}
+$('#other-add').addEventListener('click',addOther);$('#other').addEventListener('keydown',e=>{if(e.key==='Enter')addOther();});
+
+/* 2 · goals wire pathways */
+const goalsEl=$('#goals'),tagsEl=$('#tags');
+Object.entries(B.GOALS).forEach(([k,G])=>{const li=document.createElement('li');li.innerHTML=`<button type="button" aria-pressed="false" data-g="${k}"><span><span class="w">${G.label}</span><span class="s">${G.sub}</span></span><span class="wire"></span></button>`;goalsEl.appendChild(li);
+  const t=document.createElement('div');t.className='tag';t.dataset.g=k;t.textContent=G.label;tagsEl.appendChild(t);
+  li.querySelector('button').addEventListener('click',e=>{const on=!P.goals.includes(k);if(on&&P.goals.length>=3){$('#g-next').textContent='Three is the most for now';setTimeout(()=>$('#g-next').textContent='Wire them →',1400);return;}setGoal(k,on);});});
+function setGoal(k,on){const now=performance.now();
+  if(on){P.goals.push(k);paths.push({key:'g:'+k,pts:B.goalRoute(k),born:now,w:4,wTo:doseWidth(),frac:0});B.chime();}
+  else{P.goals=P.goals.filter(x=>x!==k);paths.forEach(p=>{if(p.key==='g:'+k&&!p.dying)p.dying=now;});B.tick(.7);}
+  $$('#goals button').forEach(b=>b.setAttribute('aria-pressed',P.goals.includes(b.dataset.g)));$('#g-next').disabled=!P.goals.length;}
+function placeTags(){$$('.tag').forEach(t=>{const k=t.dataset.g;const on=P.goals.includes(k)&&step>=2;t.classList.toggle('on',on);if(!on)return;const b=cv.getBoundingClientRect(),s=stage.getBoundingClientRect();const a=B.GOALS[k].at;t.style.left=(b.left-s.left+lay.ox+a[0]*lay.fit)+'px';t.style.top=(b.top-s.top+lay.oy+a[1]*lay.fit)+'px';});}
+
+/* 3 · connectors plug in */
+const CONNS=[
+  ['claude','Claude','Bring in what you’re learning or building, so exercises use your words.'],
+  ['chatgpt','ChatGPT','Import topics you’ve been exploring, to seed new challenges.'],
+  ['spotify','Spotify','Shape sound and rhythm exercises around what you listen to.'],
+  ['whoop','Whoop','Use sleep and recovery to plan harder days and lighter ones.'],
+  ['health','Apple Health','Sleep and movement, to time your sessions well.'],
+  ['calendar','Google Calendar','Find your five minutes, and protect them.']];
+const edge=[[110,300],[150,140],[300,64],[470,70],[620,220],[600,380]];
+CONNS.forEach(([k,n,d],i)=>{const b=document.createElement('button');b.type='button';b.className='conn';b.setAttribute('aria-pressed','false');b.innerHTML=`<span class="n">${n}<em>Connect</em></span><span class="d">${d}</span>`;$('#conns').appendChild(b);
+  b.addEventListener('click',()=>{const on=!P.connectors.includes(k);const now=performance.now();
+    if(on){P.connectors.push(k);paths.push({key:'c:'+k,pts:B.route([edge[i],[(edge[i][0]+B.CENTRE[0])/2,(edge[i][1]+B.CENTRE[1])/2+20],B.CENTRE],16),born:now,w:2.5,frac:0,slow:1200,alpha:.7});B.chime();}
+    else{P.connectors=P.connectors.filter(x=>x!==k);paths.forEach(p=>{if(p.key==='c:'+k&&!p.dying)p.dying=now;});B.tick(.7);}
+    b.setAttribute('aria-pressed',on);b.querySelector('em').textContent=on?'Connected':'Connect';
+    $('#c-next').textContent=P.connectors.length?'Continue with '+P.connectors.length+' →':'Continue →';});});
+
+/* 4 · dose and rhythm */
+const DOSES=[[3,'A spark','3 minutes'],[5,'A session','5 minutes · most people start here'],[10,'A deep dive','10 minutes'],[0,'Not sure','Start me at 5 and adjust']];
+function doseWidth(){return {3:4,5:6,10:8}[P.dose]||6;}
+DOSES.forEach(([m,t,s])=>{const b=document.createElement('button');b.type='button';b.className='dose';b.innerHTML=`<b>${t}</b><span>${s}</span>`;b.setAttribute('aria-pressed',(m===0?!P.doseSure:(P.doseSure&&P.dose===m)));$('#doses').appendChild(b);
+  b.addEventListener('click',()=>{P.dose=m||5;P.doseSure=!!m;$$('.dose').forEach(x=>x.setAttribute('aria-pressed',x===b));paths.forEach(p=>{if(p.key.startsWith('g:'))p.wTo=doseWidth();});B.tick(1.1);});});
+['Morning','Afternoon','Evening','It varies'].forEach(w=>{const b=document.createElement('button');b.type='button';b.className='when';b.textContent=w;b.setAttribute('aria-pressed','false');$('#whens').appendChild(b);
+  b.addEventListener('click',()=>{P.when=w;$$('.when').forEach(x=>x.setAttribute('aria-pressed',x===b));B.tick(1.05);});});
+function a11y(){reduced=P.a11y.motion||matchMedia('(prefers-reduced-motion: reduce)').matches;document.body.classList.toggle('calm',reduced);document.body.classList.toggle('large',P.a11y.large);B.audio.on=P.a11y.sound;$('#snd').textContent=B.audio.on?'Sound on':'Sound off';$('#snd').setAttribute('aria-pressed',B.audio.on);$('#t-sound').checked=B.audio.on;}
+$('#t-motion').addEventListener('change',e=>{P.a11y.motion=e.target.checked;a11y();});
+$('#t-sound').addEventListener('change',e=>{P.a11y.sound=e.target.checked;a11y();});
+$('#t-large').addEventListener('change',e=>{P.a11y.large=e.target.checked;a11y();});
+$('#snd').addEventListener('click',()=>{P.a11y.sound=!B.audio.on;a11y();});
+
+/* 5 · reveal: the navy fills, like the end of the landing page */
+function identity(){const names=P.interests.map(k=>k==='other'?P.other.toLowerCase():B.INTERESTS[k].label.split(' ')[0].toLowerCase());
+  const world=names.length?names.join(names.length>2?', ':'-and-').replace(/, ([^,]*)$/,' and $1'):'curious';
+  const goals=P.goals.map(k=>B.GOALS[k].label.toLowerCase());const g=goals.length>1?goals.slice(0,-1).join(', ')+' and '+goals.at(-1):goals[0]||'new connections';
+  return `A ${world} brain, wiring ${g}.`;}
+function revealPlan(){fill={from:0,to:1,t0:performance.now()};
+  /* like the landing page's ending: the gaps fill in with drawings of every kind */
+  if(!motifs.some(m=>m.owner==='fill')){const now=performance.now();B.scatter(motifs.filter(m=>!m.dying),[360,290],['leaf','sprig','petal','flower','tulip','heart','bolt','dots','squig','spark','star','frond','gear'],140,401,300)
+    .forEach((m,i)=>{m.s=Math.min(m.s,15);m.owner='fill';m.born=now+300+i*12;motifs.push(m);});}$('#h5').textContent=(P.name?P.name+', here’s':'Here’s')+' your brain.';$('#identity').textContent=identity();$('#p-min').textContent=P.dose;
+  setTimeout(()=>B.chime(),D(900));save();}
+$('#redo').addEventListener('click',()=>{fill={from:1,to:0,t0:performance.now()};const now=performance.now();motifs.forEach(m=>{if(m.owner==='fill'&&!m.dying)m.dying=now;});go(1);});
+
+function save(){try{localStorage.setItem('pp3.profile',JSON.stringify({...P,redo:false,at:Date.now()}));}catch(e){}}
+a11y();
+})();
+</script>
+</body>
+</html>

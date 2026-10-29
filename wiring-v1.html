@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Project Plasticity — Wiring</title>
+<meta name="description" content="Light it, hold it, tap it back. A memory exercise that shows you what changed.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--ease:cubic-bezier(.4,0,.2,1);--dur:.6s;--bg:#fff;--bg2:#f5f5f3;--ink:#111318;--ink2:#5a5e68;--accent:#e4572e;--rule:#e6e6e3;--navy:#131E4A;--navy2:#1B2A5C;--edge:#0B1233;--cream:#FFF0BE;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#fff;--bg2:#f5f5f3}}
+:root[data-theme="dark"]{--bg:#fff;--bg2:#f5f5f3}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Inter",system-ui,sans-serif;font-size:18px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body.large{font-size:21px}
+button{font:inherit;color:inherit}
+a{color:inherit}
+.in{max-width:760px;margin:0 auto;padding:0 clamp(16px,4vw,32px)}
+.top{display:flex;justify-content:space-between;align-items:center;padding:18px clamp(16px,5vw,72px);font-size:13px;color:var(--ink2)}
+.top a{text-decoration:none;font-weight:500}
+.snd{position:fixed;right:clamp(16px,5vw,72px);bottom:20px;background:none;border:0;padding:4px 0;font-size:13px;color:var(--ink2);cursor:pointer;border-bottom:1px solid transparent;z-index:5}
+.snd:hover{border-bottom-color:currentColor}
+.screen{display:none;padding:clamp(16px,5svh,56px) 0 96px;animation:rise var(--dur) var(--ease)}
+.screen.on{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.k{font-size:13px;color:var(--accent);margin-bottom:10px;font-variant-numeric:tabular-nums}
+h1,h2,h3{margin:0;font-weight:500;letter-spacing:-.03em;line-height:1.06}
+h1{font-size:clamp(36px,5vw,56px)}
+h2{font-size:clamp(28px,3.4vw,40px)}
+h3{font-size:clamp(20px,2vw,24px);letter-spacing:-.015em;line-height:1.2}
+.lede{color:var(--ink2);margin:16px 0 0;font-size:clamp(17px,1.6vw,20px);max-width:36em}
+.btn{display:inline-block;margin-top:28px;background:var(--ink);color:#fff;border:0;padding:15px 24px;font-weight:500;font-size:17px;cursor:pointer;text-decoration:none}
+.link{background:none;border:0;padding:0;font-size:15px;color:var(--ink2);cursor:pointer;border-bottom:1px solid var(--rule)}
+.link:hover{color:var(--ink)}
+.row{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.sec{margin-top:48px}
+.sec>.k{margin-bottom:6px}
+.rule{border:0;border-top:1px solid var(--rule);margin:40px 0}
+.flow{list-style:none;margin:28px 0 0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid var(--ink)}
+.flow li{padding:12px 12px 0 0;font-size:15px;color:var(--ink2)}
+.flow b{display:block;font-weight:500;color:var(--ink);font-size:16px}
+.flow span{font-size:13px;color:var(--accent);font-variant-numeric:tabular-nums}
+.find{list-style:none;margin:16px 0 0;padding:0}
+.find li{display:grid;grid-template-columns:1fr;padding:14px 0;border-top:1px solid var(--rule)}
+.find .c{font-weight:500;font-size:clamp(18px,1.7vw,20px);letter-spacing:-.01em}
+.find .u{color:var(--ink2);font-size:15px;margin-top:3px}
+.cite{font-size:13px;color:var(--ink2);margin-top:6px}
+.cite a{text-decoration:none;border-bottom:1px solid var(--rule)}
+.cite a:hover{color:var(--accent);border-bottom-color:var(--accent)}
+.story{background:var(--navy);color:#F7EEDD;padding:clamp(20px,3vw,32px);margin-top:28px;position:relative;overflow:hidden}
+.story .k{color:#F5C63C}
+.story p{margin:8px 0 0;font-size:clamp(18px,1.8vw,22px);line-height:1.35;letter-spacing:-.01em}
+.story .cite{color:rgba(247,238,221,.7)}
+.story .cite a{border-bottom-color:rgba(247,238,221,.3)}
+.quote{font-size:clamp(24px,3vw,34px);font-weight:500;letter-spacing:-.025em;line-height:1.15;margin:0}
+.quote+.cite{margin-top:10px}
+
+/* the board */
+.hud{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.status{font-weight:500;font-size:clamp(20px,2.2vw,26px);letter-spacing:-.02em;min-height:1.3em}
+.meta{font-size:14px;color:var(--ink2);font-variant-numeric:tabular-nums}
+.timer{height:2px;background:var(--rule);margin-top:12px;position:relative;overflow:hidden}
+.timer i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);width:0}
+.boardwrap{position:relative;margin-top:18px;width:min(100%,560px,max(300px,calc((100svh - 300px) * 1.2)))}
+.board{position:relative;display:grid;grid-template-columns:repeat(5,1fr);gap:clamp(6px,1.2vw,10px);padding:clamp(10px,2vw,18px);background:radial-gradient(circle at 50% 45%,var(--navy2),var(--navy) 70%);box-shadow:0 0 0 3px var(--edge)}
+.tile{aspect-ratio:1;border:0;background:rgba(247,238,221,.06);color:var(--navy);font-weight:500;font-size:clamp(20px,4vw,30px);letter-spacing:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .18s,transform .18s,box-shadow .18s;position:relative;z-index:1}
+.tile:hover{background:rgba(247,238,221,.12)}
+.tile.lit{background:#FFF7DC;transform:scale(1.04)}
+.tile.got{background:var(--cream);color:var(--navy)}
+.tile.miss{background:var(--accent);color:#fff;animation:shake .3s}
+.tile.ghost{box-shadow:inset 0 0 0 2px rgba(255,240,190,.55);color:rgba(255,240,190,.75);font-size:clamp(13px,2vw,16px)}
+.board.locked .tile{cursor:default}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.wires{position:absolute;inset:0;pointer-events:none;z-index:2}
+.wires path{fill:none;stroke:#FFF0BE;stroke-linecap:round;stroke-linejoin:round;transition:stroke-width .4s var(--ease)}
+.card{min-height:150px;margin-top:20px;border-top:1px solid var(--rule);padding-top:14px}
+.card .w{font-weight:500;font-size:clamp(24px,2.8vw,32px);letter-spacing:.06em}
+.card .t{color:var(--ink);margin-top:4px;font-size:clamp(17px,1.6vw,19px);max-width:34em}
+.card .from{font-size:13px;color:var(--accent)}
+.card .next{margin-top:12px}
+.card.empty{opacity:.5;color:var(--ink2);font-size:15px}
+.wired{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.wired span{font-size:12px;letter-spacing:.06em;font-weight:500;border:1px solid var(--rule);padding:3px 8px}
+
+/* impact */
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:clamp(12px,3vw,32px);margin-top:28px}
+.brainbox{position:relative}
+.brainbox canvas{width:100%;aspect-ratio:720/560;display:block}
+.brainbox .lbl{font-size:13px;color:var(--ink2)}
+.brainbox .big{font-weight:500;font-size:clamp(28px,4vw,44px);letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+.brainbox .big small{font-size:.45em;color:var(--ink2);letter-spacing:0;font-weight:400}
+.brainbox.now .lbl{color:var(--accent)}
+.deltas{list-style:none;margin:28px 0 0;padding:0}
+.deltas li{display:grid;grid-template-columns:1fr auto auto auto;gap:14px;align-items:baseline;padding:12px 0;border-top:1px solid var(--rule);font-variant-numeric:tabular-nums}
+.deltas .n{font-weight:500}
+.deltas .a{color:var(--ink2)}
+.deltas .arrow{color:var(--accent)}
+.deltas .b{font-weight:500}
+.honest{font-size:15px;color:var(--ink2);margin-top:14px;max-width:38em}
+.sleep{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start;margin-top:36px;padding:22px;background:var(--bg2)}
+.moon{width:44px;height:44px;border-radius:50%;box-shadow:inset -12px -4px 0 0 var(--navy);transform:rotate(-20deg)}
+.stories{display:grid;grid-template-columns:1fr 1fr;gap:clamp(12px,2vw,20px);margin-top:18px}
+.person{border-top:2px solid var(--ink);padding-top:12px}
+.person .who{font-size:13px;color:var(--accent)}
+.person h3{margin-top:4px}
+.person p{color:var(--ink2);font-size:15px;margin:6px 0 0}
+
+@media (max-width:640px){
+  .flow{grid-template-columns:1fr 1fr;row-gap:12px}
+  .compare,.stories{grid-template-columns:1fr}
+  .deltas li{grid-template-columns:1fr auto auto auto;gap:8px;font-size:16px}
+}
+@media (prefers-reduced-motion:reduce){.screen{animation:none}.tile{transition:none}}
+</style>
+</head>
+<body>
+<div class="top"><a href="onboarding-v2.html">Project Plasticity</a><span id="who"></span></div>
+
+<main class="in">
+
+<!-- ============ before: why it matters ============ -->
+<section class="screen on" id="s-intro" aria-labelledby="h-intro">
+  <div class="k" id="intro-k">Day 1 · Wiring · about 5 minutes</div>
+  <h1 id="h-intro">Light it. Hold it. Tap it back.</h1>
+  <p class="lede" id="intro-lede">Tiles light up inside your brain, one by one. When they go dark, tap the same tiles in the same order. Every pattern spells a word, and most of them are words about how your brain changes.</p>
+  <ol class="flow" aria-label="How today works">
+    <li><span>1</span><b>First try</b>3 patterns. Your starting point.</li>
+    <li><span>2</span><b>Train</b>At your edge, where it’s hard but doable.</li>
+    <li><span>3</span><b>Try again</b>Same difficulty, new patterns.</li>
+    <li><span>4</span><b>See it</b>What changed, and why.</li>
+  </ol>
+
+  <div class="sec">
+    <div class="k">Why it matters</div>
+    <ul class="find">
+      <li><span class="c">Pulling a memory out strengthens it.</span><span class="u">Students who practised recalling a text remembered more a week later than students who reread it.</span><span class="cite">Roediger &amp; Karpicke, 2006 · <a href="https://doi.org/10.1111/j.1467-9280.2006.01693.x" target="_blank" rel="noopener">Psychological Science</a></span></li>
+      <li><span class="c">Patterns that mean something are easier to hold.</span><span class="u">Chess masters could rebuild a real game position after a five-second glance. With pieces placed at random, they did little better than beginners.</span><span class="cite">Chase &amp; Simon, 1973 · <a href="https://doi.org/10.1016/0010-0285(73)90004-2" target="_blank" rel="noopener">Cognitive Psychology</a></span></li>
+      <li><span class="c">Memory practice changes what the brain does.</span><span class="u">After five weeks of working-memory training, brain scans showed more activity in frontal and parietal areas.</span><span class="cite">Olesen, Westerberg &amp; Klingberg, 2004 · <a href="https://doi.org/10.1038/nn1165" target="_blank" rel="noopener">Nature Neuroscience</a></span></li>
+    </ul>
+  </div>
+
+  <div class="story">
+    <div class="k">A runner who rewired his memory</div>
+    <p>SF started with an ordinary memory: about 7 digits. After around 230 hours of practice over 20 months, he could hold 79. His trick: he heard digits as race times. 3492 became “3 minutes 49.2 seconds, a near world-record mile.”</p>
+    <div class="cite">Ericsson, Chase &amp; Faloon, 1980 · <a href="https://doi.org/10.1126/science.7375930" target="_blank" rel="noopener">Science</a></div>
+  </div>
+
+  <div class="row"><button class="btn" type="button" id="start">Start your first try →</button><button class="link" type="button" id="skip-why" hidden>Skip to training</button></div>
+</section>
+
+<!-- ============ play ============ -->
+<section class="screen" id="s-play" aria-labelledby="status">
+  <div class="hud"><div class="status" id="status" aria-live="polite">Watch.</div><div class="meta" id="meta"></div></div>
+  <div class="timer" id="timer" hidden><i id="timer-i"></i></div>
+  <div class="boardwrap">
+    <div class="board locked" id="board" role="grid" aria-label="Pattern board"></div>
+    <svg class="wires" id="wires" aria-hidden="true"></svg>
+  </div>
+  <div class="card empty" id="card" aria-live="polite">Each word you wire shows up here with what it means for your brain.</div>
+</section>
+
+<!-- ============ after: what changed ============ -->
+<section class="screen" id="s-impact" aria-labelledby="h-impact">
+  <div class="k" id="imp-k">What changed</div>
+  <h2 id="h-impact">Five minutes ago, you held 0 tiles.</h2>
+  <p class="lede" id="imp-lede"></p>
+  <div class="compare">
+    <div class="brainbox"><div class="lbl" id="b1-l">First try</div><canvas id="b1" aria-hidden="true"></canvas><div class="big" id="b1-n">0<small> / 15 tiles</small></div></div>
+    <div class="brainbox now"><div class="lbl" id="b2-l">Just now</div><canvas id="b2" aria-hidden="true"></canvas><div class="big" id="b2-n">0<small> / 15 tiles</small></div></div>
+  </div>
+  <ul class="deltas" id="deltas"></ul>
+  <p class="honest" id="honest"></p>
+  <div class="sec" id="wired-sec"><div class="k">Words you wired today</div><div class="wired" id="wired"></div></div>
+  <div class="sleep" id="sleep">
+    <div class="moon" aria-hidden="true"></div>
+    <div><h3>Now, sleep on it.</h3><p class="lede" style="margin-top:6px;font-size:16px">Overnight, your brain replays and steadies what you practised. Tomorrow, before any warm-up, you’ll replay your first try and see what stuck.</p>
+      <div class="cite">Walker et al., 2002 · <a href="https://doi.org/10.1016/S0896-6273(02)00746-8" target="_blank" rel="noopener">Neuron</a></div>
+      <div class="row" style="margin-top:12px"><button class="link" type="button" id="tomorrow">Prototype: jump to tomorrow</button></div></div>
+  </div>
+  <div class="row"><a class="btn" href="#why" id="to-why">Why this works →</a><button class="link" type="button" id="again" style="margin-top:28px">Play again</button></div>
+
+  <!-- ============ after: the research ============ -->
+  <div id="why" style="padding-top:40px">
+    <hr class="rule">
+    <p class="quote">“Every man can, if he so desires, become the sculptor of his own brain.”</p>
+    <div class="cite">Santiago Ramón y Cajal, the neuroscientist who first mapped neurons · <i>Advice for a Young Investigator</i>, 1897</div>
+
+    <div class="sec">
+      <div class="k">The research behind today’s session</div>
+      <h2>Why each part is there.</h2>
+      <ul class="find">
+        <li><span class="c">You recalled, you didn’t reread.</span><span class="u">Every round makes you pull the pattern back out. Practising recall builds stronger memories than seeing the same thing again.</span><span class="cite">Roediger &amp; Karpicke, 2006 · <a href="https://doi.org/10.1111/j.1467-9280.2006.01693.x" target="_blank" rel="noopener">Psychological Science</a></span></li>
+        <li><span class="c">Words made the tiles easier.</span><span class="u">Once you spotted the word, five tiles became one chunk. That’s how chess masters remember boards and how SF the runner held 79 digits.</span><span class="cite">Chase &amp; Simon, 1973 · <a href="https://doi.org/10.1016/0010-0285(73)90004-2" target="_blank" rel="noopener">Cognitive Psychology</a> · Ericsson, Chase &amp; Faloon, 1980 · <a href="https://doi.org/10.1126/science.7375930" target="_blank" rel="noopener">Science</a></span></li>
+        <li><span class="c">It got harder when you got good.</span><span class="u">Two in a row and the pattern grew or sped up. One miss and it eased off. That kept you at your edge, getting most right but not all, which is where learning tends to be fastest.</span><span class="cite">Wilson et al., 2019 · <a href="https://doi.org/10.1038/s41467-019-12552-4" target="_blank" rel="noopener">Nature Communications</a></span></li>
+        <li><span class="c">Training like this changes brain activity.</span><span class="u">Weeks of working-memory practice increased activity in the frontal and parietal areas that hold information in mind.</span><span class="cite">Olesen, Westerberg &amp; Klingberg, 2004 · <a href="https://doi.org/10.1038/nn1165" target="_blank" rel="noopener">Nature Neuroscience</a></span></li>
+        <li><span class="c">Tomorrow, not tonight again.</span><span class="u">People who practised a finger-tapping sequence and then slept were about 20% faster the next day, with no extra practice. Spreading practice over days also beats cramming.</span><span class="cite">Walker et al., 2002 · <a href="https://doi.org/10.1016/S0896-6273(02)00746-8" target="_blank" rel="noopener">Neuron</a> · Cepeda et al., 2006 · <a href="https://doi.org/10.1037/0033-2909.132.3.354" target="_blank" rel="noopener">Psychological Bulletin</a></span></li>
+      </ul>
+    </div>
+
+    <div class="sec">
+      <div class="k">People whose brains changed with practice</div>
+      <div class="stories">
+        <div class="person"><div class="who">An athlete</div><h3>SF, the runner</h3><p>Went from 7 digits to 79 by turning numbers into race times. Same brain, new strategy, hundreds of hours.</p><div class="cite">Ericsson, Chase &amp; Faloon, 1980 · <a href="https://doi.org/10.1126/science.7375930" target="_blank" rel="noopener">Science</a></div></div>
+        <div class="person"><div class="who">Working professionals</div><h3>London taxi drivers</h3><p>Years of learning the city’s streets went with a larger back part of the hippocampus, a region involved in navigation. The longer they’d driven, the larger it was.</p><div class="cite">Maguire et al., 2000 · <a href="https://doi.org/10.1073/pnas.070039597" target="_blank" rel="noopener">PNAS</a></div></div>
+        <div class="person"><div class="who">Musicians</div><h3>Concert pianists</h3><p>The more they had practised as children, the more developed the white matter (the brain’s myelinated wiring) in tracts linked to playing.</p><div class="cite">Bengtsson et al., 2005 · <a href="https://doi.org/10.1038/nn1516" target="_blank" rel="noopener">Nature Neuroscience</a></div></div>
+        <div class="person"><div class="who">Adults learning something new</div><h3>Three months of juggling</h3><p>Adults who learned to juggle showed grey-matter growth in areas that track motion. After they stopped, it partly went back.</p><div class="cite">Draganski et al., 2004 · <a href="https://doi.org/10.1038/427311a" target="_blank" rel="noopener">Nature</a></div></div>
+      </div>
+    </div>
+
+    <div class="story">
+      <div class="k">The rule behind it all</div>
+      <p class="quote" style="color:#F7EEDD">“Cells that fire together wire together.”</p>
+      <div class="cite">Carla Shatz, neuroscientist, summing up Donald Hebb’s 1949 idea · Shatz, 1992 · <a href="https://doi.org/10.1038/scientificamerican0992-60" target="_blank" rel="noopener">Scientific American</a></div>
+    </div>
+
+    <div class="sec">
+      <div class="k">What it can’t do, honestly</div>
+      <ul class="find">
+        <li><span class="c">You’ll get better at what you practise.</span><span class="u">Memory training reliably improves the trained task and ones close to it. Clear evidence that it spreads to everyday life is still missing.</span><span class="cite">Melby-Lervåg &amp; Hulme, 2013 · <a href="https://doi.org/10.1037/a0028228" target="_blank" rel="noopener">Developmental Psychology</a> · Simons et al., 2016 · <a href="https://doi.org/10.1177/1529100616661983" target="_blank" rel="noopener">Psychological Science in the Public Interest</a></span></li>
+        <li><span class="c">That’s why we build from your world.</span><span class="u">The closer practice is to what you actually do, the more of it carries over. This is a training exercise, not a medical test.</span></li>
+      </ul>
+    </div>
+    <div class="row"><button class="btn" type="button" id="again2">Play again</button><a class="link" href="onboarding-v2.html" style="margin-top:28px">Back to my brain</a></div>
+  </div>
+</section>
+</main>
+<button class="snd" id="snd" type="button" aria-pressed="true">Sound on</button>
+
+<script src="brain.js"></script>
+<script>
+(function(){
+const B=PPBrain;const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const store={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d;}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
+const profile=store.get('pp3.profile',{});
+const reduced=(profile.a11y&&profile.a11y.motion)||matchMedia('(prefers-reduced-motion: reduce)').matches;
+if(profile.a11y){B.audio.on=profile.a11y.sound!==false;document.body.classList.toggle('large',!!profile.a11y.large);}
+const sndBtn=$('#snd');const snd=()=>{sndBtn.textContent=B.audio.on?'Sound on':'Sound off';sndBtn.setAttribute('aria-pressed',B.audio.on);};snd();
+sndBtn.addEventListener('click',()=>{B.audio.on=!B.audio.on;snd();});
+if(profile.name)$('#who').textContent=profile.name;
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+
+/* ---------- words ---------- */
+/* brain words: each one teaches something */
+const BRAIN={
+  AXON:'The long wire a neuron sends its signal down.',
+  GLIA:'Support cells. Some wrap your axons in myelin.',
+  FIRE:'A neuron fires when enough signal builds up. Practice makes the path easier to fire.',
+  WIRE:'Cells that fire together wire together. You just fired these tiles together.',
+  SLEEP:'Overnight, your brain replays and steadies what you practised today.',
+  SPINE:'Tiny bumps on a neuron’s branches where new connections form. They can grow with learning.',
+  PRUNE:'Connections you stop using get trimmed, so the busy ones run cleaner.',
+  CHUNK:'Grouping pieces into one unit. It’s why a word is easier to hold than five random tiles.',
+  RECALL:'Pulling a memory out strengthens it more than looking at it again. That’s every round of this game.',
+  MYELIN:'Insulation around axons. Pianists who practised more as children had more developed wiring.',
+  CORTEX:'The brain’s outer layer. In adults who learned to juggle, parts of it grew within three months.',
+  REPEAT:'Each repeat makes the same path a little easier to fire next time.',
+  SYNAPSE:'The tiny gap where one neuron passes its signal to the next. Learning changes how strong it is.',
+  NEURONS:'You have about 86 billion. What matters is how they connect.',
+  NOVELTY:'New things grab your attention, and attention helps decide what your brain keeps.',
+  SPACING:'Spreading practice over days beats cramming. That’s why tomorrow matters.',
+  PLASTIC:'From the Greek for “able to be shaped.” Your brain is, at any age.',
+  DENDRITE:'The branches that collect signals from other neurons. Use grows them.',
+  REWIRING:'Changing which connections carry the signal. You’ve been doing it all session.'
+};
+/* your world: words from the interests you picked */
+const WORLD={
+  music:['BEAT','TUNE','TEMPO','CHORD','RHYTHM','MELODY','HARMONY','CADENCE','BASSLINE'],
+  sport:['PACE','GOAL','SPRINT','STRIDE','STAMINA','TRAINING','RELAY','AGILE'],
+  code:['LOOP','BUILD','DEBUG','CACHE','COMMIT','BRANCH','COMPILE','FUNCTION'],
+  startups:['PLAN','PITCH','PIVOT','SCALE','LAUNCH','MARKET','ROADMAP','FOUNDER','INVESTOR'],
+  art:['LINE','PAINT','SKETCH','CANVAS','PALETTE','TEXTURE','CONTRAST'],
+  writing:['PLOT','DRAFT','NOVEL','STANZA','CHAPTER','METAPHOR','VERSE'],
+  science:['ATOM','CELL','GENE','ORBIT','PHOTON','THEORY','ENZYME','PARTICLE'],
+  languages:['WORD','VERB','IDIOM','ACCENT','SYNTAX','GRAMMAR','DIALECT','FLUENCY'],
+  nature:['LEAF','TREE','RIVER','FOREST','MEADOW','GLACIER','MOUNTAIN'],
+  food:['SALT','SPICE','BASIL','GARLIC','SIMMER','SAFFRON','FERMENT'],
+  games:['DICE','QUEST','LEVEL','PUZZLE','RIDDLE','GAMBIT','STRATEGY'],
+  wellbeing:['CALM','REST','FOCUS','BREATH','BALANCE','MINDFUL','GRATEFUL']
+};
+const WORLD_LINES=['Words from your world are easier to hold. That’s attention at work.','You care about this, so your brain flagged it as worth keeping.','Meaning turns separate tiles into one chunk.','Practice that looks like your real life is the kind that carries over best.'];
+const interests=(profile.interests||[]).filter(k=>WORLD[k]||k==='other');
+const worldBank=[];interests.forEach(k=>{if(WORLD[k])WORLD[k].forEach(w=>worldBank.push([w,k]));});
+if(profile.other&&/^[a-z]{4,8}$/i.test(profile.other))worldBank.push([profile.other.toUpperCase(),'other']);
+const worldName=k=>k==='other'?profile.other:B.INTERESTS[k].label;
+/* fixed tests: same lengths and speed each time, different words, so the comparison is fair */
+const TESTS={first:['GROW','SPARK','SIGNAL'],final:['PATH','FOCUS','STRONG'],replay:['LINK','LEARN','CHANGE']};
+const TEST_MS=600;
+/* levels: pattern length and how long each tile stays lit */
+const LEVELS=[[4,700],[4,560],[5,650],[5,520],[6,600],[6,480],[7,560],[7,440],[8,520],[8,400]];
+
+/* ---------- the board ---------- */
+const COLS=5,ROWS=4,N=COLS*ROWS;const board=$('#board'),wires=$('#wires');
+const tiles=[];for(let i=0;i<N;i++){const b=document.createElement('button');b.type='button';b.className='tile';b.dataset.i=i;b.setAttribute('aria-label','Tile '+(i+1));board.appendChild(b);tiles.push(b);}
+function clearBoard(){tiles.forEach(t=>{t.className='tile';t.textContent='';});wires.innerHTML='';}
+function centre(i){const r=tiles[i].getBoundingClientRect(),w=wires.getBoundingClientRect();return [r.left-w.left+r.width/2,r.top-w.top+r.height/2];}
+function wirePath(seq,width){const pts=seq.map(centre);if(pts.length<2)return;let d='M'+pts[0].join(',');for(let i=1;i<pts.length;i++)d+=' L'+pts[i].join(',');
+  wires.setAttribute('viewBox',`0 0 ${wires.clientWidth} ${wires.clientHeight}`);wires.innerHTML=`<path d="${d}" stroke-width="${width}" opacity=".9"/>`;}
+function pickCells(n){const all=[...Array(N).keys()];for(let i=all.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[all[i],all[j]]=[all[j],all[i]];}return all.slice(0,n);}
+
+/* one round: show the word's letters on random tiles in order, then ask for them back */
+let tapResolve=null,expect=[],tapped=0,tLast=0,times=[];
+board.addEventListener('click',e=>{const t=e.target.closest('.tile');if(!t||!tapResolve)return;tap(+t.dataset.i);});
+function tap(i){const now=performance.now();const want=expect[tapped];
+  if(i===want){times.push(now-tLast);tLast=now;tiles[i].classList.add('got');tiles[i].textContent=word[tapped];tapped++;B.tick(1+tapped*.09);
+    if(tapped>1)wirePath(expect.slice(0,tapped),3);
+    if(tapped===expect.length){const r=tapResolve;tapResolve=null;r({held:tapped,ok:true});}}
+  else{if(tiles[i].classList.contains('got'))return;tiles[i].classList.add('miss');B.tick(.5,.22);
+    expect.slice(tapped).forEach((c,k)=>{tiles[c].classList.add('ghost');tiles[c].textContent=k+tapped+1;});
+    const r=tapResolve;tapResolve=null;r({held:tapped,ok:false});}}
+let word='';
+async function round(w,ms){word=w;clearBoard();board.classList.add('locked');setStatus('Watch.');
+  expect=pickCells(w.length);await wait(reduced?250:500);
+  for(let k=0;k<w.length;k++){const t=tiles[expect[k]];t.classList.add('lit');t.textContent=w[k];B.tick(.8+k*.06,.12);await wait(ms);t.classList.remove('lit');t.textContent='';await wait(110);}
+  await wait(250);board.classList.remove('locked');setStatus(`Your turn. Tap ${w.length} tiles in order.`);tapped=0;times=[];tLast=performance.now();
+  const res=await new Promise(r=>tapResolve=r);board.classList.add('locked');
+  res.ms=times.length?times.reduce((a,b)=>a+b,0)/times.length:0;
+  if(res.ok){wirePath(expect,7);setStatus('Wired.');B.chime();await wait(reduced?400:850);}
+  else{setStatus('Close. Here’s where it went.');await wait(1300);}
+  return res;}
+const setStatus=s=>{$('#status').textContent=s;};
+const setMeta=s=>{$('#meta').textContent=s;};
+
+/* ---------- a session ---------- */
+const S={first:null,final:null,replay:null,top:0,words:[],level:0};
+function show(id){$$('.screen').forEach(s=>s.classList.toggle('on',s.id===id));scrollTo({top:0,behavior:'auto'});}
+async function test(kind,label){let held=0,ms=[];const words=TESTS[kind];
+  for(let i=0;i<words.length;i++){setMeta(`${label} · ${i+1} of ${words.length}`);const r=await round(words[i],TEST_MS);held+=r.held;if(r.ms)ms.push(r.ms);}
+  return {held,total:words.reduce((a,w)=>a+w.length,0),ms:ms.length?Math.round(ms.reduce((a,b)=>a+b,0)/ms.length):0};}
+function pickWord(len,i){const useWorld=worldBank.length&&i%3===2;
+  if(useWorld){const opts=worldBank.filter(([w])=>w.length===len&&!S.words.some(x=>x.w===w));if(opts.length){const [w,k]=opts[Math.floor(Math.random()*opts.length)];return {w,k};}}
+  const opts=Object.keys(BRAIN).filter(w=>w.length===len&&!S.words.some(x=>x.w===w));const pool=opts.length?opts:Object.keys(BRAIN).filter(w=>w.length===len);return {w:pool[Math.floor(Math.random()*pool.length)],k:'brain'};}
+function showCard(x){const c=$('#card');c.classList.remove('empty');
+  if(x.k==='brain')c.innerHTML=`<div class="from">Brain word</div><div class="w">${x.w}</div><div class="t">${BRAIN[x.w]}</div>`;
+  else c.innerHTML=`<div class="from">From your world · ${worldName(x.k)}</div><div class="w">${x.w}</div><div class="t">${WORLD_LINES[S.words.length%WORLD_LINES.length]}</div>`;}
+async function train(){const dose=profile.dose||5;const budget=(dose<=3?90:dose>=10?420:180)*1000;let used=0,streak=0,i=0;
+  $('#timer').hidden=false;const bar=$('#timer-i');
+  while(used<budget){const [len,ms]=LEVELS[S.level];const x=pickWord(len,i++);setMeta(`Training · level ${S.level+1} of ${LEVELS.length}`);
+    const t0=performance.now();const r=await round(x.w,ms);used+=performance.now()-t0;bar.style.width=Math.min(100,used/budget*100)+'%';
+    if(r.ok){S.words.push(x);showCard(x);S.top=Math.max(S.top,S.level+1);if(++streak>=2){streak=0;if(S.level<LEVELS.length-1){S.level++;setStatus('Level up. Longer or faster now.');await wait(reduced?300:900);}}}
+    else{streak=0;if(S.level>0)S.level--;}}
+  $('#timer').hidden=true;}
+
+/* ---------- history: day 1, then the overnight replay ---------- */
+const dayKey=(d=new Date())=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const H=store.get('pp3.wiring',{sessions:[]});
+const last=H.sessions[H.sessions.length-1];
+const replayDue=last&&last.date<dayKey()&&!(H.replays||[]).some(r=>r.date===dayKey());
+
+if(replayDue){$('#intro-k').textContent='Day 2 · Wiring';$('#h-intro').textContent='Welcome back. You slept on it.';
+  $('#intro-lede').textContent=`Yesterday you ended at ${last.final.held} of ${last.final.total} tiles. Before any warm-up, let’s see what your brain kept overnight.`;
+  $('#start').textContent='Replay your first try →';}
+
+$('#start').addEventListener('click',async()=>{show('s-play');
+  if(replayDue){S.replay=await test('replay','Overnight replay');H.replays=(H.replays||[]).concat([{date:dayKey(),...S.replay}]);store.set('pp3.wiring',H);showOvernight();return;}
+  await runSession();});
+async function runSession(){S.words=[];S.top=0;S.level=Math.max(0,Math.min(3,(last&&last.top?last.top-3:0)));
+  $('#card').className='card empty';$('#card').textContent='Each word you wire shows up here with what it means for your brain.';
+  setStatus('First try.');S.first=await test('first','First try');
+  setStatus('Now train. It adapts to you.');await wait(reduced?400:1200);await train();
+  setStatus('Same test, new patterns.');await wait(reduced?400:1000);S.final=await test('final','Final try');
+  H.sessions.push({date:dayKey(),first:S.first,final:S.final,top:S.top,words:S.words.map(x=>x.w)});store.set('pp3.wiring',H);showImpact();}
+
+/* ---------- impact ---------- */
+const PROFILE_MOTIFS=(()=>{const ms=[];let seed=11;(profile.interests||['other']).forEach(k=>{const I=B.INTERESTS[k]||B.INTERESTS.other;ms.push(...B.scatter(ms,I.at,I.kinds,12,seed+=17,110).map(m=>({...m,k:1})));});
+  ms.push(...B.scatter(ms,[360,290],['leaf','sprig','petal','flower','tulip','heart','bolt','dots','squig','spark','star','frond','gear'],140,401,300).map(m=>({...m,s:Math.min(m.s,15),k:1})));return ms;})();
+/* the pathway the session strengthens: long enough to read at a glance */
+const SESSION_ROUTE=B.route([[165,215],[260,280],[380,330],[480,380],[586,420]],16);
+function brainWith(cv,width,frac){const draw=B.renderer(cv);const pts=SESSION_ROUTE;let t0=performance.now();
+  const f=now=>{const k=reduced?1:B.sm((now-t0)/1400);draw({motifs:PROFILE_MOTIFS,fill:1,paths:[{pts,frac:k*frac,w:width}]});if(k<1)requestAnimationFrame(f);};requestAnimationFrame(f);
+  addEventListener('resize',()=>draw({motifs:PROFILE_MOTIFS,fill:1,paths:[{pts,frac,w:width}]}));}
+const widthFor=r=>2+16*(r.held/r.total)**3;
+function deltaRows(rows){$('#deltas').innerHTML=rows.map(([n,a,b])=>`<li><span class="n">${n}</span><span class="a">${a}</span><span class="arrow">${a?'→':''}</span><span class="b">${b}</span></li>`).join('');}
+const sec=ms=>ms?(ms/1000).toFixed(2)+'s':'–';
+function showImpact(){show('s-impact');const a=S.first,b=S.final;const gain=b.held-a.held;
+  $('#imp-k').textContent='What changed in about '+(profile.dose||5)+' minutes';
+  $('#h-impact').textContent=gain>0?`You held ${a.held} tiles. Then ${b.held}.`:gain===0?`Steady at ${b.held} of ${b.total}, and faster to find them.`:`${b.held} of ${b.total} this time. Tired brains count too.`;
+  $('#imp-lede').textContent=gain>0?'Same difficulty, new patterns, a stronger pathway. That’s your brain adjusting to practice in real time.':'Some sessions show up as speed or as a higher level rather than more tiles. Look at the details below.';
+  $('#b1-n').innerHTML=`${a.held}<small> / ${a.total} tiles</small>`;$('#b2-n').innerHTML=`${b.held}<small> / ${b.total} tiles</small>`;
+  brainWith($('#b1'),widthFor(a),1);brainWith($('#b2'),widthFor(b),1);
+  const [len,ms]=LEVELS[Math.max(0,S.top-1)];
+  deltaRows([['Tiles held',`${a.held} / ${a.total}`,`${b.held} / ${b.total}`],['Time per tap',sec(a.ms),sec(b.ms)],['Highest level','',S.top?`Level ${S.top} · ${len} letters, ${(ms/1000).toFixed(2)}s each`:'Keep going']]);
+  $('#honest').textContent='Part of today’s jump is getting used to the game. That’s real, but it isn’t lasting change yet. Tomorrow’s replay, before any warm-up, shows what your brain kept.';
+  $('#wired').innerHTML=[...new Set(S.words.map(x=>x.w))].map(w=>`<span>${w}</span>`).join('')||'<span>None yet. Tomorrow’s another go.</span>';
+  $('#sleep').hidden=false;B.chime();}
+function showOvernight(){show('s-impact');const y=last,r=S.replay;
+  $('#imp-k').textContent='Overnight';
+  const kept=r.held>=y.final.held?'all':r.held>y.first.held?'most':'some';
+  $('#h-impact').textContent=kept==='all'?`You woke up at ${r.held}. You kept all of it.`:kept==='most'?`You woke up at ${r.held}. You kept most of yesterday’s gain.`:`${r.held} on a cold start. That’s normal.`;
+  $('#imp-lede').textContent=kept==='some'?'Cold starts often dip. A few minutes of practice usually brings it back, and each night it tends to stick a little more.':'No practice this morning, and the gain was still there. That’s what sleep and spacing are for.';
+  $('#b1-l').textContent='Yesterday, first try';$('#b2-l').textContent='This morning, cold';
+  $('#b1-n').innerHTML=`${y.first.held}<small> / ${y.first.total} tiles</small>`;$('#b2-n').innerHTML=`${r.held}<small> / ${r.total} tiles</small>`;
+  brainWith($('#b1'),widthFor(y.first),1);brainWith($('#b2'),widthFor(r),1);
+  deltaRows([['Yesterday, first try','',`${y.first.held} / ${y.first.total}`],['Yesterday, end','',`${y.final.held} / ${y.final.total}`],['This morning, before practice','',`${r.held} / ${r.total}`]]);
+  $('#honest').textContent='One night is one data point. Over a week, this line is what shows whether practice is sticking.';
+  $('#wired-sec').hidden=true;$('#sleep').hidden=true;
+  $('#again').textContent='Start today’s training';B.chime();}
+
+$('#tomorrow').addEventListener('click',()=>{const d=new Date();d.setDate(d.getDate()-1);H.sessions.forEach(s=>s.date=dayKey(d));store.set('pp3.wiring',H);location.reload();});
+const again=()=>{location.hash='';location.reload();};
+$('#again').addEventListener('click',again);$('#again2').addEventListener('click',again);
+$('#to-why').addEventListener('click',e=>{e.preventDefault();$('#why').scrollIntoView({behavior:reduced?'auto':'smooth'});});
+})();
+</script>
+</body>
+</html>
