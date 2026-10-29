@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Triage v3 — Project Plasticity</title>
+<meta name="description" content="A task-switching exercise built around a startup workday. One of Project Plasticity's interest-specific exercises.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--ease:cubic-bezier(.4,0,.2,1);--dur:.6s;--bg:#fff;--bg2:#f5f5f3;--ink:#111318;--ink2:#5a5e68;--line:#1b2a5c;--accent:#e4572e;--rule:#e6e6e3}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#fff;--bg2:#f5f5f3}}
+:root[data-theme="dark"]{--bg:#fff;--bg2:#f5f5f3}
+*{box-sizing:border-box}
+html{overscroll-behavior:none}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Inter",system-ui,sans-serif;font-size:18px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+a{color:inherit}
+
+/* ---------- one screen at a time ---------- */
+.app{display:grid;min-height:100svh}
+.screen{grid-area:1/1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:72px clamp(16px,4vw,48px) 88px;opacity:0;visibility:hidden;transform:translateY(10px);transition:opacity var(--dur) var(--ease),transform var(--dur) var(--ease),visibility 0s linear var(--dur)}
+.screen.on{opacity:1;visibility:visible;transform:none;transition:opacity var(--dur) var(--ease),transform var(--dur) var(--ease)}
+.col{width:min(560px,100%)}
+.k{font-size:13px;color:var(--accent);margin:0 0 10px}
+h1{margin:0;font-weight:500;font-size:clamp(48px,7vw,80px);line-height:1.02;letter-spacing:-.035em}
+h2{margin:0;font-weight:500;font-size:clamp(28px,3.2vw,40px);line-height:1.06;letter-spacing:-.03em}
+.lede{margin:18px 0 0;font-weight:500;font-size:clamp(20px,2.4vw,26px);line-height:1.25;letter-spacing:-.015em}
+.sub{margin:10px 0 0;color:var(--ink2);font-size:clamp(16px,1.6vw,18px)}
+.meta{margin:24px 0 0;font-size:14px;color:var(--ink2)}
+.fine{margin:28px 0 0;font-size:13px;color:var(--ink2)}
+.btn{display:inline-block;margin-top:28px;background:var(--ink);color:#fff;border:0;text-decoration:none;padding:16px 26px;font-weight:500;font-size:18px;cursor:pointer}
+.btn:focus-visible,.ch:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.btn.ghost{background:none;color:var(--ink);padding:16px 0;margin-left:24px;border-bottom:1.5px solid var(--accent);padding-bottom:3px}
+
+/* the two questions */
+.rules{margin:28px 0 0;padding:0;list-style:none}
+.rules li{display:grid;grid-template-columns:1fr auto auto;gap:4px 20px;align-items:baseline;padding:12px 0;border-top:1px solid var(--rule)}
+.rules li:last-child{border-bottom:1px solid var(--rule)}
+.rules .q{font-weight:500;display:flex;align-items:center;gap:10px}
+.rules .o{color:var(--ink2);font-size:16px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--line);flex:none}
+.dot.u{background:var(--accent)}
+
+/* ---------- play ---------- */
+.hud{display:flex;justify-content:space-between;font-size:13px;color:var(--ink2);font-variant-numeric:tabular-nums}
+.prog{height:1px;background:var(--rule);margin:10px 0 0}
+.prog i{display:block;height:1px;width:0;background:var(--ink);transition:width var(--dur) var(--ease)}
+.cue{margin:36px 0 16px;display:flex;align-items:center;gap:12px;font-weight:500;font-size:clamp(26px,3vw,36px);letter-spacing:-.025em;line-height:1.1}
+.cue .dot{width:12px;height:12px}
+.cue.flip{animation:flip .45s var(--ease)}
+@keyframes flip{0%{opacity:.2;transform:translateY(-6px)}100%{opacity:1;transform:none}}
+.card{position:relative;border:1px solid var(--rule);padding:26px 26px 30px;min-height:172px;transition:transform .32s var(--ease),opacity .32s var(--ease),border-color .2s;touch-action:pan-y;user-select:none}
+.card.pre{opacity:0;transform:translateY(8px)}
+.card.go-l{opacity:0;transform:translateX(-36px)}
+.card.go-r{opacity:0;transform:translateX(36px)}
+.card.bad{border-color:var(--accent)}
+.from{font-size:13px;color:var(--ink2);margin:0 0 10px}
+.msg{margin:0;font-weight:500;font-size:clamp(20px,2.3vw,25px);line-height:1.25;letter-spacing:-.015em}
+.tags{display:flex;gap:8px;margin-top:16px;min-height:26px}
+.tag{font-size:13px;color:var(--ink2);border:1px solid var(--rule);padding:2px 9px}
+.time{position:absolute;left:0;right:0;bottom:0;height:2px}
+.time i{display:block;height:2px;width:100%;background:var(--ink)}
+.note{min-height:2.8em;margin:12px 0 0;font-size:15px;color:var(--ink2);line-height:1.4}
+.note b{font-weight:500;color:var(--accent)}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+.ch{display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--bg);border:1px solid var(--ink);padding:18px 20px;font-weight:500;font-size:20px;letter-spacing:-.01em;cursor:pointer;transition:background .15s,color .15s}
+.ch .ar{color:var(--ink2);font-weight:400;transition:color .15s}
+.ch:hover{background:var(--bg2)}
+.ch.hit,.ch.show{background:var(--ink);color:#fff}.ch.hit .ar,.ch.show .ar{color:#fff}
+.ch.flip-l{animation:flip .45s var(--ease)}
+
+/* ---------- result: the pathway, then the numbers ---------- */
+.res{width:min(1040px,100%);display:grid;grid-template-columns:1.1fr 1fr;gap:clamp(24px,5vw,72px);align-items:center}
+.viz{position:relative}
+.viz canvas{display:block;width:100%;aspect-ratio:4/3}
+.vlab{display:flex;justify-content:space-between;font-size:13px;color:var(--ink2);margin-top:6px;padding:0 6%}
+.stats dl{margin:24px 0 0;display:grid;grid-template-columns:1fr auto;gap:0}
+.stats dt,.stats dd{margin:0;padding:11px 0;border-top:1px solid var(--rule)}
+.stats dt{color:var(--ink2);font-size:16px}
+.stats dd{font-weight:500;font-variant-numeric:tabular-nums;text-align:right}
+.stats dd small{display:block;font-weight:400;font-size:13px;color:var(--ink2)}
+.explain{margin:18px 0 0;font-size:16px;color:var(--ink2);line-height:1.45}
+.cons{margin:16px 0 0;font-size:15px;line-height:1.4}
+.cons span{color:var(--accent);font-size:13px;margin-right:8px}
+
+/* neuroplasticity, told in three moves */
+.np{margin:22px 0 0;padding:0;list-style:none}
+.np li{display:grid;grid-template-columns:2em 1fr;gap:2px 8px;padding:10px 0;border-top:1px solid var(--rule)}
+.np .n{font-size:13px;color:var(--accent);padding-top:3px;font-variant-numeric:tabular-nums}
+.np .w{font-weight:500}
+.np .d{grid-column:2;color:var(--ink2);font-size:15px;line-height:1.4}
+.h3{margin:30px 0 0;font-size:13px;color:var(--ink2)}
+/* the pathway you are building, live while you play */
+.live{display:flex;align-items:center;gap:12px;margin:14px 0 0}
+.live svg{flex:1;height:26px;display:block;background:#131E4A;border-radius:13px}
+.live span{font-size:13px;color:var(--ink2);white-space:nowrap;font-variant-numeric:tabular-nums}
+.what{margin:18px 0 0;padding:0;list-style:none}
+.what li{padding:9px 0;border-top:1px solid var(--rule);font-size:15px;line-height:1.4;color:var(--ink2)}
+.what b{font-weight:500;color:var(--ink);margin-right:6px}
+/* research: plain-language finding, then the paper */
+.ev{list-style:none;margin:16px 0 0;padding:0}
+.ev li{padding:13px 0;border-top:1px solid var(--rule)}
+.ev .c{display:block;font-weight:500;font-size:17px;line-height:1.35;letter-spacing:-.01em}
+.ev .s{display:block;margin-top:5px;font-size:13px;color:var(--ink2);line-height:1.45}
+.ev .t{display:block;font-size:13px;color:var(--accent);margin-bottom:3px}
+.ev a,.caveat a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--accent);white-space:nowrap}
+.ev a:hover,.caveat a:hover{color:var(--accent)}
+.caveat{margin:18px 0 0;font-size:14px;color:var(--ink2);background:var(--bg2);padding:13px 15px;line-height:1.45}
+.caveat b{font-weight:500;color:var(--ink)}
+.papers{width:min(1040px,100%);margin:64px 0 0;padding-top:28px;border-top:1px solid var(--ink)}
+.papers .ev{display:grid;grid-template-columns:1fr 1fr;column-gap:clamp(24px,5vw,72px)}
+@media (max-width:760px){.papers .ev{grid-template-columns:1fr}}
+.mark{position:absolute;left:20px;top:18px;font-size:13px;font-weight:500;color:var(--ink2);text-decoration:none;letter-spacing:.01em}
+.snd{position:absolute;right:20px;top:14px;background:none;border:0;padding:4px 0;font-size:13px;color:var(--ink2);cursor:pointer;border-bottom:1px solid transparent}
+.snd:hover{border-bottom-color:currentColor}
+
+#result,#why{justify-content:flex-start}
+@media (max-width:760px){
+  .screen{padding:56px 16px 72px;justify-content:flex-start}
+  .cue{margin-top:24px}
+  .card{padding:20px 20px 24px;min-height:150px}
+  .ch{padding:16px;font-size:18px}
+  .res{grid-template-columns:1fr}
+  .btn.ghost{margin-left:16px}
+  .rules li{grid-template-columns:1fr auto auto;gap:4px 12px}
+}
+@media (prefers-reduced-motion:reduce){
+  .screen,.screen.on,.card,.prog i{transition:none}
+  .cue.flip,.ch.flip-l{animation:none}
+  .card.pre,.card.go-l,.card.go-r{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+<main class="app">
+
+  <section class="screen on" id="intro" aria-labelledby="h-intro">
+    <div class="col">
+      <p class="k">Startup track · Switching focus</p>
+      <h1 id="h-intro">Triage</h1>
+      <p class="lede">Messages keep landing. The question keeps changing. Sort each one by the question on screen.</p>
+      <p class="sub">Each time the question changes, your brain has to drop one rule and load the other. That switch runs on a network of connections, and like any connection in your brain, it can get stronger with challenging practice. That's neuroplasticity.</p>
+      <p class="h3">The two questions</p>
+      <ul class="rules">
+        <li><span class="q"><span class="dot"></span>Who owns it?</span><span class="o">← Eng</span><span class="o">Growth →</span></li>
+        <li><span class="q"><span class="dot u"></span>How urgent?</span><span class="o">← Now</span><span class="o">Later →</span></li>
+      </ul>
+      <p class="meta">About 3 minutes · 6 practice messages, then 40 · Use ← → keys, tap, or swipe</p>
+      <button class="btn" id="go-why" type="button">Next: why it matters →</button>
+      <p class="fine">A training exercise, not a medical test.</p>
+    </div>
+  </section>
+
+  <section class="screen" id="why" aria-labelledby="h-why">
+    <div class="col">
+      <p class="k">Why it matters</p>
+      <h2 id="h-why">Your workday is a switching workout you never planned.</h2>
+      <p class="sub">A startup day is a stream of interruptions: a bug, a launch, an investor email. Decades of research show that every switch has a cost.</p>
+      <ol class="ev">
+        <li><span class="c">Every switch costs time, even when you see it coming. Your brain has to reload the rules for the new task.</span><span class="s">Rogers &amp; Monsell (1995), Journal of Experimental Psychology: General · <a href="https://doi.org/10.1037/0096-3445.124.2.207" target="_blank" rel="noopener">Read the paper ↗</a></span></li>
+        <li><span class="c">When you leave a task unfinished, part of your attention stays behind and drags down the next one. Researchers call it attention residue.</span><span class="s">Leroy (2009), Organizational Behavior and Human Decision Processes · <a href="https://doi.org/10.1016/j.obhdp.2009.04.002" target="_blank" rel="noopener">Read the paper ↗</a></span></li>
+        <li><span class="c">People who are interrupted make up for it by working faster, but report more stress, frustration and effort.</span><span class="s">Mark, Gudith &amp; Klocke (2008), CHI Conference on Human Factors in Computing Systems · <a href="https://doi.org/10.1145/1357054.1357072" target="_blank" rel="noopener">Read the paper ↗</a></span></li>
+        <li><span class="c">In a Stanford study, heavy media multitaskers were slower to switch tasks and more distracted by irrelevant information than light multitaskers.</span><span class="s">Ophir, Nass &amp; Wagner (2009), PNAS · <a href="https://doi.org/10.1073/pnas.0903620106" target="_blank" rel="noopener">Read the paper ↗</a></span></li>
+      </ol>
+      <p class="h3">Why practice can help</p>
+      <ol class="ev">
+        <li><span class="c">After a few sessions of task-switching training, people's switch costs went down, and the gains carried over to similar switching tasks they hadn't trained on.</span><span class="s">Karbach &amp; Kray (2009), Developmental Science · <a href="https://doi.org/10.1111/j.1467-7687.2009.00846.x" target="_blank" rel="noopener">Read the paper ↗</a></span></li>
+        <li><span class="c">The adult brain physically changes with practice. Three months of learning to juggle grew grey matter in areas that process motion, and it partly faded once practice stopped.</span><span class="s">Draganski et al. (2004), Nature · <a href="https://doi.org/10.1038/427311a" target="_blank" rel="noopener">Read the paper ↗</a></span></li>
+      </ol>
+      <p class="caveat"><b>An honest note.</b> Brain training reliably improves the skills you practise. Evidence that it improves everyday life more broadly is limited, which is why Triage is built from messages like the ones in your own workday. Simons et al. (2016), Psychological Science in the Public Interest · <a href="https://doi.org/10.1177/1529100616661983" target="_blank" rel="noopener">Read the review ↗</a></p>
+      <button class="btn" id="go-practice" type="button">Start practice →</button>
+    </div>
+  </section>
+
+  <section class="screen" id="play" aria-label="Triage">
+    <div class="col">
+      <div class="hud"><span id="phase">Practice</span><span id="count"></span></div>
+      <div class="prog"><i id="prog"></i></div>
+      <div class="live" aria-hidden="true"><svg viewBox="0 0 300 26" preserveAspectRatio="none"><path id="live-path" d="M14 13 C 90 3, 210 23, 286 13" fill="none" stroke="rgba(255,240,190,.9)" stroke-linecap="round" stroke-width="1.2"/><circle cx="14" cy="13" r="5" fill="#FFF7DC"/><circle cx="286" cy="13" r="5" fill="#FFF7DC" id="live-end" opacity=".45"/></svg><span id="live-n">Switching pathway · 0 reps</span></div>
+      <p class="cue" id="cue" aria-live="assertive"><span class="dot" id="cue-dot"></span><span id="cue-text">Who owns it?</span></p>
+      <div class="card" id="card">
+        <p class="from" id="from"></p>
+        <p class="msg" id="msg"></p>
+        <div class="tags" id="tags"></div>
+        <div class="time" id="time-wrap"><i id="time"></i></div>
+      </div>
+      <p class="note" id="note" aria-live="polite"></p>
+      <div class="choices">
+        <button class="ch" id="L" type="button"><span class="ar">←</span><span id="L-t">Eng</span></button>
+        <button class="ch" id="R" type="button"><span id="R-t">Growth</span><span class="ar">→</span></button>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen" id="ready" aria-labelledby="h-ready">
+    <div class="col">
+      <p class="k">Practice done</p>
+      <h2 id="h-ready">Now the clock is on.</h2>
+      <p class="sub">It adapts as you go: a little faster after a run of right answers, a little slower after a slip. Aim for steady, not perfect.</p>
+      <p class="sub">Why a clock? Your brain changes most when practice is just beyond comfortable. Too easy and nothing needs to adapt; too hard and you stop learning.</p>
+      <p class="sub">From level 4 the tags disappear, so you read the message to decide.</p>
+      <button class="btn" id="go-main" type="button">Start →</button>
+    </div>
+  </section>
+
+  <section class="screen" id="result" aria-labelledby="h-result">
+    <div class="res">
+      <div class="viz">
+        <canvas id="viz" aria-hidden="true"></canvas>
+        <div class="vlab"><span>Who owns it?</span><span>How urgent?</span></div>
+      </div>
+      <div class="stats">
+        <p class="k">Session complete</p>
+        <h2 id="h-result">40 reps on your switching pathway.</h2>
+        <dl id="dl"></dl>
+        <p class="explain" id="explain"></p>
+        <p class="h3">What just happened in your brain</p>
+        <ul class="what" id="what"></ul>
+        <p class="cons"><span>Consolidate</span>Sleep tonight helps today's practice stick. Come back in a day or two: spaced practice holds better than cramming.</p>
+        <button class="btn" id="again" type="button">Train again →</button><a class="btn ghost" href="v2.html">Back to Plasticity</a>
+      </div>
+    </div>
+    <div class="papers">
+      <p class="k">The research behind today's round</p>
+      <h2>Why each part of Triage works the way it does.</h2>
+      <ol class="ev">
+        <li><span class="t">Switch cost</span><span class="c">Your switch cost is the extra time your brain needs to reload the rules when the question changes. It's the standard measure in task-switching research, and it shrinks with preparation and practice.</span><span class="s">Rogers &amp; Monsell (1995) · <a href="https://doi.org/10.1037/0096-3445.124.2.207" target="_blank" rel="noopener">Paper ↗</a> · Monsell (2003), Trends in Cognitive Sciences · <a href="https://doi.org/10.1016/S1364-6613(03)00028-7" target="_blank" rel="noopener">Review ↗</a></span></li>
+        <li><span class="t">The adaptive clock</span><span class="c">Learning is fastest when practice is tuned so you succeed most of the time, but not always: about 85% in this model. Triage's clock aims for around 80%.</span><span class="s">Wilson et al. (2019), Nature Communications · <a href="https://doi.org/10.1038/s41467-019-12552-4" target="_blank" rel="noopener">Read the paper ↗</a></span></li>
+        <li><span class="t">Training the switch</span><span class="c">Repeated task-switching practice lowered switch costs, and the improvement carried over to similar switching tasks that weren't trained.</span><span class="s">Karbach &amp; Kray (2009), Developmental Science · <a href="https://doi.org/10.1111/j.1467-7687.2009.00846.x" target="_blank" rel="noopener">Read the paper ↗</a></span></li>
+        <li><span class="t">Sleep</span><span class="c">Skills practised during the day are consolidated during sleep. Performance can improve after a night's rest, without any extra practice.</span><span class="s">Walker &amp; Stickgold (2004), Neuron · <a href="https://doi.org/10.1016/j.neuron.2004.08.031" target="_blank" rel="noopener">Read the paper ↗</a></span></li>
+        <li><span class="t">Spacing</span><span class="c">Spreading practice over separate days beats cramming it into one session. This review is about memory; the same principle sets how often Triage suggests a round.</span><span class="s">Cepeda et al. (2006), Psychological Bulletin · <a href="https://doi.org/10.1037/0033-2909.132.3.354" target="_blank" rel="noopener">Read the paper ↗</a></span></li>
+        <li><span class="t">What it can't do</span><span class="c">Training reliably improves the trained skill. Broad everyday benefits are less certain, so Triage stays close to the switching your real work demands.</span><span class="s">Simons et al. (2016), Psychological Science in the Public Interest · <a href="https://doi.org/10.1177/1529100616661983" target="_blank" rel="noopener">Read the review ↗</a></span></li>
+      </ol>
+    </div>
+  </section>
+
+</main>
+<a class="mark" href="v2.html">Project Plasticity</a>
+<button class="snd" id="snd" type="button" aria-pressed="true">Sound on</button>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const sm=t=>{t=Math.min(1,Math.max(0,t));return t*t*(3-2*t);};
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- the messages: a startup workday, each with an owner and an urgency ---------- */
+const MSG=[
+  ['#alerts','Prod is down. Checkout returns 500s.','eng','now'],
+  ['#eng','Today\'s deploy broke login for every user.','eng','now'],
+  ['PagerDuty','Database CPU at 100%. Pages are timing out.','eng','now'],
+  ['#alerts','Payments webhook failing since 9:02am.','eng','now'],
+  ['Security bot','API key exposed in a public repo.','eng','now'],
+  ['#eng','CI is red and blocking every merge.','eng','now'],
+  ['#mobile','App crashes on launch after this morning\'s release.','eng','now'],
+  ['#support','Data export is stuck and the client is waiting on a call.','eng','now'],
+  ['#eng','Refactor the auth module when there\'s time.','eng','later'],
+  ['#eng','Upgrade to the next Node version next quarter.','eng','later'],
+  ['#eng','Clean up unused feature flags someday.','eng','later'],
+  ['#billing-dev','Add more unit tests to billing eventually.','eng','later'],
+  ['#eng','Try a faster build tool at next sprint planning.','eng','later'],
+  ['#data','Rename old database columns. Low priority.','eng','later'],
+  ['#platform','Document the internal API once things calm down.','eng','later'],
+  ['#eng','Look into caching the settings page next month.','eng','later'],
+  ['#growth','Launch email goes out in 1 hour and the link is broken.','growth','now'],
+  ['#ads','Ad spend tripled overnight. Pause the campaign?','growth','now'],
+  ['#growth','Pricing page is showing the wrong price right now.','growth','now'],
+  ['#metrics','Signups dropped 60% in the last hour.','growth','now'],
+  ['#launch','We\'re live on Product Hunt. Reply to comments now.','growth','now'],
+  ['#sales','Our biggest customer may cancel today.','growth','now'],
+  ['#press','Embargo lifts in 30 minutes. Landing page isn\'t ready.','growth','now'],
+  ['#events','Webinar starts in 10 minutes and the invite link is wrong.','growth','now'],
+  ['#growth','Brainstorm a new newsletter name next month.','growth','later'],
+  ['#brand','Refresh the homepage illustrations someday.','growth','later'],
+  ['#lifecycle','Test a new onboarding email sequence next quarter.','growth','later'],
+  ['#events','Plan a conference booth for the spring.','growth','later'],
+  ['#marketing','Collect more customer testimonials when there\'s time.','growth','later'],
+  ['#social','Explore a short-video channel. No rush.','growth','later'],
+  ['#brand','Update the brand guidelines eventually.','growth','later'],
+  ['#growth','Draft referral program ideas for Q3.','growth','later'],
+].map(([from,t,team,urg])=>({from,t,team,urg}));
+
+const RULES={
+  owner:{q:'Who owns it?',key:'team',l:'Eng',r:'Growth',lv:'eng',why:{eng:'it\'s about the product\'s code and systems',growth:'it\'s about customers, reach or revenue'}},
+  urgency:{q:'How urgent?',key:'urg',l:'Now',r:'Later',lv:'now',why:{now:'it can\'t wait',later:'it can wait'}}
+};
+const PRACTICE=6,MAIN=40,MAXL=8,TAGS_UNTIL=3;
+/* the clock: generous at level 1, about 1.8s at level 8 */
+const deadline=L=>Math.max(1750,Math.round(4200*Math.pow(.88,L-1)));
+
+/* ---------- sound: the same small mechanical tick as the story ---------- */
+let ac=null,soundOn=true;const sndBtn=$('#snd');
+sndBtn.addEventListener('click',()=>{soundOn=!soundOn;sndBtn.textContent=soundOn?'Sound on':'Sound off';sndBtn.setAttribute('aria-pressed',soundOn);if(soundOn)unlock();});
+function unlock(){if(!ac){try{ac=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return;}}if(ac.state==='suspended')ac.resume();}
+['pointerdown','keydown'].forEach(ev=>addEventListener(ev,unlock,{passive:true}));
+function tick(ok){if(!soundOn||!ac||ac.state!=='running')return;const t=ac.currentTime;
+  const o=ac.createOscillator(),gn=ac.createGain();o.type='sine';
+  o.frequency.setValueAtTime(ok?1800:520,t);o.frequency.exponentialRampToValueAtTime(ok?700:260,t+(ok?.03:.08));
+  gn.gain.setValueAtTime(.0001,t);gn.gain.exponentialRampToValueAtTime(ok?.18:.12,t+.003);gn.gain.exponentialRampToValueAtTime(.0001,t+(ok?.045:.11));
+  o.connect(gn).connect(ac.destination);o.start(t);o.stop(t+.12);}
+
+/* ---------- screens ---------- */
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));const f=$('#'+id+' .btn');if(f&&id!=='play')setTimeout(()=>f.focus({preventScroll:true}),50);}
+
+/* ---------- a session ---------- */
+let S=null;
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function draw(){if(!S.bag.length)S.bag=shuffle(MSG.slice());let m=S.bag.pop();if(m===S.last&&S.bag.length){S.bag.unshift(m);m=S.bag.pop();}S.last=m;return m;}
+function live(){const n=S.reps;$('#live-path').setAttribute('stroke-width',(1.2+Math.min(9,n*.24)).toFixed(2));$('#live-end').setAttribute('opacity',Math.min(1,.45+n*.02).toFixed(2));$('#live-n').textContent='Switching pathway · '+n+' rep'+(n===1?'':'s');}
+function begin(){S={i:0,level:1,run:0,maxL:1,rule:'owner',log:[],bag:[],last:null,cur:null,timer:0,paused:false,reps:0,msg:''};live();show('play');setTimeout(next,reduced?0:300);}
+
+function next(){
+  if(S.i>=PRACTICE+MAIN){finish();return;}
+  const practice=S.i<PRACTICE;let rule=S.rule;
+  /* practice alternates often; in the real round switches get more frequent as the level rises */
+  if(S.i>0&&S.i!==PRACTICE){const p=practice?.5:.25+S.level*.03;if(Math.random()<p)rule=rule==='owner'?'urgency':'owner';}
+  const sw=S.i>0&&S.i!==PRACTICE&&rule!==S.rule;S.rule=rule;
+  S.cur={m:draw(),rule,sw,practice,t0:0,done:false};present(S.cur);
+}
+
+const card=$('#card'),cue=$('#cue'),note=$('#note'),Lb=$('#L'),Rb=$('#R'),timeBar=$('#time');
+function present(c){
+  const R=RULES[c.rule],practice=c.practice,n=practice?S.i+1:S.i-PRACTICE+1;
+  $('#phase').textContent=practice?'Practice':'Level '+S.level;
+  $('#count').textContent=practice?n+' / '+PRACTICE:n+' / '+MAIN;
+  $('#prog').style.width=((practice?n-1:n-1)/(practice?PRACTICE:MAIN)*100)+'%';
+  $('#cue-text').textContent=R.q;$('#cue-dot').className='dot'+(c.rule==='urgency'?' u':'');
+  if(c.sw||S.i===0||S.i===PRACTICE){cue.classList.remove('flip');void cue.offsetWidth;cue.classList.add('flip');}
+  $('#L-t').textContent=R.l;$('#R-t').textContent=R.r;
+  Lb.className='ch';Rb.className='ch';
+  if(c.sw){[Lb,Rb].forEach(b=>{void b.offsetWidth;b.classList.add('flip-l');});}
+  /* channel names and tags give the answer away, so both go once you pass level 3 */
+  const hints=practice||S.level<=TAGS_UNTIL;
+  $('#from').textContent=hints?c.m.from:'Message';$('#msg').textContent=c.m.t;
+  const tags=$('#tags');tags.innerHTML='';
+  if(hints){for(const t of [c.m.team==='eng'?'Eng':'Growth',c.m.urg==='now'?'Now':'Later']){const s=document.createElement('span');s.className='tag';s.textContent=t;tags.appendChild(s);}}
+  note.textContent=practice?'Take your time. '+(c.rule==='owner'?'Eng or Growth?':'Now or Later?'):(S.msg||'');S.msg='';
+  card.style.transition='none';card.className='card'+(reduced?'':' pre');void card.offsetWidth;card.style.transition='';
+  requestAnimationFrame(()=>card.classList.remove('pre'));
+  $('#time-wrap').style.visibility=practice?'hidden':'visible';
+  c.t0=performance.now();
+  if(!practice){const ms=deadline(S.level);timeBar.style.transition='none';timeBar.style.width='100%';void timeBar.offsetWidth;timeBar.style.transition='width '+ms+'ms linear';timeBar.style.width='0%';clearTimeout(S.timer);S.timer=setTimeout(()=>answer(null),ms);}
+}
+
+function answer(side){
+  const c=S&&S.cur;if(!c||c.done||!$('#play').classList.contains('on'))return;c.done=true;clearTimeout(S.timer);
+  const rt=performance.now()-c.t0;
+  const R=RULES[c.rule],val=c.m[R.key],good=val===R.lv?'L':'R',ok=side===good;
+  timeBar.style.transition='none';timeBar.style.width=getComputedStyle(timeBar).width;
+  if(!c.practice){
+    S.log.push({ok,rt,sw:c.sw,timeout:side===null,level:S.level});
+    /* staircase: three right in a row steps up, one miss steps down — it settles near 80% correct */
+    const was=S.level;
+    if(ok){if(++S.run>=3){S.level=Math.min(MAXL,S.level+1);S.run=0;}}else{S.level=Math.max(1,S.level-1);S.run=0;}
+    /* say what the level change means for the brain, once per change */
+    if(S.level>was)S.msg='Level '+S.level+'. Harder now: that extra effort is what drives change.';
+    else if(S.level<was)S.msg='Eased off to level '+S.level+' to keep you at your edge.';
+    S.maxL=Math.max(S.maxL,S.level);
+  }
+  tick(ok);
+  if(side)(side==='L'?Lb:Rb).classList.add('hit');
+  if(ok){if(!c.practice){S.reps++;live();}card.classList.add(good==='L'?'go-l':'go-r');note.textContent='';}
+  else{card.classList.add('bad');(good==='L'?Lb:Rb).classList.add('show');if(side)(side==='L'?Lb:Rb).classList.remove('hit');
+    const label=good==='L'?R.l:R.r;note.innerHTML='';const b=document.createElement('b');b.textContent=(side===null?'Time\'s up. ':'')+label+': ';note.appendChild(b);note.appendChild(document.createTextNode(R.why[val]+'.'));}
+  setTimeout(()=>{S.i++;if(S.i===PRACTICE)show('ready');else next();},ok?(c.practice?520:360):(c.practice?1700:1150));
+}
+
+/* input: buttons, arrow keys (or F / J), and a swipe on the card */
+Lb.addEventListener('click',()=>answer('L'));Rb.addEventListener('click',()=>answer('R'));
+addEventListener('keydown',e=>{if(!$('#play').classList.contains('on'))return;
+  if(e.key==='ArrowLeft'||e.key==='f'||e.key==='F'){e.preventDefault();answer('L');}
+  else if(e.key==='ArrowRight'||e.key==='j'||e.key==='J'){e.preventDefault();answer('R');}});
+let px=null;card.addEventListener('pointerdown',e=>{px=e.clientX;});
+card.addEventListener('pointerup',e=>{if(px===null)return;const dx=e.clientX-px;px=null;if(Math.abs(dx)>60)answer(dx<0?'L':'R');});
+/* leaving the tab pauses the clock and replays the same message */
+document.addEventListener('visibilitychange',()=>{if(!S||!S.cur||S.cur.done||S.cur.practice)return;
+  if(document.hidden){clearTimeout(S.timer);S.paused=true;}else if(S.paused){S.paused=false;present(S.cur);}});
+
+$('#go-why').addEventListener('click',()=>{show('why');scrollTo({top:0,behavior:'instant'});});
+$('#go-practice').addEventListener('click',()=>{scrollTo({top:0,behavior:'instant'});begin();});
+$('#go-main').addEventListener('click',()=>{show('play');setTimeout(next,reduced?0:300);});
+$('#again').addEventListener('click',()=>{scrollTo({top:0,behavior:'instant'});begin();});
+
+/* ---------- result ---------- */
+const med=a=>{if(!a.length)return null;const s=a.slice().sort((x,y)=>x-y),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2;};
+let R0=null;
+function finish(){
+  const L=S.log,right=L.filter(x=>x.ok);
+  const acc=right.length/L.length,rt=med(right.map(x=>x.rt));
+  const swA=right.filter(x=>x.sw).map(x=>x.rt),swB=right.filter(x=>!x.sw).map(x=>x.rt);
+  const sc=swA.length>=3&&swB.length>=3?Math.round(med(swA)-med(swB)):null;
+  let last=null;try{last=JSON.parse(localStorage.getItem('pp.triage.last')||'null');}catch(e){}
+  try{localStorage.setItem('pp.triage.last',JSON.stringify({acc,rt,sc,maxL:S.maxL,at:Date.now()}));}catch(e){}
+  const row=(k,v,was)=>'<dt>'+k+'</dt><dd>'+v+(was?'<small>'+was+'</small>':'')+'</dd>';
+  const ms=v=>v==null?'—':Math.round(v)+' ms';
+  $('#dl').innerHTML=
+    row('Accuracy',Math.round(acc*100)+'%',last?'last time '+Math.round(last.acc*100)+'%':'')+
+    row('Typical response',ms(rt),last&&last.rt?'last time '+ms(last.rt):'')+
+    row('Switch cost',sc==null?'—':(sc>0?'+':'')+sc+' ms',last&&last.sc!=null?'last time '+(last.sc>0?'+':'')+last.sc+' ms':'')+
+    row('Highest level',S.maxL+' of '+MAXL,last?'last time '+last.maxL:'');
+  let ex='';
+  if(sc==null)ex='Not enough switches this round to measure your switch cost. ';
+  else if(sc>0)ex='When the question changed, you took about '+sc+' ms longer than when it stayed the same. That gap is your switch cost, and practice tends to shrink it on the task you train. ';
+  else ex='You were as fast when the question changed as when it stayed the same. ';
+  ex+='The clock kept adjusting to hold you near 80% correct: hard enough to stretch, easy enough to keep going.';
+  $('#explain').textContent=ex;
+  const sws=L.filter(x=>x.sw).length,swOk=L.filter(x=>x.sw&&x.ok).length;
+  /* where the staircase settled: the typical level over the second half of the round */
+  const edge=Math.round(med(L.slice(Math.floor(L.length/2)).map(x=>x.level)));
+  const li=(b,t)=>{const e=document.createElement('li');const s=document.createElement('b');s.textContent=b;e.appendChild(s);e.appendChild(document.createTextNode(t));return e;};
+  const w=$('#what');w.innerHTML='';
+  w.appendChild(li('Repetition.',' You used the switching connection '+sws+' times and got '+swOk+' right. Connections that are used often tend to get stronger.'));
+  w.appendChild(li('Challenge.',' The clock settled around level '+edge+' in the second half. That was your edge today, the zone where your brain has to adapt.'));
+  w.appendChild(li('Relevance.',' The messages came from a startup day like yours, which keeps attention high. Attention is what tells the brain a connection matters.'));
+  R0={n:right.length,maxL:S.maxL,acc};
+  show('result');scrollTo({top:0,behavior:'instant'});animateViz();
+}
+
+/* the pathway: one navy brain-field, two questions, one connection that thickens with level reached */
+const C=['#E8472E','#F28C28','#F5C63C','#4CAF6E','#2F8F5B','#2E86DE','#7ED0E0','#8E5BD6','#E8508A','#F7EEDD'];
+function motif(g,m){g.save();g.translate(m.x,m.y);g.rotate(m.rot);const s=m.s;g.fillStyle=m.c;g.strokeStyle=m.c;g.lineCap='round';g.lineJoin='round';
+  switch(m.kind){
+    case 'leaf':g.beginPath();g.moveTo(0,-s);g.quadraticCurveTo(s*.9,-s*.3,0,s);g.quadraticCurveTo(-s*.9,-s*.3,0,-s);g.fill();break;
+    case 'bolt':g.beginPath();g.moveTo(-s*.1,-s);g.lineTo(s*.45,-s*.15);g.lineTo(s*.05,-s*.1);g.lineTo(s*.2,s);g.lineTo(-s*.45,s*.1);g.lineTo(-s*.02,s*.05);g.closePath();g.fill();break;
+    case 'star':g.beginPath();for(let i=0;i<10;i++){const a=i*Math.PI/5-Math.PI/2,r=i%2?s*.45:s;g.lineTo(Math.cos(a)*r,Math.sin(a)*r);}g.closePath();g.fill();break;
+    case 'gear':g.beginPath();for(let i=0;i<16;i++){const a=i*Math.PI/8,r=i%2?s:s*.78;g.lineTo(Math.cos(a)*r,Math.sin(a)*r);}g.closePath();g.fill();g.fillStyle='#131E4A';g.beginPath();g.arc(0,0,s*.32,0,7);g.fill();break;
+    case 'spark':g.lineWidth=Math.max(1.2,s*.16);for(let i=0;i<8;i++){g.save();g.rotate(i*Math.PI/4);g.beginPath();g.moveTo(0,s*.35);g.lineTo(0,s*(i%2?.7:1));g.stroke();g.restore();}break;
+    case 'flower':for(let i=0;i<6;i++){g.save();g.rotate(i*Math.PI/3);g.beginPath();g.ellipse(0,-s*.6,s*.32,s*.55,0,0,7);g.fill();g.restore();}g.fillStyle='#F5C63C';g.beginPath();g.arc(0,0,s*.3,0,7);g.fill();break;
+    default:g.beginPath();g.arc(0,0,s*.5,0,7);g.fill();
+  }g.restore();}
+const VW=400,VH=300,A=[78,186],B=[322,114];
+function pathPts(){const p=[];const c1=[160,70],c2=[240,250];for(let i=0;i<=60;i++){const t=i/60,u=1-t;p.push([u*u*u*A[0]+3*u*u*t*c1[0]+3*u*t*t*c2[0]+t*t*t*B[0],u*u*u*A[1]+3*u*u*t*c1[1]+3*u*t*t*c2[1]+t*t*t*B[1]]);}return p;}
+const PP=pathPts();
+let motifs=[];
+function placeMotifs(n){let seed=7;const rnd=()=>{seed=(seed*16807)%2147483647;return (seed-1)/2147483646;};const K=['leaf','bolt','star','gear','spark','flower','dot'];motifs=[];let tries=0;
+  while(motifs.length<n&&tries<8000){tries++;const x=30+rnd()*340,y=30+rnd()*240,s=7+rnd()*7;
+    if(((x-200)/178)**2+((y-150)/128)**2>1)continue;
+    if(PP.some(p=>Math.hypot(p[0]-x,p[1]-y)<s+16))continue;
+    if(motifs.some(m=>Math.hypot(m.x-x,m.y-y)<(m.s+s)*.95))continue;
+    motifs.push({x,y,s,rot:rnd()*6.28,kind:K[Math.floor(rnd()*K.length)],c:C[Math.floor(rnd()*C.length)]});}}
+function drawViz(k){
+  const cv=$('#viz'),g=cv.getContext('2d'),dpr=Math.min(2,devicePixelRatio||1),w=cv.clientWidth,h=cv.clientHeight;
+  if(!w||!h)return;cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,w,h);
+  const s=Math.min(w/VW,h/VH);g.translate((w-VW*s)/2,(h-VH*s)/2);g.scale(s,s);
+  const field=new Path2D();field.ellipse(200,150,190,140,0,0,Math.PI*2);
+  g.save();g.fillStyle='#0B1233';for(let a=0;a<10;a++){g.save();g.translate(Math.cos(a*Math.PI/5)*2.4,Math.sin(a*Math.PI/5)*2.4);g.fill(field);g.restore();}g.restore();
+  const grd=g.createRadialGradient(200,140,20,200,150,200);grd.addColorStop(0,'#1B2A5C');grd.addColorStop(1,'#131E4A');g.fillStyle=grd;g.fill(field);
+  g.save();g.clip(field);
+  g.strokeStyle='rgba(244,241,232,.07)';g.lineWidth=1;for(let i=0;i<motifs.length;i++)for(let j=i+1;j<motifs.length;j++){const a=motifs[i],b=motifs[j];if(Math.hypot(a.x-b.x,a.y-b.y)<58){g.beginPath();g.moveTo(a.x,a.y);g.lineTo(b.x,b.y);g.stroke();}}
+  motifs.forEach((m,i)=>{const q=sm((k*1.4-i/motifs.length)/.3);if(q<=0)return;g.save();g.globalAlpha=q;g.translate(m.x,m.y);g.scale(q,q);g.translate(-m.x,-m.y);motif(g,m);g.restore();});
+  g.restore();
+  /* the connection: thicker the higher you climbed */
+  const f=sm(k/.7),n=Math.max(2,Math.round(PP.length*f)),width=2.5+R0.maxL*1.15;
+  const trace=()=>{g.beginPath();g.moveTo(PP[0][0],PP[0][1]);for(let i=1;i<n;i++)g.lineTo(PP[i][0],PP[i][1]);g.stroke();};
+  g.lineCap='round';g.lineJoin='round';
+  g.strokeStyle='rgba(11,18,51,.85)';g.lineWidth=width+7;trace();
+  g.strokeStyle='rgba(255,240,190,'+(.7+.3*R0.acc)+')';g.lineWidth=width;trace();
+  const soma=(x,y,r,b)=>{g.fillStyle='rgba(11,18,51,.85)';g.beginPath();g.arc(x,y,r+5,0,7);g.fill();
+    g.strokeStyle='rgba(255,240,190,'+b+')';g.lineWidth=3;for(let i=0;i<6;i++){const an=i*Math.PI/3+.4;g.beginPath();g.moveTo(x+Math.cos(an)*r*.8,y+Math.sin(an)*r*.8);g.lineTo(x+Math.cos(an)*(r+12),y+Math.sin(an)*(r+12));g.stroke();}
+    g.fillStyle='rgba(255,247,220,'+b+')';g.beginPath();g.arc(x,y,r,0,7);g.fill();};
+  soma(A[0],A[1],10,1);soma(B[0],B[1],10,.45+.55*sm((k-.6)/.3));
+}
+function animateViz(){placeMotifs(Math.min(40,R0.n));if(reduced){drawViz(1);return;}const t0=performance.now();
+  const step=now=>{const k=Math.min(1,(now-t0)/1800);drawViz(k);if(k<1&&$('#result').classList.contains('on'))requestAnimationFrame(step);};
+  setTimeout(()=>requestAnimationFrame(step),250);}
+addEventListener('resize',()=>{if(R0&&$('#result').classList.contains('on'))drawViz(1);});
+})();
+</script>
+</body>
+</html>
