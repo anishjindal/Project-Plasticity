@@ -6,12 +6,13 @@
 const MARK={exact:'🟠',near:'🟡',off:'⚪'};
 function rng(seed){let s=seed%2147483647||7;return ()=>{s=(s*16807)%2147483647;return (s-1)/2147483646;};}
 const grid=rows=>(rows||[]).map(r=>r.map(c=>MARK[c]).join('')).join('\n');
-function text({num,tries,solved,first,rows,title,echo}){
+function text({num,tries,solved,first,rows,title,echo,customText}){
+  if(customText)return customText;
   if(first){const [a,b]=rows||[[],[]],n=x=>x.filter(c=>c==='exact').length;return `🧠 My first pathway on Plasticity\n${n(a)}/${a.length} → ${n(b)}/${b.length}\n\n${grid(rows)}`;}
   return `🧠 ${title||'Plasticity'} #${num} · ${solved?tries:'X'}/6\n\n${grid(rows)}${solved?'\n✨ wired':''}${echo?'\n🔁 recalled yesterday’s word':''}`;}
 
 /* ---------- the picture: a story-sized card, loud colour, your brain in the middle ---------- */
-async function image({num,tries,solved,first,motifs,rows,title}){const B=window.PPBrain;
+async function image({num,tries,solved,first,motifs,rows,title,big,label}){const B=window.PPBrain;
   try{await document.fonts.load('500 120px Inter');}catch(e){}
   const W=1080,H=1920,out=document.createElement('canvas');out.width=W;out.height=H;const g=out.getContext('2d');
   /* sunset gradient from the motif palette */
@@ -34,8 +35,8 @@ async function image({num,tries,solved,first,motifs,rows,title}){const B=window.
   g.fillStyle='#fff';g.textAlign='center';
   g.font='500 46px Inter, system-ui, sans-serif';if(g.letterSpacing!==undefined)g.letterSpacing='10px';g.fillText(first?'PLASTICITY':`${(title||'Plasticity').toUpperCase()} #${num}`,W/2,220);if(g.letterSpacing!==undefined)g.letterSpacing='0px';
   const fr=first&&rows?rows.map(r=>r.filter(c=>c==='exact').length):null;
-  g.font='500 150px Inter, system-ui, sans-serif';g.fillText(first?(fr?`${fr[0]} → ${fr[1]}`:'day one'):solved?`${tries}/6`:'X/6',W/2,400);
-  g.font='500 76px Inter, system-ui, sans-serif';g.fillText(first?'first pathway ✨':solved?'wired ✨':'still wiring',W/2,1250+(rows?rows.length:0)*72+90);
+  g.font='500 150px Inter, system-ui, sans-serif';g.fillText(big||(first?(fr?`${fr[0]} → ${fr[1]}`:'day one'):solved?`${tries}/6`:'X/6'),W/2,400);
+  g.font='500 76px Inter, system-ui, sans-serif';g.fillText(label||(first?'first pathway ✨':solved?'wired ✨':'still wiring'),W/2,1250+(rows?rows.length:0)*72+90);
   g.fillStyle='rgba(255,255,255,.85)';g.font='400 40px Inter, system-ui, sans-serif';g.fillText('my brain, today',W/2,1250+(rows?rows.length:0)*72+160);
   return await new Promise(res=>out.toBlob(res,'image/png'));}
 
