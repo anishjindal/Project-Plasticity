@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>Glimpse</title>
+<meta name="description" content="How fast can your brain see? Three rounds, easy to hard, then the research and your speed.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ease:cubic-bezier(.4,0,.2,1);--bounce:cubic-bezier(.34,1.56,.64,1);--bg:#fff;--ink:#111318;--ink2:#5a5e68;--rule:#e6e6e3;--accent:#e4572e;--gold:#F5C63C;--navy:#131E4A;
+  --safeb:env(safe-area-inset-bottom,0px);--safet:env(safe-area-inset-top,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#fff}}
+:root[data-theme="dark"]{--bg:#fff}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Inter",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body{max-width:440px;margin:0 auto;overflow:hidden;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+button,a{font:inherit;color:inherit;touch-action:manipulation;cursor:pointer}
+.app{height:100svh;display:flex;flex-direction:column;align-items:center;padding:calc(12px + var(--safet)) 16px calc(16px + var(--safeb))}
+header{width:100%;display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:8px;font-weight:600;font-size:20px;letter-spacing:-.02em}
+.eye{width:26px;height:26px;border-radius:50%;background:var(--navy);position:relative}
+.eye::after{content:"";position:absolute;inset:8px;border-radius:50%;background:var(--accent);animation:blinkdot 3.4s infinite}
+@keyframes blinkdot{0%,90%,100%{transform:scale(1)}94%{transform:scale(.2)}}
+.rounds{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--ink2);font-variant-numeric:tabular-nums}
+.rounds i{width:22px;height:4px;border-radius:2px;background:var(--rule);transition:background .4s}
+.rounds i.on{background:var(--accent)}.rounds i.done{background:var(--ink)}
+/* one dot per flash in this round: fills as you play */
+.trace{display:flex;gap:6px;justify-content:center;margin-top:12px;min-height:12px}
+.trace i{width:11px;height:11px;border-radius:50%;box-shadow:inset 0 0 0 1.5px #d6d6d0;transition:background .3s,box-shadow .3s,transform .3s var(--bounce)}
+.trace i.exact{background:var(--accent);box-shadow:none;transform:scale(1.15)}.trace i.near{background:var(--gold);box-shadow:none}.trace i.off{background:#d9d9d4;box-shadow:none}
+.say{font-weight:500;font-size:clamp(20px,5.6vw,24px);letter-spacing:-.02em;margin:14px 0 0;min-height:1.3em;text-align:center}
+.sub{font-size:14px;color:var(--ink2);margin-top:4px;min-height:1.4em;text-align:center}
+.world{position:relative;width:min(100%,calc(100svh - 320px),400px);aspect-ratio:1;margin-top:10px}
+.world canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+.playc{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:88px;height:88px;border-radius:50%;border:0;background:#F7EEDD;color:var(--navy);font-size:26px;padding-left:6px;z-index:2}
+.playc[hidden]{display:none}
+.choices{display:flex;gap:28px;justify-content:center;margin-top:16px;min-height:84px}
+.choices button{width:76px;height:76px;border-radius:50%;border:0;background:#f3f1ec;padding:0;transition:transform .15s var(--bounce),background .2s,opacity .2s}
+.choices button:active{transform:scale(.92)}
+.choices button.right{background:var(--accent)}.choices button.wrong{background:#d9d9d4}
+.choices canvas{width:100%;height:100%;display:block}
+.choices.off{visibility:hidden}
+/* full-screen sheets: research, then impact */
+.sheet{position:fixed;inset:0;z-index:12;overflow-y:auto;background:#fff;padding:calc(22px + var(--safet)) 22px calc(110px + var(--safeb));opacity:0;pointer-events:none;transition:opacity .45s var(--ease)}
+.sheet.on{opacity:1;pointer-events:auto}
+.cap{font-size:13px;color:var(--accent);margin:0}
+.sheet h2{margin:6px 0 0;font-weight:600;font-size:clamp(26px,7.4vw,32px);letter-spacing:-.03em;line-height:1.08}
+/* research, written out the way a mind works through it: one finding at a time */
+.thoughts{margin-top:18px;display:flex;flex-direction:column;gap:16px}
+.th{display:grid;grid-template-columns:18px 1fr;gap:10px;opacity:0;transform:translateY(6px);transition:opacity .5s var(--ease),transform .5s var(--ease)}
+.th.on{opacity:1;transform:none}
+.th .mk{width:12px;height:12px;border-radius:50%;margin-top:5px;background:var(--accent);box-shadow:0 0 0 4px rgba(228,87,46,.18);animation:think 1s ease-in-out infinite}
+.th.done .mk{animation:none;background:var(--navy);box-shadow:none}
+@keyframes think{50%{transform:scale(1.4);opacity:.6}}
+.th p{margin:0;font-size:16px;line-height:1.4}
+.th .src{display:block;font-size:12.5px;margin-top:3px}.th .src a{color:var(--ink2);text-decoration:none;border-bottom:1px solid var(--rule)}
+.th .src a:hover{color:var(--accent)}
+.th.muted p{color:var(--ink2)}
+.clip{position:relative;width:min(58%,220px);aspect-ratio:9/16;border-radius:22px;overflow:hidden;background:var(--navy);margin:26px auto 0;box-shadow:0 10px 28px rgba(19,30,74,.18)}
+.clip iframe,.poster{position:absolute;inset:0;width:100%;height:100%;border:0}
+.poster{padding:0;background:none}.poster img{width:100%;height:100%;object-fit:cover;display:block}
+.pbtn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:60px;height:60px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;padding-left:5px;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.cliplbl{font-size:13px;color:var(--ink2);margin:10px 0 0;text-align:center}
+.gobtn{position:fixed;left:50%;bottom:calc(22px + var(--safeb));transform:translateX(-50%);z-index:13;background:none;border:0;padding:0 0 4px;border-bottom:1.5px solid var(--accent);font-weight:600;font-size:19px;white-space:nowrap;box-shadow:0 0 0 14px #fff,0 -28px 30px 6px rgba(255,255,255,.95);opacity:0;pointer-events:none;transition:opacity .4s}
+.gobtn.on{opacity:1;pointer-events:auto}
+/* impact */
+#impact{text-align:center}
+.big{font-weight:600;font-size:clamp(56px,17vw,80px);letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums;margin-top:10px}
+.big small{font-size:.32em;letter-spacing:0;color:var(--ink2);font-weight:500;margin-left:4px}
+.climb{display:flex;justify-content:center;align-items:flex-end;gap:18px;margin-top:22px}
+.climb div{display:flex;flex-direction:column;align-items:center;gap:6px}
+.climb .bar{width:46px;border-radius:23px;background:#e7e7e2;transition:height 1s var(--ease)}
+.climb div:last-child .bar{background:var(--accent)}
+.climb b{font-weight:600;font-size:15px;font-variant-numeric:tabular-nums}.climb span{font-size:12px;color:var(--ink2)}
+.delta{font-size:16px;font-weight:500;margin-top:16px}.delta b{color:var(--accent);font-weight:600}
+.rows{display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:18px}
+.rows .trace{margin:0}
+.stats{display:flex;justify-content:center;gap:clamp(16px,6vw,32px);margin-top:22px}
+.stats div{display:flex;flex-direction:column;align-items:center}
+.stats b{font-weight:600;font-size:26px;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums}
+.stats span{font-size:12px;color:var(--ink2);margin-top:5px}
+.share{display:inline-flex;align-items:center;gap:10px;margin-top:24px;background:var(--accent);color:#fff;border:0;border-radius:999px;padding:16px 46px;font-weight:600;font-size:19px}
+.share::after{content:"↗"}
+.next{font-size:13px;color:var(--ink2);margin-top:14px;font-variant-numeric:tabular-nums}
+.links{display:flex;justify-content:center;gap:22px;margin-top:16px}
+.links a,.links button{background:none;border:0;padding:0 0 2px;font-size:14px;color:var(--ink2);text-decoration:none;border-bottom:1px solid var(--rule)}
+@media (prefers-reduced-motion:reduce){.eye::after,.th .mk{animation:none}}
+</style>
+</head>
+<body>
+<main class="app">
+  <header>
+    <div class="brand"><span class="eye" aria-hidden="true"></span>Glimpse</div>
+    <div class="rounds" aria-label="Rounds"><i></i><i></i><i></i><span id="day"></span></div>
+  </header>
+  <div class="trace" id="trace" aria-label="This round"></div>
+  <p class="say" id="say" aria-live="polite">How fast can your brain see?</p>
+  <p class="sub" id="sub">Three short rounds. Easy first.</p>
+  <div class="world"><canvas id="cv" aria-label="Flash area"></canvas><button class="playc" type="button" id="play" aria-label="Start">▶</button></div>
+  <div class="choices off" id="choices"><button type="button" data-c="0" aria-label="First drawing"><canvas></canvas></button><button type="button" data-c="1" aria-label="Second drawing"><canvas></canvas></button></div>
+</main>
+
+<!-- after playing: the research first -->
+<section class="sheet" id="research" aria-labelledby="rh">
+  <p class="cap">Why this works</p>
+  <h2 id="rh">You just trained speed.</h2>
+  <div class="thoughts" id="thoughts"></div>
+  <div class="clip" id="clip"><button type="button" class="poster" id="poster" aria-label="Play: So much to learn from Eileen Gu, Olympic Games"><img src="https://i.ytimg.com/vi/-tbAaPXNeSg/hqdefault.jpg" alt="" loading="lazy"><span class="pbtn" aria-hidden="true">▶</span></button></div>
+  <p class="cliplbl">So much to learn from Eileen Gu · Olympic Games</p>
+</section>
+<button class="gobtn" type="button" id="to-impact">See your impact →</button>
+
+<!-- then the impact -->
+<section class="sheet" id="impact" aria-labelledby="big">
+  <p class="cap">Your sight speed</p>
+  <div class="big" id="big"></div>
+  <div class="climb" id="climb"></div>
+  <p class="delta" id="delta"></p>
+  <div class="rows" id="rows" aria-hidden="true"></div>
+  <div class="stats"><div><b id="s-days">0</b><span>days</span></div><div><b id="s-best">–</b><span>best ms</span></div><div><b id="s-streak">0</b><span>streak</span></div></div>
+  <button class="share" type="button" id="share">Share</button>
+  <p class="next" id="next"></p>
+  <div class="links"><button type="button" id="again-research">The research</button><a href="odyssey-v9.html">See your brain</a></div>
+</section>
+
+<script src="brain.js?v=7"></script>
+<script src="share.js?v=8"></script>
+<script>
+(function(){
+const B=PPBrain,$=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+/* wait for the next screen refresh, but never more than a moment if refreshes pause */
+const frame=()=>new Promise(r=>{let done=false;const f=()=>{if(!done){done=true;r();}};requestAnimationFrame(f);setTimeout(f,60);});
+const store={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d;}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
+const buzz=ms=>{try{navigator.vibrate&&navigator.vibrate(ms);}catch(e){}};
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const ME=store.get('pp9.profile',null)||store.get('pp7.profile',{})||{};
+
+const today=new Date(),NUM=Math.round((new Date(today.getFullYear(),today.getMonth(),today.getDate())-new Date(2026,9,1))/864e5)+1;
+$('#day').textContent='#'+NUM;
+const H=store.get('glimpse.v2',{});
+const PAIRS={move:['ball','bolt'],create:['rainbow','pencil'],sound:['note','squig'],words:['bubble','question'],numbers:['arrow','star'],build:['gear','key'],discover:['magnifier','spark'],people:['heart','flower']};
+const PAIR=PAIRS[(ME.loves||[])[0]]||['heart','star'];
+
+/* three rounds, easy to hard: the middle alone, then four edge spots, then all eight and faster */
+const ROUNDS=[{n:6,spots:[],say:'Round 1',sub:'Just the middle. Take your time.'},
+  {n:7,spots:[0,2,4,6],say:'Round 2',sub:'Now the edge too.'},
+  {n:7,spots:[0,1,2,3,4,5,6,7],say:'Round 3',sub:'Every spot, and faster.'}];
+const START=700,MIN=17,MAX=900;
+
+/* ---------- drawing ---------- */
+const cv=$('#cv');
+function ctx(){const dpr=Math.min(2,devicePixelRatio||1),w=cv.clientWidth;if(cv.width!==Math.round(w*dpr)){cv.width=cv.height=Math.round(w*dpr);}const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);return {g,w,c:w/2,R:w*.48};}
+function disc(){const {g,w,c,R}=ctx();g.clearRect(0,0,w,w);const gr=g.createRadialGradient(c,c*.9,8,c,c,R);gr.addColorStop(0,'#1B2A5C');gr.addColorStop(1,'#131E4A');
+  g.fillStyle='#0B1233';g.beginPath();g.arc(c,c,R+3,0,7);g.fill();g.fillStyle=gr;g.beginPath();g.arc(c,c,R,0,7);g.fill();return {g,w,c,R};}
+const spot=(k,c,R)=>{const a=-Math.PI/2+k*Math.PI/4;return [c+Math.cos(a)*R*.72,c+Math.sin(a)*R*.72];};
+function outline(spots,hi,truth){const {g,c,R}=disc();spots.forEach(k=>{const [x,y]=spot(k,c,R);g.beginPath();g.arc(x,y,R*.085,0,7);
+  if(truth===k){g.fillStyle='#e4572e';g.fill();}else if(hi===k){g.fillStyle='rgba(247,238,221,.55)';g.fill();}else{g.strokeStyle='rgba(247,238,221,.4)';g.lineWidth=2;g.stroke();}});}
+function fixation(spots){outline(spots);const {g,c}=ctx();g.fillStyle='rgba(247,238,221,.85)';g.beginPath();g.arc(c,c,3.5,0,7);g.fill();}
+function flash(centre,where,spots){outline(spots);const {g,c,R}=ctx();B.drawMotif(g,{kind:PAIR[centre],x:c,y:c,s:R*.22,c:'#F28C28',c2:'#F5C63C'});
+  if(where!=null){const [x,y]=spot(where,c,R);B.drawMotif(g,{kind:'star',x,y,s:R*.08,c:'#FFF0BE'});}}
+function mask(seed){const {g,c,R}=disc();const r=B.rng(seed),C=Object.values(B.C);
+  for(let i=0;i<70;i++){const a=r()*7,d=Math.sqrt(r())*R*.9;B.drawMotif(g,{kind:['star','dots','squig','petal','spark'][i%5],x:c+Math.cos(a)*d,y:c+Math.sin(a)*d,s:R*(.03+r()*.05),rot:r()*6,c:C[i%C.length],c2:'#F5C63C'});}}
+function choiceArt(){$$('#choices canvas').forEach((cn,i)=>{const dpr=Math.min(2,devicePixelRatio||1),w=cn.clientWidth||76;cn.width=cn.height=w*dpr;const g=cn.getContext('2d');g.scale(dpr,dpr);B.drawMotif(g,{kind:PAIR[i],x:w/2,y:w/2,s:w*.26,c:'#131E4A',c2:'#F5C63C'});});}
+
+/* ---------- answers ---------- */
+function pickCentre(){return new Promise(res=>{const el=$('#choices');el.classList.remove('off');const h=e=>{const b=e.target.closest('button');if(!b)return;el.removeEventListener('click',h);res({i:+b.dataset.c,b});};el.addEventListener('click',h);});}
+function pickSpot(spots){return new Promise(res=>{const h=e=>{const b=cv.getBoundingClientRect(),x=e.clientX-b.left,y=e.clientY-b.top,{c,R}=ctx();let best=-1,bd=1e9;
+  spots.forEach(k=>{const [sx,sy]=spot(k,c,R),d=Math.hypot(sx-x,sy-y);if(d<bd){bd=d;best=k;}});if(bd<R*.28){cv.removeEventListener('pointerdown',h);res(best);}};cv.addEventListener('pointerdown',h);});}
+
+/* ---------- play ---------- */
+const say=(t,s)=>{$('#say').textContent=t;if(s!=null)$('#sub').textContent=s;};
+function dots(el,res,n){el.innerHTML=Array.from({length:n},(_,i)=>`<i class="${res[i]||''}"></i>`).join('');}
+function roundBar(r){$$('.rounds i').forEach((x,i)=>{x.classList.toggle('on',i===r);x.classList.toggle('done',i<r);});}
+async function game(){$('#play').hidden=true;const rng=B.rng(NUM*104729+7),out={rounds:[]};let E=START;
+  for(let ri=0;ri<ROUNDS.length;ri++){const RD=ROUNDS[ri],res=[],exp=[];roundBar(ri);dots($('#trace'),res,RD.n);
+    /* each round opens with a slow example, so the new step is obvious */
+    say(RD.say,RD.sub);outline(RD.spots);await wait(1200);
+    if(ri===1)E=Math.max(E*1.5,350);if(ri===2)E=Math.max(E*1.15,120);
+    for(let t=0;t<RD.n;t++){const centre=rng()<.5?0:1,where=RD.spots.length?RD.spots[Math.floor(rng()*RD.spots.length)]:null;
+      const first=t===0,e=first&&ri<2?Math.max(E,800):E;
+      say(first?(ri===0?'Remember the middle.':'Remember the middle and the star.'):'',null);
+      fixation(RD.spots);await wait(600);await frame();flash(centre,where,RD.spots);const t0=performance.now();await wait(Math.max(0,e-8));await frame();const shown=performance.now()-t0;
+      mask(ri*97+t*31+NUM);await wait(300);outline(RD.spots);
+      say('Which one was in the middle?',null);const c=await pickCentre();const cOk=c.i===centre;c.b.classList.add(cOk?'right':'wrong');buzz(cOk?8:4);
+      let sOk=true;if(where!=null){await wait(150);say('Where was the star?',null);outline(RD.spots,-1,-1);const s=await pickSpot(RD.spots);sOk=s===where;outline(RD.spots,s,where);buzz(sOk?10:4);}
+      await wait(320);$('#choices').classList.add('off');$$('#choices button').forEach(b=>b.classList.remove('right','wrong'));
+      const o=cOk&&sOk?'exact':cOk||sOk?'near':'off';res.push(o);exp.push(shown);dots($('#trace'),res,RD.n);
+      /* gentle steps: a full hit speeds the next flash up; a half holds; a miss slows it down */
+      if(!first){E=o==='exact'?Math.max(MIN,E*.8):o==='off'?Math.min(MAX,E*1.25):E;}
+      say(o==='exact'?['Sharp.','Got it.','Quick eyes.','Nice.'][t%4]:o==='near'?'Half right.':'A little slower next.',null);await wait(reduced?250:480);}
+    out.rounds.push({res,exp:exp.map(Math.round)});
+    if(ri<ROUNDS.length-1){say(`Round ${ri+1} done.`,'');await wait(900);}}
+  roundBar(3);const med=a=>{const s=a.slice().sort((x,y)=>x-y);return Math.round(s[Math.floor(s.length/2)]);};
+  out.start=med(out.rounds[0].exp.slice(-3));out.score=med(out.rounds[2].exp.slice(-4));H[NUM]=out;store.set('glimpse.v2',H);
+  say(`${out.score} ms`,'Your sight speed today.');research();}
+
+/* ---------- research: written out one finding at a time, each with its paper ---------- */
+const FIND=[
+  ['Reading the biggest brain-training trial: 2,832 adults, ten years.','Ball et al., 2002 · JAMA','https://doi.org/10.1001/jama.288.18.2271'],
+  ['Speed training gave the largest, longest-lasting gains of the three trainings tested.','Ball et al., 2002 · JAMA','https://doi.org/10.1001/jama.288.18.2271'],
+  ['Ten years on, the effects were still there, including in everyday tasks.','Rebok et al., 2014 · J Am Geriatr Soc','https://doi.org/10.1111/jgs.12607'],
+  ['Trained drivers were in fewer crashes over the next six years.','Ball et al., 2010 · J Am Geriatr Soc','https://doi.org/10.1111/j.1532-5415.2010.03138.x'],
+  ['Training got harder as you got better. That’s how the trial worked too.','Wilson et al., 2019 · Nature Communications','https://doi.org/10.1038/s41467-019-12552-4'],
+  ['Honest limit: the trial was in adults over 65, and wider benefits are still debated.','Simons et al., 2016 · Psychol Sci Public Interest','https://doi.org/10.1177/1529100616661983',true]];
+async function research(){$('#research').classList.add('on');$('#research').scrollTop=0;const el=$('#thoughts');el.innerHTML='';
+  for(const [txt,src,url,muted] of FIND){const d=document.createElement('div');d.className='th'+(muted?' muted':'');
+    d.innerHTML=`<span class="mk" aria-hidden="true"></span><p>${txt}<span class="src"><a href="${url}" target="_blank" rel="noopener">${src}</a></span></p>`;el.appendChild(d);
+    await frame();d.classList.add('on');await wait(reduced?0:900);d.classList.add('done');}
+  $('#to-impact').classList.add('on');}
+$('#poster').addEventListener('click',()=>{const f=document.createElement('iframe');f.src='https://www.youtube-nocookie.com/embed/-tbAaPXNeSg?autoplay=1&playsinline=1&rel=0';f.title='So much to learn from Eileen Gu, Olympic Games';f.allow='autoplay; encrypted-media; picture-in-picture; fullscreen';f.allowFullscreen=true;$('#clip').replaceChildren(f);});
+$('#to-impact').addEventListener('click',()=>{$('#to-impact').classList.remove('on');$('#research').classList.remove('on');impact();});
+$('#again-research').addEventListener('click',()=>{$('#impact').classList.remove('on');research();});
+
+/* ---------- impact: round 1 to round 3, and day one to today ---------- */
+const pct=(a,b)=>Math.round((1-b/a)*100);
+function stats(){const days=Object.keys(H).map(Number).sort((a,b)=>a-b);let streak=0;for(let n=NUM;H[n];n--)streak++;return {days,best:days.length?Math.min(...days.map(n=>H[n].score)):null,streak};}
+function impact(){const T=H[NUM],{days,best,streak}=stats(),first=H[days[0]];$('#impact').classList.add('on');$('#impact').scrollTop=0;
+  $('#big').innerHTML=`${T.score}<small>ms</small>`;
+  const mx=Math.max(T.start,T.score),h=v=>Math.max(14,Math.round(v/mx*120));
+  $('#climb').innerHTML=`<div><b>${T.start} ms</b><span class="bar" style="height:14px"></span><span>Round 1</span></div><div><b>${T.score} ms</b><span class="bar" style="height:14px"></span><span>Round 3</span></div>`;
+  requestAnimationFrame(()=>{const bs=$$('#climb .bar');bs[0].style.height=h(T.start)+'px';bs[1].style.height=h(T.score)+'px';});
+  $('#delta').innerHTML=days.length>1&&first.score>T.score?`<b>↓ ${pct(first.score,T.score)}%</b> faster than day one`:T.score<T.start?`<b>${pct(T.start,T.score)}%</b> faster by round 3`:'Your starting point. Tomorrow, beat it.';
+  $('#rows').innerHTML='';T.rounds.forEach(r=>{const d=document.createElement('div');d.className='trace';dots(d,r.res,r.res.length);$('#rows').appendChild(d);});
+  $('#s-days').textContent=days.length;$('#s-best').textContent=best??'–';$('#s-streak').textContent=streak;tick();}
+function tick(){const n=new Date(),m=new Date(n.getFullYear(),n.getMonth(),n.getDate()+1)-n;$('#next').textContent=`Next glimpse in ${Math.floor(m/36e5)}h ${Math.floor(m%36e5/6e4)}m`;}
+
+/* the share: how you did, round by round, never the answers */
+function shareText(){const T=H[NUM],{days}=stats(),first=H[days[0]];
+  const rows=T.rounds.map(r=>r.res.map(c=>({exact:'🟠',near:'🟡',off:'⚪'})[c]).join('')).join('\n');
+  const d=days.length>1&&first.score>T.score?`↓ ${pct(first.score,T.score)}% faster than day one`:T.score<T.start?`⚡ ${T.start} → ${T.score} ms in 3 rounds`:'⚡ day one';
+  return `🧠 Glimpse #${NUM} · ${T.score} ms\n\n${rows}\n${d}`;}
+const LOVE_BRAIN={move:'sport',create:'art',sound:'music',words:'writing',numbers:'startups',build:'code',discover:'science',people:'wellbeing'};
+const MOTIFS=(()=>{const ms=[];let s=11;(ME.loves||[]).forEach(l=>{const I=B.INTERESTS[LOVE_BRAIN[l]];if(I)ms.push(...B.scatter(ms,I.at,I.kinds,12,s+=17,110));});
+  ms.push(...B.scatter(ms,[360,290],['leaf','sprig','petal','flower','tulip','heart','bolt','dots','squig','spark','star','frond','gear'],140,401,300).map(m=>({...m,s:Math.min(m.s,15)})));return ms;})();
+$('#share').addEventListener('click',()=>{const T=H[NUM];PPShare.sheet({title:'Glimpse',num:NUM,customText:shareText(),big:`${T.score} ms`,label:'sight speed ⚡',rows:T.rounds.map(r=>r.res),motifs:MOTIFS});});
+
+/* ---------- start ---------- */
+requestAnimationFrame(()=>{outline([]);choiceArt();});
+$('#play').addEventListener('click',game);
+if(H[NUM]){$('#play').hidden=true;say(`${H[NUM].score} ms today`,'Come back tomorrow to beat it.');roundBar(3);setTimeout(impact,300);}
+else if(ME.name)say(`${ME.name}, how fast can your brain see?`);
+})();
+</script>
+</body>
+</html>
