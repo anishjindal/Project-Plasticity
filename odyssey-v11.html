@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>Plasticity</title>
+<meta name="description" content="Your brain rewires around what you do.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--ease:cubic-bezier(.4,0,.2,1);--dur:.6s;--bg:#fff;--ink:#111318;--ink2:#5a5e68;--rule:#e6e6e3;--accent:#e4572e;--navy:#131E4A;--safeb:env(safe-area-inset-bottom,0px);--safet:env(safe-area-inset-top,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#fff}}
+:root[data-theme="dark"]{--bg:#fff}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Inter",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body{max-width:440px;margin:0 auto;font-size:17px;line-height:1.5;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+button,input{font:inherit;color:inherit;touch-action:manipulation}
+h1,h2{margin:0;font-weight:500;letter-spacing:-.03em;line-height:1.08;text-wrap:balance}
+h1{font-size:clamp(28px,8vw,36px)}h2{font-size:clamp(26px,7.4vw,32px)}
+.say{color:var(--ink2);margin:10px 0 0;min-height:1.5em}
+.cap{font-size:13px;color:var(--accent);margin:0 0 8px}
+.dots{position:fixed;top:calc(14px + var(--safet));left:0;right:0;display:flex;justify-content:center;gap:10px;z-index:5}
+.dots i{width:7px;height:7px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--ink2);transition:background var(--dur) var(--ease)}
+.dots i.on{background:var(--accent);box-shadow:none}.dots i.done{background:var(--ink);box-shadow:none}
+.app{min-height:100svh;display:flex;flex-direction:column;padding:calc(40px + var(--safet)) 20px calc(120px + var(--safeb))}
+.stage{position:relative;height:36svh;margin:0 -20px;flex:none;transition:height .6s var(--ease)}
+.stage.small{height:27svh}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:manipulation}
+.tag{position:absolute;transform:translate(-50%,-150%);font-size:12px;font-weight:500;color:#fff;background:rgba(11,18,51,.86);padding:4px 10px;border-radius:999px;box-shadow:0 2px 10px rgba(11,18,51,.35);pointer-events:none;white-space:nowrap;opacity:0;transition:opacity var(--dur)}
+.tag.on{opacity:1}
+/* the tap cue: rings that pulse out from where to touch, and a fingertip pressing */
+.cue{position:absolute;left:50%;top:44%;width:0;height:0;pointer-events:none;transition:opacity .4s}
+.cue i{position:absolute;left:-28px;top:-28px;width:56px;height:56px;border-radius:50%;box-shadow:0 0 0 2px var(--accent);opacity:0;animation:ring 2s var(--ease) infinite}
+.cue i:nth-child(2){animation-delay:.66s}.cue i:nth-child(3){animation-delay:1.33s}
+.cue b{position:absolute;left:-17px;top:-17px;width:34px;height:34px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px #fff;animation:press 2s var(--ease) infinite}
+@keyframes ring{0%{transform:scale(.5);opacity:.9}100%{transform:scale(2.2);opacity:0}}
+@keyframes press{0%,60%,100%{transform:scale(1)}70%{transform:scale(.78)}}
+.cue.gone{opacity:0}
+.steps{display:grid;margin-top:6px}
+.step{grid-area:1/1;opacity:0;transform:translateY(10px);pointer-events:none;transition:opacity var(--dur) var(--ease),transform var(--dur) var(--ease)}
+.step.on{opacity:1;transform:none;pointer-events:auto}
+input[type=text]{width:100%;border:0;border-bottom:1.5px solid var(--ink);padding:8px 0;background:transparent;outline:none;font-size:17px;border-radius:0;margin-top:18px}
+input[type=text]:focus{border-bottom-color:var(--accent)}
+/* the main action: one per screen, in the thumb zone */
+.go{position:fixed;left:50%;bottom:calc(22px + var(--safeb));transform:translateX(-50%);z-index:6;background:none;border:0;padding:0 0 4px;border-bottom:1.5px solid var(--accent);font-weight:500;font-size:20px;cursor:pointer;white-space:nowrap;box-shadow:0 0 0 14px #fff,0 -28px 30px 6px rgba(255,255,255,.95);transition:opacity .3s}
+.go[disabled]{opacity:.25;cursor:default}.go[hidden]{display:none}
+.step:not(.on) .go{display:none}
+/* interests: eight symbols that between them cover any life */
+.loves{display:grid;grid-template-columns:repeat(4,1fr);gap:16px 8px;margin-top:18px}
+.love{display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:0;padding:0;cursor:pointer;text-align:center}
+.love canvas{width:66px;height:66px;border-radius:50%;transition:transform .3s var(--ease),box-shadow .3s,opacity .3s}
+.love:active canvas{transform:scale(.94)}
+.love b{font-weight:500;font-size:13px;line-height:1.1}
+.love small{font-size:10.5px;color:var(--ink2);line-height:1.2;max-width:84px}
+.love[aria-pressed=true] canvas{transform:scale(1.06);box-shadow:0 6px 18px rgba(19,30,74,.28)}
+.love[aria-pressed=true] b{color:var(--accent)}
+.loves.full .love[aria-pressed=false]{opacity:.35}
+/* recommendations: shown, not chosen */
+.recs{margin-top:16px;display:flex;flex-direction:column;gap:14px}
+.rec{display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:start;opacity:0;transform:translateY(6px);transition:opacity var(--dur) var(--ease),transform var(--dur) var(--ease)}
+.rec.on{opacity:1;transform:none}
+.rec i{width:34px;height:34px;border-radius:50%;background:var(--navy);position:relative;margin-top:2px}
+.rec i::after{content:"";position:absolute;inset:11px;border-radius:50%;background:#FFF0BE;box-shadow:0 0 0 5px rgba(228,87,46,.45)}
+.rec b{font-weight:500;display:block;font-size:18px;letter-spacing:-.01em}
+.rec span{color:var(--ink2);font-size:15px}
+/* experience: three networks, from one neuron to many */
+.levels{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:22px}
+.level{display:flex;flex-direction:column;align-items:center;gap:8px;background:none;border:0;padding:0;cursor:pointer}
+.level canvas{width:92px;height:92px;border-radius:50%;transition:transform .25s var(--ease),box-shadow .25s}
+.level b{font-weight:500;font-size:14px}
+.level[aria-pressed=true] canvas{transform:scale(1.06);box-shadow:0 0 0 3px #fff,0 0 0 5.5px var(--accent)}
+.levels.picked .level[aria-pressed=false] canvas{opacity:.4}
+.moves{list-style:none;margin:18px 0 0;padding:0}
+.moves li{display:grid;grid-template-columns:2em 1fr;padding:7px 0}
+.moves .n{font-size:13px;color:var(--accent);padding-top:3px}.moves b{font-weight:500;display:block}.moves span span{color:var(--ink2);font-size:15px}
+.whose{display:none !important;position:absolute;left:0;right:0;bottom:-2px;text-align:center;font-size:13px;font-weight:500;color:var(--ink);opacity:0;transform:translateY(4px);transition:opacity var(--dur) var(--ease),transform var(--dur) var(--ease)}
+.whose.on{opacity:1;transform:none}
+.mirror{color:var(--ink);font-weight:500;transition:color .3s}
+.mirror.idle{color:var(--ink2);font-weight:400}
+.more{animation:rise var(--dur) var(--ease)}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.drag-say{margin:0;font-size:17px}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:44px;background:transparent;margin:6px 0 0;touch-action:pan-y}
+input[type=range]::-webkit-slider-runnable-track{height:3px;border-radius:2px;background:linear-gradient(to right,var(--accent) var(--p,0%),var(--rule) var(--p,0%))}
+input[type=range]::-moz-range-track{height:3px;border-radius:2px;background:var(--rule)}
+input[type=range]::-moz-range-progress{height:3px;background:var(--accent)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;border-radius:50%;background:var(--accent);margin-top:-13.5px;box-shadow:0 0 0 6px rgba(228,87,46,.18)}
+input[type=range]::-moz-range-thumb{width:30px;height:30px;border:0;border-radius:50%;background:var(--accent)}
+.ticks{display:flex;justify-content:space-between;font-size:12px;color:var(--ink2);margin-top:-4px}
+.fine{font-size:12px;color:var(--ink2);margin:10px 0 0}
+.toast{position:fixed;left:50%;bottom:calc(78px + var(--safeb));transform:translateX(-50%);font-size:14px;color:var(--ink2);opacity:0;transition:opacity .3s;z-index:7;white-space:nowrap}.toast.on{opacity:1}
+.game{display:grid;grid-template-columns:64px 1fr;gap:14px;align-items:center;margin-top:16px}
+.game .mini{width:64px;height:54px;animation:hopm 2.6s var(--ease) infinite}
+@keyframes hopm{0%,80%,100%{transform:none}88%{transform:translateY(-6px)}}
+.game b{display:block;font-weight:500;font-size:18px}.game span{color:var(--ink2);font-size:15px}
+.sub{font-size:13px;color:var(--ink2);margin:22px 0 0}
+.rec .badge{display:inline-block;margin-left:6px;font-size:11px;font-weight:500;letter-spacing:.02em;color:var(--accent);vertical-align:2px}
+.rec .badge.dev{color:var(--ink2)}
+.rec.dev i{background:#c9c9c4}.rec.dev i::after{box-shadow:none;background:#fff}
+a.go{text-decoration:none;color:var(--ink)}
+.quietb{background:none;border:0;padding:0 0 2px;border-bottom:1px solid var(--rule);font-size:15px;color:var(--ink2);cursor:pointer}
+/* the landing story's captions: one bold line, one plain line */
+.beat b{display:block;font-weight:500;font-size:19px;letter-spacing:-.01em}
+.beat span{display:block;color:var(--ink2);font-size:15px;margin-top:2px}
+#beat0{margin-top:14px;animation:rise .7s var(--ease) both}
+/* the first-tap burst: a wave of light from where you touched */
+.flash{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none}
+.flash.go::before,.flash.go::after{content:"";position:absolute;left:-60px;top:-60px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(255,240,190,.95),rgba(228,87,46,.55) 40%,rgba(228,87,46,0) 70%);animation:burst 1.1s var(--ease) both}
+.flash.go::after{animation-delay:.18s;animation-duration:1.4s}
+@keyframes burst{0%{transform:scale(.2);opacity:1}100%{transform:scale(6);opacity:0}}
+.stage.lit canvas{animation:glowup 1.6s var(--ease)}
+@keyframes glowup{0%{filter:none}25%{filter:drop-shadow(0 0 18px rgba(228,87,46,.75)) brightness(1.08)}100%{filter:none}}
+/* thinking: words that move */
+.think{display:flex;align-items:center;justify-content:center;min-height:30svh}
+.thinking{font-size:20px;font-weight:500;letter-spacing:-.01em;color:var(--ink);margin:0;transition:opacity .2s}
+.thinking::after{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-left:10px;vertical-align:3px;animation:pulse .8s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.7);opacity:.4}}
+/* experience: signal bars, like phone signal, nothing to decode */
+.levels{display:flex !important;flex-direction:column;gap:2px;margin-top:16px}
+.lv{display:flex;align-items:center;gap:16px;background:none;border:0;padding:12px 0;min-height:56px;cursor:pointer;text-align:left;width:100%}
+.lv .bars{display:flex;align-items:flex-end;gap:4px;width:34px;height:24px;flex:none}
+.lv .bars i{width:7px;border-radius:4px;background:#d9d9d4;transition:background .25s}
+.lv .bars i:nth-child(1){height:9px}.lv .bars i:nth-child(2){height:16px}.lv .bars i:nth-child(3){height:24px}
+.lv .bars i.on{background:var(--ink2)}
+.lv b{display:block;font-weight:500;font-size:18px}.lv small{display:block;color:var(--ink2);font-size:14px}
+.lv[aria-checked=true] .bars i.on{background:var(--accent)}
+.lv[aria-checked=true] b{color:var(--accent)}
+/* your games: the one that's ready, and the ones still growing */
+.games{display:flex;flex-direction:column;gap:14px;margin-top:16px}
+.gm{display:grid;grid-template-columns:56px 1fr;gap:14px;align-items:center;opacity:0;transform:translateY(8px);transition:opacity .6s var(--ease),transform .6s var(--ease)}
+.gm.on{opacity:1;transform:none}
+.gm .art{position:relative;width:56px;height:56px}
+.gm canvas{width:56px;height:56px;border-radius:50%;display:block}
+.gm b{display:block;font-weight:500;font-size:18px;letter-spacing:-.01em}
+.gm span{color:var(--ink2);font-size:14px}
+.gm .ready{color:var(--accent);font-size:12px;font-weight:500;margin-left:6px}
+.gm.soon b,.gm.soon span{color:#9a9ea6}
+.gm.soon canvas{opacity:.45}
+/* still growing: a ring that keeps wiring itself round the circle */
+.gm.soon .art::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:2px dashed #c9c9c4;animation:grow 9s linear infinite}
+@keyframes grow{to{transform:rotate(360deg)}}
+.gm.soon .tag{display:inline-block;margin-left:6px;font-size:11px;color:#9a9ea6;font-weight:500}
+.lab{font-size:13px;color:var(--ink2);margin:16px 0 0}
+a.go{text-decoration:none;color:var(--ink)}
+/* thinking lines: a pulsing mark while working, a still one when done; each line can carry its source */
+.tlines{display:flex;flex-direction:column;gap:12px;width:100%;max-width:360px;text-align:left}
+.tlines.small{margin-top:10px;min-height:58px;gap:6px}
+.tl{display:grid;grid-template-columns:14px 1fr;gap:10px;opacity:0;transform:translateY(5px);transition:opacity .4s var(--ease),transform .4s var(--ease)}
+.tl.on{opacity:1;transform:none}
+.tl .mk{width:10px;height:10px;border-radius:50%;margin-top:6px;background:var(--accent);box-shadow:0 0 0 4px rgba(228,87,46,.18);animation:tpulse .9s ease-in-out infinite}
+.tl.done .mk{animation:none;background:var(--navy);box-shadow:none}
+@keyframes tpulse{50%{transform:scale(1.4);opacity:.55}}
+.tl p{margin:0;font-size:17px;font-weight:500;letter-spacing:-.01em;line-height:1.3}
+.tlines.small .tl p{font-size:15px;font-weight:400}
+.tl small{display:block;font-size:12px;color:var(--ink2);font-weight:400;margin-top:2px}
+.think{display:flex;align-items:center;justify-content:center;min-height:30svh}
+/* findings: one big number, what was found, what it means for you, and the study you can open */
+.steps{grid-template-columns:minmax(0,1fr)}.step{min-width:0}
+.finds{display:flex;overflow-x:auto;width:calc(100% + 40px);scroll-snap-type:x mandatory;gap:16px;margin:12px -20px 0;padding:0 20px 2px;scrollbar-width:none;min-height:128px}
+.finds::-webkit-scrollbar{display:none}
+.hint0{color:var(--ink2);font-size:15px;margin:6px 0 0;align-self:flex-start}
+.find{flex:0 0 100%;scroll-snap-align:start;display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:start;animation:rise .5s var(--ease) both}
+.find .num{grid-row:span 2;font-weight:600;font-size:30px;letter-spacing:-.03em;line-height:1;color:var(--accent);min-width:64px;font-variant-numeric:tabular-nums}
+.find .num small{display:block;font-size:11px;font-weight:500;letter-spacing:.02em;color:var(--ink2);margin-top:4px}
+.find .head{font-weight:500;font-size:16px;line-height:1.3}
+.find .mean{font-size:14px;color:var(--ink2);line-height:1.35}
+.find .mean b{color:var(--ink);font-weight:500}
+.study{grid-column:2;display:inline-flex;align-items:center;gap:8px;margin-top:6px;background:none;border:0;padding:6px 12px 6px 6px;border-radius:999px;background:#f5f3ee;font-size:12.5px;color:var(--ink);cursor:pointer;justify-self:start;transition:transform .15s var(--bounce,ease)}
+.study:active{transform:scale(.96)}
+.study i{width:22px;height:26px;position:relative;flex:none}
+.study i::before{content:"";position:absolute;inset:0;border-radius:3px 9px 3px 3px;background:#fff;box-shadow:0 1px 3px rgba(19,30,74,.25)}
+.study i::after{content:"";position:absolute;left:5px;right:6px;top:8px;height:2px;background:#e4572e;box-shadow:0 5px 0 #c9c9c4,0 10px 0 #c9c9c4}
+.fdots{display:flex;justify-content:center;gap:6px;margin-top:8px;min-height:6px}
+.fdots i{width:6px;height:6px;border-radius:50%;background:#d9d9d4;transition:background .3s,width .3s}
+.fdots i.on{background:var(--accent);width:16px;border-radius:3px}
+/* the study sheet: slides up, friendly, everything in plain words */
+.veil{position:fixed;inset:0;background:rgba(17,19,24,.28);opacity:0;pointer-events:none;transition:opacity .3s;z-index:20}
+.veil.on{opacity:1;pointer-events:auto}
+.paper{position:fixed;left:50%;bottom:0;width:min(100%,440px);transform:translate(-50%,105%);background:#fff;border-radius:26px 26px 0 0;padding:12px 22px calc(26px + var(--safeb));z-index:21;transition:transform .45s cubic-bezier(.34,1.3,.64,1);box-shadow:0 -10px 40px rgba(19,30,74,.18)}
+.paper.on{transform:translate(-50%,0)}
+.grab{width:40px;height:5px;border-radius:3px;background:#dcdcd6;margin:0 auto 14px}
+.pp-k{font-size:13px;color:var(--accent);margin:0}
+.paper h3{margin:4px 0 0;font-weight:600;font-size:22px;letter-spacing:-.02em;line-height:1.15}
+.pp-meta{font-size:13px;color:var(--ink2);margin:6px 0 0}
+.pp-rows{list-style:none;margin:16px 0 0;padding:0;display:flex;flex-direction:column;gap:12px}
+.pp-rows li{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;font-size:15px;line-height:1.4}
+.pp-rows .ic{width:28px;height:28px;border-radius:50%;background:#f5f3ee;display:flex;align-items:center;justify-content:center;font-size:14px}
+.pp-rows b{display:block;font-weight:500;font-size:12px;color:var(--ink2);letter-spacing:.02em}
+.pp-open{display:inline-block;margin-top:18px;font-size:14px;color:var(--ink2);text-decoration:none;border-bottom:1px solid var(--rule)}
+.pp-ok{display:block;margin:18px auto 0;background:var(--accent);color:#fff;border:0;border-radius:999px;padding:14px 44px;font-weight:600;font-size:17px;cursor:pointer}
+.fly{position:fixed;left:0;top:0;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;z-index:9;pointer-events:none}
+.next-note{color:var(--ink2);font-size:14px;margin-top:16px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+/* shorter phones: a smaller brain and tighter grid so everything, and the button, fits on one screen */
+@media (max-height:760px){.app{padding-top:calc(26px + var(--safet))}.stage.small{height:21svh}.loves{gap:10px 8px;margin-top:12px}.love canvas{width:56px;height:56px}.finds{margin-top:8px}}
+@media (prefers-reduced-motion:reduce){.cue i,.cue b{animation:none}.cue i:first-child{opacity:.6}}
+</style>
+</head>
+<body>
+<div class="dots" id="dots" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
+<main class="app">
+  <div class="stage" id="stage">
+    <canvas id="cv" role="button" tabindex="0" aria-label="Tap the brain"></canvas>
+    <div class="cue gone" id="cue" aria-hidden="true"></div>
+    <div class="flash" id="flash" aria-hidden="true"></div>
+    <div id="tags"></div>
+    <div class="whose" id="whose" aria-live="polite"></div>
+  </div>
+  <div class="steps">
+    <!-- 0 · the first touch -->
+    <section class="step on" data-s="0">
+      <h1 id="h0">Now, let’s wire yours.</h1>
+      <div id="more0"><input type="text" id="name" placeholder="What should we call you?" maxlength="24" autocomplete="given-name"></div>
+      <button class="go" type="button" data-next id="go0">Begin →</button>
+    </section>
+    <!-- between screens: the brain is working -->
+    <section class="step think" data-s="9" aria-live="polite"><div class="tlines" id="thinking"></div></section>
+    <!-- 1 · what you love -->
+    <section class="step" data-s="1">
+      <h2>What do you love?</h2>
+      <div class="finds" id="finds" aria-live="polite"><p class="hint0">Pick up to three. We’ll show you what the research says about each.</p></div>
+      <div class="fdots" id="fdots" aria-hidden="true"></div>
+      <div class="loves" id="loves"></div>
+      <button class="go" type="button" data-next id="go1" disabled>That’s me →</button>
+    </section>
+    <!-- 2 · what we'll train: recommended, not chosen -->
+    <section class="step" data-s="2">
+      <div class="beat on"><b>Keep practicing.</b><span>Repeating a skill can strengthen the connections you use.</span></div>
+      <h2 style="margin-top:14px">We’ll train these.</h2>
+      <div class="recs" id="recs"></div>
+      <button class="go" type="button" data-next>Sounds good →</button>
+    </section>
+    <!-- 3 · how deep you are in it -->
+    <section class="step" data-s="3">
+      <div class="beat on"><b>Try something new.</b><span>Wherever you start, practice changes what comes next.</span></div>
+      <h2 id="h3" style="margin-top:14px">How much do you already practise?</h2>
+      <div class="levels" id="levels" role="radiogroup"></div>
+      <p class="say" id="depth-say"></p>
+      <button class="go" type="button" data-next id="go3" disabled>Next →</button>
+    </section>
+    <!-- 4 · this is neuroplasticity -->
+    <section class="step" data-s="4">
+      <div class="beat on"><b>This is neuroplasticity.</b><span>Your brain can change its connections through learning and experience.</span></div>
+      <h2 id="h4" style="margin-top:14px">Your games.</h2>
+      <div class="games" id="games"></div>
+      <p class="lab" id="lab" hidden>New games are growing in the lab.</p>
+      <a class="go" href="glimpse-v3.html" id="play" hidden>Play Glimpse →</a>
+    </section>
+  </div>
+</main>
+<div class="toast" id="toast" aria-live="polite"></div>
+<div class="veil" id="veil"></div>
+<section class="paper" id="paper" role="dialog" aria-modal="true" aria-labelledby="pp-title">
+  <div class="grab" aria-hidden="true"></div>
+  <p class="pp-k">The study</p>
+  <h3 id="pp-title"></h3>
+  <p class="pp-meta" id="pp-meta"></p>
+  <ul class="pp-rows" id="pp-rows"></ul>
+  <a class="pp-open" id="pp-open" target="_blank" rel="noopener">Read the full paper ↗</a>
+  <button class="pp-ok" type="button" id="pp-ok">Got it</button>
+</section>
+
+<script src="brain.js?v=7"></script>
+<script>
+(function(){
+const B=PPBrain,sm=B.sm,$=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches,D=ms=>reduced?1:ms;
+const store={get(k){try{return JSON.parse(localStorage.getItem(k));}catch(e){return null;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
+const P={name:'',loves:[],goals:[],depth:''};
+
+/* ---------- eight loves: between them, any job or passion fits one ---------- */
+const LOVES={
+  move:    {label:'Move',    eg:'sport · dance · fitness',        color:'#E8472E',brain:'sport'},
+  create:  {label:'Create',  eg:'painting · design · craft',      color:'#8E5BD6',brain:'art'},
+  sound:   {label:'Sound',   eg:'music · singing · audio',        color:'#2E86DE',brain:'music'},
+  words:   {label:'Words',   eg:'writing · languages · law',      color:'#F28C28',brain:'writing'},
+  numbers: {label:'Numbers', eg:'finance · business · data',      color:'#2F8F5B',brain:'startups'},
+  build:   {label:'Build',   eg:'technology · engineering',       color:'#1B2A5C',brain:'code'},
+  discover:{label:'Discover',eg:'science · nature · research',    color:'#4CAF6E',brain:'science'},
+  people:  {label:'People',  eg:'care · teaching · leading',      color:'#E8508A',brain:'wellbeing'}};
+/* each symbol drawn by hand in white on its colour, same line weight throughout */
+function symbol(g,k,c,s){g.save();g.translate(c,c);g.strokeStyle='#fff';g.fillStyle='#fff';g.lineWidth=s*.09;g.lineCap='round';g.lineJoin='round';const L=(pts)=>{g.beginPath();pts.forEach(([x,y],i)=>i?g.lineTo(x*s,y*s):g.moveTo(x*s,y*s));g.stroke();};
+  switch(k){
+    case 'move':g.beginPath();g.arc(.12*s,-.42*s,.11*s,0,7);g.fill();L([[-.05,-.22],[-.15,.1]]);L([[-.05,-.22],[.22,-.1],[.3,.05]]);L([[-.05,-.22],[-.3,-.08]]);L([[-.15,.1],[.1,.25],[.05,.45]]);L([[-.15,.1],[-.32,.32],[-.45,.28]]);break;
+    case 'create':L([[.38,-.38],[-.1,.1]]);g.beginPath();g.moveTo(-.1*s,.1*s);g.quadraticCurveTo(-.32*s,.12*s,-.36*s,.4*s);g.quadraticCurveTo(-.12*s,.36*s,-.04*s,.16*s);g.closePath();g.fill();break;
+    case 'sound':g.beginPath();g.ellipse(-.16*s,.26*s,.14*s,.1*s,-.4,0,7);g.fill();g.beginPath();g.ellipse(.24*s,.16*s,.14*s,.1*s,-.4,0,7);g.fill();L([[-.04,.24],[-.04,-.36],[.36,-.46],[.36,.14]]);L([[-.04,-.22],[.36,-.32]]);break;
+    case 'words':g.beginPath();g.moveTo(-.38*s,-.3*s);g.lineTo(.38*s,-.3*s);g.quadraticCurveTo(.44*s,-.3*s,.44*s,-.22*s);g.lineTo(.44*s,.12*s);g.quadraticCurveTo(.44*s,.2*s,.38*s,.2*s);g.lineTo(-.1*s,.2*s);g.lineTo(-.3*s,.4*s);g.lineTo(-.28*s,.2*s);g.lineTo(-.38*s,.2*s);g.quadraticCurveTo(-.44*s,.2*s,-.44*s,.12*s);g.lineTo(-.44*s,-.22*s);g.quadraticCurveTo(-.44*s,-.3*s,-.38*s,-.3*s);g.stroke();L([[-.26,-.12],[.26,-.12]]);L([[-.26,.03],[.12,.03]]);break;
+    case 'numbers':L([[-.4,.3],[-.12,0],[.06,.14],[.38,-.24]]);L([[.2,-.26],[.38,-.24],[.36,-.06]]);g.beginPath();g.arc(-.12*s,0,.05*s,0,7);g.arc(.06*s,.14*s,.05*s,0,7);g.fill();break;
+    case 'build':g.beginPath();for(let i=0;i<16;i++){const a=i*Math.PI/8,r=(i%2?.4:.3)*s;g.lineTo(Math.cos(a)*r,Math.sin(a)*r);}g.closePath();g.fill();g.fillStyle=g.canvas.dataset.bg;g.beginPath();g.arc(0,0,.13*s,0,7);g.fill();break;
+    case 'discover':g.beginPath();g.arc(-.08*s,-.08*s,.26*s,0,7);g.stroke();L([[.12,.12],[.38,.38]]);g.beginPath();g.arc(-.15*s,-.16*s,.07*s,0,7);g.fill();break;
+    case 'people':g.beginPath();g.arc(-.16*s,-.2*s,.12*s,0,7);g.fill();g.beginPath();g.arc(.18*s,-.14*s,.1*s,0,7);g.fill();g.beginPath();g.arc(-.16*s,.32*s,.26*s,Math.PI,0);g.fill();g.beginPath();g.arc(.18*s,.32*s,.2*s,Math.PI,0);g.fill();break;}
+  g.restore();}
+/* the options use the same hand-drawn motifs as the brain: soft tint when resting, the navy of the brain when chosen */
+const ART={move:['ball','bolt'],create:['rainbow','pencil'],sound:['note','squig'],words:['bubble','question'],numbers:['arrow','star'],build:['gear','key'],discover:['magnifier','spark'],people:['heart','flower']};
+function art(cv,k,on){const dpr=Math.min(2,devicePixelRatio||1),w=cv.clientWidth||64;cv.width=cv.height=w*dpr;const g=cv.getContext('2d');g.scale(dpr,dpr);const c=w/2,L=LOVES[k];
+  g.fillStyle=on?'#131E4A':L.color+'1c';g.beginPath();g.arc(c,c,c,0,7);g.fill();
+  const [a,b2]=ART[k];B.drawMotif(g,{kind:b2,x:c+w*.2,y:c-w*.18,s:w*.12,rot:.4,c:on?'#F5C63C':L.color,c2:'#F5C63C'});
+  B.drawMotif(g,{kind:a,x:c-w*.03,y:c+(a==='rainbow'?w*.04:w*.02),s:w*(a==='rainbow'?.3:.24),rot:a==='pencil'?0:0,c:on?'#FFF0BE':L.color,c2:on?'#e4572e':'#F5C63C'});}
+function disc(cv,color,k){const dpr=Math.min(2,devicePixelRatio||1),w=cv.clientWidth||62;cv.width=cv.height=w*dpr;const g=cv.getContext('2d');g.scale(dpr,dpr);cv.dataset.bg=color;
+  g.fillStyle=color;g.beginPath();g.arc(w/2,w/2,w/2,0,7);g.fill();symbol(g,k,w/2,w*.62);}
+
+/* ---------- what each love leans on: the recommendation is ours, the reason is plain ---------- */
+const GOALS={perception:{label:'Seeing fine detail',at:[590,250]},attention:{label:'Tracking and focus',at:[175,215]},memory:{label:'Holding and updating',at:[420,330]},
+  flexibility:{label:'Switching between rules',at:[285,150]},retention:{label:'Remembering over time',at:[470,118]}};
+const REC={move:[['attention','Track many moving things.'],['perception','Read motion early.']],
+  create:[['perception','Notice small differences.'],['memory','Hold the whole picture.']],
+  sound:[['memory','Hold patterns in order.'],['perception','Hear small differences.']],
+  words:[['memory','Hold and update words.'],['retention','Make words last.']],
+  numbers:[['memory','Keep figures in mind.'],['flexibility','Adapt when rules change.']],
+  build:[['flexibility','Switch between big picture and detail.'],['memory','Keep moving parts in mind.']],
+  discover:[['perception','Notice what others miss.'],['flexibility','Change your mind with evidence.']],
+  people:[['attention','Follow many signals at once.'],['flexibility','Adapt to each person.']]};
+
+/* ---------- the brain, changing the same five ways the landing story did ---------- */
+const cv=$('#cv'),draw=B.renderer(cv);let lay={fit:1,ox:0,oy:0};
+const motifs=[],paths=[],sparks=[],pulses=[];let t0=performance.now();let fill={from:1,to:1,t0:0},neuron=null,step=0;
+const DIM=.22;
+B.scatter([],[360,290],['leaf','sprig','petal','flower','tulip','heart','bolt','dots','squig','spark','star','frond','gear','note','puzzle','bulb'],170,401,300)
+  .forEach(m=>{m.s=Math.min(m.s,15);m.born=-1e9;m.alpha=m.alphaTo=DIM;m.owner='bg';motifs.push(m);});
+function frame(now){
+  for(let i=motifs.length-1;i>=0;i--){const m=motifs[i];m.k=m.dying?1-sm((now-m.dying)/D(450)):sm((now-m.born)/D(650));if(m.alphaTo!=null)m.alpha+=(m.alphaTo-m.alpha)*(reduced?1:.06);if(m.dying&&m.k<=0)motifs.splice(i,1);}
+  for(let i=paths.length-1;i>=0;i--){const p=paths[i];p.frac=p.dying?1-sm((now-p.dying)/D(500)):sm((now-p.born)/D(900));if(p.dying&&p.frac<=0)paths.splice(i,1);}
+  for(const s of sparks){const t=(now-s.born)/1000;s.a=t<.1?t/.1:.85+.15*Math.sin(t*3+s.x);s.r=s.small?3+5*Math.exp(-t*5):5+13*Math.exp(-t*5);}
+  if(neuron&&!neuron.manual){const v=(now-neuron.t0)/1000;neuron.p.w=3+4*sm(v-1)+5*sm(v-2.2);neuron.p.frac=sm(v/1.2);}
+  const f=fill.from+(fill.to-fill.from)*sm((now-fill.t0)/D(1800));
+  const r=draw({motifs,paths:neuron?[...paths.map(p=>({...p,alpha:.35})),neuron.p]:paths,sparks:neuron?[]:sparks,fill:f});if(r)lay=r;drawPulses(now);placeTags();requestAnimationFrame(frame);}
+requestAnimationFrame(frame);
+/* measure on demand, so a tap before the first frame still lands in the right place */
+function measure(){const r=draw({motifs,paths,sparks,fill:fill.from});if(r)lay=r;}
+const toBrain=(x,y)=>{measure();const b=cv.getBoundingClientRect();return [(x-b.left-lay.ox)/lay.fit,(y-b.top-lay.oy)/lay.fit];};
+const toScreen=([x,y])=>{measure();const b=cv.getBoundingClientRect();return [b.left+lay.ox+x*lay.fit,b.top+lay.oy+y*lay.fit];};
+/* signals: a bright dot that runs along a pathway, drawn over the brain */
+function drawPulses(now){if(!pulses.length)return;const g=cv.getContext('2d'),dpr=Math.min(2,devicePixelRatio||1);g.save();g.setTransform(dpr,0,0,dpr,0,0);g.translate(lay.ox,lay.oy);g.scale(lay.fit,lay.fit);
+  for(let i=pulses.length-1;i>=0;i--){const p=pulses[i],k=(now-p.t0)/p.dur;if(k<0)continue;if(k>1){pulses.splice(i,1);continue;}const e=sm(k),q=p.pts[Math.min(p.pts.length-1,Math.floor(e*(p.pts.length-1)))];
+    g.fillStyle='rgba(228,87,46,.3)';g.beginPath();g.arc(q[0],q[1],22,0,7);g.fill();g.fillStyle='#FFF7DC';g.beginPath();g.arc(q[0],q[1],9,0,7);g.fill();}g.restore();}
+const buzz=ms=>{try{navigator.vibrate&&navigator.vibrate(ms);}catch(e){}};
+function route(a){const c=B.CENTRE,m=[(c[0]+a[0])/2+(a[1]-c[1])*.25,(c[1]+a[1])/2-(a[0]-c[0])*.25];return B.route([c,m,a],18);}
+
+/* ---------- screens ---------- */
+function go(n){step=n;const di=n>=4?2:n;$$('.step').forEach(s=>s.classList.toggle('on',+s.dataset.s===n));$$('#dots i').forEach((d,i)=>{d.classList.toggle('on',i===di);d.classList.toggle('done',i<di);});if(n===1)setTimeout(reserve,50);
+  if(n>0)$('#cue').classList.add('gone');$('#stage').classList.toggle('small',n>0&&n<4);if(n===2)recommend();if(n===4)reveal();}
+/* what we're really doing at each step, with the study it rests on */
+const THINK={2:()=>[[`Matching ${P.loves.map(k=>LOVES[k].label).join(' + ')} to the skills ${P.loves.length>1?'they lean':'it leans'} on`],['Checking what practice really improves','Simons et al., 2016 · trained skills improve most'],['Picking skills you can measure','Ball et al., 2002 · ACTIVE trial, 2,832 adults']],
+  4:()=>[[`Matching ${P.loves.map(k=>LOVES[k].label).join(' + ')} to the skills ${P.loves.length>1?'they use':'it uses'}`],['Choosing your first game','Speed training has the strongest evidence'],['Starting easy, then getting harder','So you learn at your edge']]};
+/* say one line at a time, like working something out: pulse while thinking, settle when done */
+async function lines(el,list,gap){el.innerHTML='';for(const [t,src] of list){const d=document.createElement('div');d.className='tl';d.innerHTML=`<span class="mk" aria-hidden="true"></span><p>${t}${src?`<small>${src}</small>`:''}</p>`;el.appendChild(d);
+    await new Promise(r=>requestAnimationFrame(()=>r()));d.classList.add('on');await new Promise(r=>setTimeout(r,reduced?0:gap));d.classList.add('done');}}
+let thinking=false;
+async function next(){const n=step===1?4:step+1;if(thinking)return;
+  if(THINK[n]&&!reduced){thinking=true;$$('.step').forEach(s=>s.classList.toggle('on',s.dataset.s==='9'));const el=$('#thinking');
+    /* the brain works while you wait: signals run down random pathways */
+    const ps=paths.filter(p=>!p.dying&&p.key!=='d');for(let i=0;i<6&&ps.length;i++)pulses.push({pts:ps[Math.floor(Math.random()*ps.length)].pts,t0:performance.now()+i*220,dur:600});
+    if(n===4)recommend();await lines(el,THINK[n](),1250);await new Promise(r=>setTimeout(r,300));thinking=false;}
+  go(n);}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-next]');if(b&&!b.disabled)next();});
+
+/* 0 · the cue shows where to touch; the first touch fires a signal, the second connects them */
+/* one touch sets off a cascade: signals branch out, each landing sparks the next, until the brain is alive */
+function cascade(pt){const now=performance.now(),r=B.rng(Math.floor(pt[0]*7+pt[1]*13));let front=[pt],delay=0;
+  for(let gen=0;gen<4;gen++){const next=[];front.forEach(p=>{const kids=gen===0?6:2;for(let i=0;i<kids;i++){let e=null;for(let k=0;k<12&&!e;k++){const a=r()*Math.PI*2,l=70+r()*80,q=[p[0]+Math.cos(a)*l,p[1]+Math.sin(a)*l];if(B.inside(q[0],q[1]))e=q;}if(!e)continue;
+      const m=[(p[0]+e[0])/2+(r()-.5)*40,(p[1]+e[1])/2+(r()-.5)*40],pts=B.route([p,m,e],12),at=now+D(delay+gen*260+i*35);
+      paths.push({key:'c',pts,born:at,w:2.6-gen*.4,frac:0,alpha:.9-gen*.12});pulses.push({pts,t0:at,dur:D(420)});
+      setTimeout(()=>sparks.push({x:e[0],y:e[1],r:4,a:0,born:performance.now(),small:1}),D(delay+gen*260+i*35+420));next.push(e);}});front=next.slice(0,8);}
+  const [x,y]=toScreen(pt),b=$('#stage').getBoundingClientRect(),f=$('#flash');f.style.left=(x-b.left)+'px';f.style.top=(y-b.top)+'px';f.classList.remove('go');void f.offsetWidth;f.classList.add('go');setTimeout(()=>f.classList.remove('go'),1700);
+  $('#stage').classList.remove('lit');void $('#stage').offsetWidth;$('#stage').classList.add('lit');setTimeout(()=>$('#stage').classList.remove('lit'),1700);buzz([12,40,10,40,10,60,30]);}
+const LINES=['Brain cells send signals.','Two signals, connected.','Fire together, wire together.'];
+function fire(pt){const now=performance.now();const first=!t0;if(!t0)t0=now;sparks.push({x:pt[0],y:pt[1],r:6,a:0,born:now});$('#cue').classList.add('gone');buzz(12);if(first)cascade(pt);
+  /* the neuron sprouts branches where you touched */
+  for(let i=0;i<5;i++){const a=i/5*Math.PI*2+Math.random()*.6,l=26+Math.random()*16,e=[pt[0]+Math.cos(a)*l,pt[1]+Math.sin(a)*l];paths.push({key:'d',pts:B.route([pt,[(pt[0]+e[0])/2+Math.sin(a)*6,(pt[1]+e[1])/2-Math.cos(a)*6],e],8),born:now+i*40,w:1.6,frac:0,alpha:.7});}
+  if(sparks.length>1){const a=sparks.at(-2),b=sparks.at(-1),m=[(a.x+b.x)/2+(b.y-a.y)*.2,(a.y+b.y)/2-(b.x-a.x)*.2];const pts=B.route([[a.x,a.y],m,[b.x,b.y]],16);paths.push({key:'w',pts,born:now,w:3+sparks.length,frac:0});pulses.push({pts,t0:now+700,dur:700});setTimeout(()=>buzz([8,40,8]),700);}
+  /* after the burst settles, the landing story's first line, then your name */
+  if(first){setTimeout(()=>{$('#beat0').hidden=false;},D(1300));setTimeout(()=>{$('#more0').hidden=false;$('#go0').hidden=false;},D(2000));}}
+cv.addEventListener('pointerdown',e=>{if(step!==0)return;const p=toBrain(e.clientX,e.clientY);if(B.inside(p[0],p[1]))fire(p);});
+cv.addEventListener('keydown',e=>{if(step===0&&(e.key==='Enter'||e.key===' ')){e.preventDefault();fire([[300,250],[470,300],[420,360]][sparks.length%3]);}});
+$('#name').addEventListener('input',e=>{P.name=e.target.value.trim();const w=$('#whose');w.textContent=P.name?P.name+(P.name.endsWith('s')?'’':'’s')+' brain':'';w.classList.toggle('on',!!P.name);});
+
+/* 1 · loves: tap a symbol and it flies into the brain and grows there */
+let seed=7;
+Object.entries(LOVES).forEach(([k,L])=>{const b=document.createElement('button');b.type='button';b.className='love';b.setAttribute('aria-pressed','false');
+  b.innerHTML=`<canvas aria-hidden="true"></canvas><b>${L.label}</b>`;b.setAttribute('aria-label',`${L.label}: ${L.eg}`);$('#loves').appendChild(b);requestAnimationFrame(()=>art(b.querySelector('canvas'),k,false));
+  b.addEventListener('click',()=>{const on=!P.loves.includes(k);if(on&&P.loves.length>=3)return;const now=performance.now(),BI=B.INTERESTS[L.brain];
+    if(on){P.loves.push(k);flyTo(b.querySelector('canvas'),BI.at,L.color,()=>{light();B.scatter(motifs.filter(m=>!m.dying),BI.at,BI.kinds,11,seed+=13,100).forEach((m,i)=>{m.owner=k;m.born=performance.now()+i*55;motifs.push(m);});
+        const from=sparks[0]?[sparks[0].x,sparks[0].y]:B.CENTRE;paths.push({key:'i:'+k,pts:B.route([from,[(from[0]+BI.at[0])/2,(from[1]+BI.at[1])/2-30],BI.at],16),born:performance.now(),w:4,frac:0});});}
+    else{P.loves=P.loves.filter(x=>x!==k);motifs.forEach(m=>{if(m.owner===k&&!m.dying)m.dying=now;});paths.forEach(p=>{if(p.key==='i:'+k&&!p.dying)p.dying=now;});light();}
+    b.setAttribute('aria-pressed',on);art(b.querySelector('canvas'),k,on);$('#loves').classList.toggle('full',P.loves.length>=3);$('#go1').disabled=!P.loves.length;mirror();});});
+const WHO={move:'A mover',create:'A maker',sound:'A musician at heart',words:'A storyteller',numbers:'An analyst',build:'A builder',discover:'An explorer',people:'A people person'};
+const DOES={move:'thinks on their feet',create:'sees the detail',sound:'hears the pattern',words:'thinks in words',numbers:'thinks in numbers',build:'loves how things work',discover:'asks why',people:'reads people'};
+/* each love lights its neighbourhood of the brain; the rest stays softly dimmed */
+function light(){const at=P.loves.map(l=>B.INTERESTS[LOVES[l].brain].at);motifs.forEach(m=>{if(m.owner!=='bg')return;m.alphaTo=at.some(a=>Math.hypot(a[0]-m.x,a[1]-m.y)<150)?1:DIM;});}
+function identity(){return P.loves.map(k=>LOVES[k].label).join(' · ');}
+/* reflect what's happening in the brain, not who you are */
+const FIND={
+  move:{num:'3',unit:'months',head:'Adults who learned to juggle showed brain changes in three months.',mean:'Learning a new movement <b>reshapes the parts of the brain that do it</b>. Every sport and dance works this way.',
+    t:'Learning to juggle changed the brain',a:'Draganski et al.',y:2004,j:'Nature',doi:'10.1038/427311a',who:'Adults with no juggling experience',did:'Practised juggling for three months',got:'Brain scans showed growth in areas that track motion. It partly faded after they stopped.'},
+  create:{num:'5',unit:'seconds',head:'Experts rebuilt a whole chess board after a five-second glance.',mean:'With practice your brain <b>sees whole patterns, not single pieces</b>. Artists and designers train the same way of seeing.',
+    t:'Experts see in patterns',a:'Chase & Simon',y:1973,j:'Cognitive Psychology',doi:'10.1016/0010-0285(73)90004-2',who:'Chess masters and beginners',did:'Glanced at a chess position for five seconds, then rebuilt it',got:'Masters recalled real positions far better. With random positions, they did little better than beginners.'},
+  sound:{num:'Early',unit:'practice',head:'Pianists who practised more as children had more developed brain wiring.',mean:'Playing music <b>builds the connections it uses</b>, and the more you practise, the more they develop.',
+    t:'Piano practice shaped brain wiring',a:'Bengtsson et al.',y:2005,j:'Nature Neuroscience',doi:'10.1038/nn1516',who:'Professional pianists',did:'Had brain scans and reported their practice over the years',got:'More childhood practice went with more developed white matter, the brain’s wiring.'},
+  words:{num:'1',unit:'week',head:'Students who practised recalling remembered more a week later than those who reread.',mean:'<b>Pulling words back out of memory</b> makes them stick far better than reading them again.',
+    t:'Recalling beats rereading',a:'Roediger & Karpicke',y:2006,j:'Psychological Science',doi:'10.1111/j.1467-9280.2006.01693.x',who:'University students',did:'Studied short texts, then either reread them or practised recalling them',got:'A week later, the recall group remembered more.'},
+  numbers:{num:'7→79',unit:'digits',head:'One student went from remembering 7 digits to 79 with practice.',mean:'Memory isn’t fixed. <b>Grouping things into chunks</b> lets you hold far more, and practice builds the habit.',
+    t:'Practice built a giant memory span',a:'Ericsson, Chase & Faloon',y:1980,j:'Science',doi:'10.1126/science.7375930',who:'One student, a keen runner',did:'Practised for about 230 hours over 20 months',got:'He grouped digits into running times and went from 7 to 79 digits.'},
+  build:{num:'85%',unit:'right',head:'Learning is fastest when you get about 85% right.',mean:'Too easy teaches nothing; too hard is discouraging. <b>The sweet spot is just past comfortable</b>, so our games adjust to keep you there.',
+    t:'The sweet spot for learning',a:'Wilson et al.',y:2019,j:'Nature Communications',doi:'10.1038/s41467-019-12552-4',who:'A mathematical study of how learning works',did:'Worked out which difficulty makes learning fastest',got:'Learning was fastest at about 85% accuracy, the edge of what you can do.'},
+  discover:{num:'Years',unit:'of practice',head:'London taxi drivers had a larger memory region for navigation.',mean:'Exploring and learning a complex world <b>shapes the brain areas you use for it</b>. The longer they drove, the bigger the change.',
+    t:'Navigation changed taxi drivers’ brains',a:'Maguire et al.',y:2000,j:'PNAS',doi:'10.1073/pnas.070039597',who:'London taxi drivers and non-drivers',did:'Had brain scans compared',got:'Drivers had a larger rear hippocampus, and it was larger the longer they had driven.'},
+  people:{num:'+20%',unit:'after sleep',head:'After a night’s sleep, people were about 20% faster at a skill, with no extra practice.',mean:'Your brain <b>keeps working on what you learned while you sleep</b>. Rest is part of practice.',
+    t:'Sleep improves practised skills',a:'Walker et al.',y:2002,j:'Neuron',doi:'10.1016/S0896-6273(02)00746-8',who:'Healthy adults',did:'Learned a finger-tapping sequence, then slept or stayed awake',got:'After sleep they were about 20% faster. After the same time awake, they weren’t.'}};
+function findHTML(k){const f=FIND[k];return `<div class="find" data-k="${k}"><div class="num">${f.num}<small>${f.unit}</small></div><div class="head">${f.head}</div><div class="mean">${f.mean}</div><button class="study" type="button" data-k="${k}"><i aria-hidden="true"></i>${f.a} · ${f.y}</button></div>`;}
+function renderFinds(focus){const el=$('#finds'),dots=$('#fdots');if(!el.style.minHeight)reserve();if(!P.loves.length){el.innerHTML='<p class="hint0">Pick up to three. We’ll show you what the research says about each.</p>';dots.innerHTML='';return;}
+  el.innerHTML=P.loves.map(findHTML).join('');
+  dots.innerHTML=P.loves.length>1?P.loves.map((_,i)=>`<i class="${i===P.loves.length-1?'on':''}"></i>`).join(''):'';
+  const i=Math.max(0,P.loves.indexOf(focus));requestAnimationFrame(()=>{el.scrollTo({left:i*el.clientWidth,behavior:reduced?'auto':'smooth'});});}
+function reserve(){const el=$('#finds'),probe=document.createElement('div');probe.className='finds';probe.style.cssText='position:absolute;visibility:hidden;left:0;top:0';
+  probe.style.width=el.getBoundingClientRect().width+'px';probe.innerHTML=Object.keys(FIND).map(k=>findHTML(k)).join('');document.body.appendChild(probe);
+  const h=Math.max(...[...probe.children].map(c=>c.getBoundingClientRect().height));probe.remove();if(h>0)el.style.minHeight=Math.ceil(h+4)+'px';}
+addEventListener('resize',()=>{if(step===1)reserve();});
+$('#finds').addEventListener('scroll',e=>{const el=e.currentTarget,i=Math.round(el.scrollLeft/el.clientWidth);$$('#fdots i').forEach((d,k)=>d.classList.toggle('on',k===i));},{passive:true});
+$('#finds').addEventListener('click',e=>{const b=e.target.closest('.study');if(b)openPaper(b.dataset.k);});
+function openPaper(k){const f=FIND[k];$('#pp-title').textContent=f.t;$('#pp-meta').textContent=`${f.a} · ${f.j} · ${f.y}`;
+  $('#pp-rows').innerHTML=[['👥','Who',f.who],['🧪','What they did',f.did],['✨','What changed',f.got]].map(([ic,l,v])=>`<li><span class="ic" aria-hidden="true">${ic}</span><span><b>${l}</b>${v}</span></li>`).join('');
+  $('#pp-open').href='https://doi.org/'+f.doi;$('#veil').classList.add('on');$('#paper').classList.add('on');buzz(8);setTimeout(()=>$('#pp-ok').focus(),300);}
+const closePaper=()=>{$('#veil').classList.remove('on');$('#paper').classList.remove('on');};
+$('#pp-ok').addEventListener('click',closePaper);$('#veil').addEventListener('click',closePaper);addEventListener('keydown',e=>{if(e.key==='Escape')closePaper();});
+const WHY_LOVE={move:['Linking Move to tracking skills','Jugglers’ brains changed in 3 months · Draganski et al., 2004'],
+  create:['Linking Create to seeing detail','Practice reshapes how finely we see · Draganski et al., 2004'],
+  sound:['Linking Sound to hearing and memory','Hearing and movement wire together · Zatorre et al., 2007'],
+  words:['Linking Words to memory','Recalling beats rereading · Roediger & Karpicke, 2006'],
+  numbers:['Linking Numbers to holding figures in mind','Experts remember in chunks · Chase & Simon, 1973'],
+  build:['Linking Build to switching between levels','Learning is fastest at your edge · Wilson et al., 2019'],
+  discover:['Linking Discover to noticing','Taxi drivers’ brains grew with navigation · Maguire et al., 2000'],
+  people:['Linking People to tracking many signals','Sleep steadies what you practise · Walker et al., 2002']};
+let lastLove=null;
+function mirror(){renderFinds(P.loves[P.loves.length-1]);return;const m=$('#mirror'),n=P.loves.length;if(!n){m.innerHTML='<p class="say" style="margin:0">Pick up to three.</p>';lastLove=null;return;}
+  const k=P.loves[n-1];if(k===lastLove)return;lastLove=k;const [a,b]=WHY_LOVE[k];lines(m,[[a],[b.split(' · ')[0],b.split(' · ')[1]]],650);}
+function flyTo(el,to,color,done){if(reduced||!el.animate){done();return;}const a=el.getBoundingClientRect(),s=[a.left+a.width/2,a.top+a.height/2],e=toScreen(to);
+  const d=document.createElement('div');d.className='fly';d.style.background=color;document.body.appendChild(d);
+  d.animate([{transform:`translate(${s[0]}px,${s[1]}px) scale(2.4)`},{transform:`translate(${(s[0]+e[0])/2}px,${Math.min(s[1],e[1])-60}px) scale(1.4)`,offset:.5},{transform:`translate(${e[0]}px,${e[1]}px) scale(.7)`}],{duration:650,easing:'cubic-bezier(.4,0,.2,1)'}).onfinish=()=>{d.remove();done();};}
+
+/* 2 · recommendation: the two skills your loves lean on most, wired one after the other */
+function recommend(){const score={},why={};P.loves.forEach(k=>REC[k].forEach(([g,r],n)=>{score[g]=(score[g]||0)+(n?1:2);if(!why[g])why[g]=r;}));
+  P.goals=Object.keys(score).sort((a,b)=>score[b]-score[a]).slice(0,2);
+  paths.forEach(p=>{if(p.key.startsWith('g:')&&!p.dying)p.dying=performance.now();});
+  $('#recs').innerHTML=P.goals.map(g=>`<div class="rec"><i aria-hidden="true"></i><div><b>${GOALS[g].label}</b><span>${why[g]}</span></div></div>`).join('');
+  P.goals.forEach((g,i)=>setTimeout(()=>{paths.push({key:'g:'+g,pts:route(GOALS[g].at),born:performance.now(),w:7,frac:0});$$('.rec')[i].classList.add('on');},D(300+i*700)));}
+function placeTags(){const tags=$('#tags');if(!tags.children.length)Object.entries(GOALS).forEach(([k,G])=>{const t=document.createElement('div');t.className='tag';t.dataset.g=k;t.textContent=G.label;tags.appendChild(t);});
+  const b=cv.getBoundingClientRect(),s=$('#stage').getBoundingClientRect();[...tags.children].forEach(t=>{const on=P.goals.includes(t.dataset.g)&&step>=2&&paths.some(p=>p.key==='g:'+t.dataset.g&&p.frac>.9);t.classList.toggle('on',on);
+    if(on){const a=GOALS[t.dataset.g].at;const x=b.left-s.left+lay.ox+a[0]*lay.fit,hw=t.offsetWidth/2+8;t.style.left=Math.min(s.width-hw,Math.max(hw,x))+'px';t.style.top=(b.top-s.top+lay.oy+a[1]*lay.fit)+'px';}});}
+
+/* 3 · depth: one neuron, a few connected, a dense network */
+const DEPTH=[['start','Just starting','',1,1],['some','Some practice','',2,4],['deep','Lots of practice','',3,9]];
+DEPTH.forEach(([k,label,sub,bars,n])=>{const b=document.createElement('button');b.type='button';b.className='lv';b.setAttribute('role','radio');b.setAttribute('aria-checked','false');
+  b.innerHTML=`<span class="bars" aria-hidden="true">${[1,2,3].map(i=>`<i class="${i<=bars?'on':''}"></i>`).join('')}</span><span><b>${label}</b></span>`;$('#levels').appendChild(b);
+  b.addEventListener('click',()=>{P.depth=k;$$('.lv').forEach(x=>x.setAttribute('aria-checked',x===b));$('#go3').disabled=false;rewire(n);
+    $('#depth-say').textContent={start:'The fastest gains come early.',some:'Plenty of room to grow.',deep:'Experts keep rewiring too.'}[k];});});
+/* the brain grows the network you described: a few links, or many */
+function rewire(n){const now=performance.now();paths.forEach(p=>{if(p.key==='x'&&!p.dying)p.dying=now;});const anchors=motifs.filter(m=>!m.dying&&m.s>16).map(m=>[m.x,m.y]).concat([B.CENTRE]);
+  const r=B.rng(n*31+7);for(let i=0;i<n-1;i++){const a=anchors[Math.floor(r()*anchors.length)],b=[B.CENTRE[0]+(r()-.5)*360,B.CENTRE[1]+(r()-.5)*220];if(!B.inside(b[0],b[1]))continue;
+    paths.push({key:'x',pts:B.route([a,[(a[0]+b[0])/2+(r()-.5)*60,(a[1]+b[1])/2+(r()-.5)*60],b],12),born:now+i*80,w:2.2,frac:0,alpha:.8});}buzz(10);}
+
+/* 4 · the reveal: navy fills, one bright neuron */
+/* the ready game first; then what your profile would get, honestly marked as still growing */
+const GAMES={memory:['Echo','Hold a pattern, then change it.','note'],attention:['Swarm','Track what moves.','dots'],flexibility:['Switch','Change the rule mid-way.','arrow'],
+  perception:['Detail','Spot the smallest difference.','magnifier'],retention:['Return','Remember it tomorrow.','spark']};
+function gameArt(cv,kind,live){const dpr=Math.min(2,devicePixelRatio||1),w=56;cv.width=cv.height=w*dpr;const g=cv.getContext('2d');g.scale(dpr,dpr);
+  g.fillStyle=live?'#131E4A':'#ecebe6';g.beginPath();g.arc(w/2,w/2,w/2,0,7);g.fill();B.drawMotif(g,{kind,x:w/2,y:w/2,s:w*.24,c:live?'#F28C28':'#9a9ea6',c2:live?'#F5C63C':'#c9c9c4'});}
+function showGames(){const el=$('#games');el.innerHTML='';
+  const rows=[['Glimpse','How fast can your brain see?','star',true]].concat(P.goals.map(g=>GAMES[g]).filter(Boolean).map(x=>[...x,false]));
+  rows.forEach(([n,line,kind,live],i)=>{const d=document.createElement('div');d.className='gm'+(live?'':' soon');
+    d.innerHTML=`<div class="art"><canvas aria-hidden="true"></canvas></div><div><b>${n}${live?'<span class="ready">Ready</span>':'<span class="tag">Growing</span>'}</b><span>${line}</span></div>`;el.appendChild(d);gameArt(d.querySelector('canvas'),kind,live);
+    setTimeout(()=>d.classList.add('on'),D(i*220));});
+  setTimeout(()=>{$('#lab').hidden=false;$('#play').hidden=false;},D(rows.length*220+200));}
+function reveal(){const now=performance.now();motifs.forEach(m=>{if(m.owner==='bg')m.alphaTo=1;});$('#h4').textContent=P.name?`${P.name}, your games.`:'Your games.';
+  /* replay: a signal runs down every pathway you made, in the order you made them */
+  const mine=paths.filter(p=>p.key!=='d'&&!p.dying),show=mine.filter(p=>p.key!=='c').concat(mine.filter(p=>p.key==='c')).slice(0,14);show.forEach((p,i)=>pulses.push({pts:p.pts,t0:now+D(1900)+i*D(130),dur:D(700)}));
+  const secs=Math.max(1,Math.round((now-(t0||now))/1000));
+    setTimeout(showGames,D(1900+show.length*130+400));
+  neuron={t0:performance.now()+D(1600),p:{pts:B.route([[165,215],[260,280],[380,330],[480,380],[586,420]],16),frac:0,w:3}};neuronBase=null;
+  store.set('pp9.profile',{name:P.name,loves:P.loves,goals:P.goals,depth:P.depth,identity:identity(),at:Date.now()});}
+/* drag through 30 days: the pathway thickens and new drawings appear. An illustration, said plainly. */
+let neuronBase=null,pool=null;const future=[];
+$('#days')&&$('#days').addEventListener('input',e=>{const d=+e.target.value,k=d/30;e.target.style.setProperty('--p',(k*100)+'%');if(!neuron)return;
+  neuron.manual=true;neuron.p.w=12+k*10;neuron.p.frac=1;
+  /* more of what you love grows in */
+  if(!pool){const kinds=[].concat(...(P.loves.length?P.loves:['create']).map(l=>B.INTERESTS[LOVES[l].brain].kinds));pool=B.scatter(motifs.filter(x=>!x.dying),B.CENTRE,kinds,40,321,300).map(m=>({...m,s:Math.min(m.s,13),owner:'future'}));}
+  const want=Math.round(k*pool.length),t=performance.now();
+  while(future.length<want){const m={...pool[future.length],born:t,dying:0,k:0};future.push(m);motifs.push(m);}
+  while(future.length>want){const m=future.pop();m.dying=t;}
+  $('#drag-say').textContent=d===0?'Drag to see day 30.':d<8?`Day ${d}. Firming up.`:d<20?`Day ${d}. Signals flow easier.`:`Day ${d}. A well-worn path.`;if(d%5===0)buzz(6);});
+async function card(){const W=1080,H=1350,out=document.createElement('canvas');out.width=W;out.height=H;const g=out.getContext('2d');
+  g.fillStyle='#fff';g.fillRect(0,0,W,H);try{await document.fonts.load('500 64px Inter');}catch(e){}
+  g.drawImage(cv,0,0,cv.width,cv.height,40,200,W-80,(W-80)*cv.height/cv.width);
+  g.fillStyle='#111318';g.textAlign='center';g.font='500 64px Inter, system-ui, sans-serif';g.fillText(P.name?P.name+(P.name.endsWith('s')?'’':'’s')+' brain':'My brain',W/2,140);
+  g.fillStyle='#e4572e';g.font='500 40px Inter, system-ui, sans-serif';const t=identity();if(t)g.fillText(t,W/2,H-170);
+  g.fillStyle='#5a5e68';g.font='400 30px Inter, system-ui, sans-serif';g.fillText('Plasticity · your brain rewires around what you do',W/2,H-100);
+  return await new Promise(r=>out.toBlob(r,'image/png'));}
+const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2600);};
+$('#keep')&&$('#keep').addEventListener('click',async()=>{const blob=await card(),file=new File([blob],'my-brain.png',{type:'image/png'});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],text:identity()});}catch(e){}return;}
+  try{await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);toast('Copied. Paste it anywhere.');return;}catch(e){}
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='my-brain.png';document.body.appendChild(a);a.click();a.remove();toast('Saved to your downloads.');});
+})();
+</script>
+</body>
+</html>
