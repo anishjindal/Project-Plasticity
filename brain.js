@@ -93,7 +93,7 @@ function renderer(cv){const g=cv.getContext('2d');const mk=document.createElemen
     g.save();g.translate(ox,oy);g.scale(fit,fit);
     const ol=(st.outline==null?1:st.outline)*(1-fill);
     if(ol>0){g.save();g.globalAlpha=ol;g.strokeStyle='#1b2a5c';g.lineWidth=2.2/Math.max(.6,fit);g.lineJoin='round';g.stroke(wavPath);g.globalAlpha=ol*.55;g.lineWidth=1.6/Math.max(.6,fit);for(const f of FOLDS){g.beginPath();g.moveTo(f[0][0],f[0][1]);g.bezierCurveTo(f[1][0],f[1][1],f[2][0],f[2][1],f[3][0],f[3][1]);g.stroke();}g.restore();}
-    g.save();g.clip(brain);for(const m of motifs){const k=sm(m.k);if(k<=0)continue;g.save();g.translate(m.x,m.y);g.scale(k,k);g.translate(-m.x,-m.y);g.globalAlpha=k;drawMotif(g,m);g.restore();}g.restore();
+    g.save();g.clip(brain);for(const m of motifs){const k=sm(m.k);if(k<=0)continue;g.save();g.translate(m.x,m.y);g.scale(k,k);g.translate(-m.x,-m.y);g.globalAlpha=k*(m.alpha==null?1:m.alpha);drawMotif(g,m);g.restore();}g.restore();
     /* pathways: cream on a dark underlay so they read over the art */
     for(const p of paths){const n=Math.max(2,Math.round(p.pts.length*clamp(p.frac,0,1)));if(p.frac<=0)continue;const tr=()=>{g.beginPath();g.moveTo(p.pts[0][0],p.pts[0][1]);for(let i=1;i<n;i++)g.lineTo(p.pts[i][0],p.pts[i][1]);g.stroke();};
       g.save();g.lineCap='round';g.lineJoin='round';g.strokeStyle='rgba(11,18,51,.85)';g.lineWidth=(p.w||5)+7;tr();g.strokeStyle='rgba(255,240,190,'+(p.alpha==null?1:p.alpha)+')';g.lineWidth=p.w||5;tr();
