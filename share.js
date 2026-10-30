@@ -75,10 +75,10 @@ function sheet(info){
 .ppsheet{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:0 16px 40px;background:rgba(255,255,255,.985);backdrop-filter:blur(10px);opacity:0;pointer-events:none;transition:opacity .3s}
 .ppsheet.on{opacity:1;pointer-events:auto}
 .ppsheet pre{margin:0 0 28px;font:clamp(18px,3vw,24px)/1.3 system-ui,"Apple Color Emoji","Segoe UI Emoji",sans-serif;text-align:left;white-space:pre}
-.ppsheet .apps{display:flex;gap:clamp(14px,4vw,28px);flex-wrap:wrap;justify-content:center}
-.ppsheet .app{display:flex;flex-direction:column;align-items:center;gap:8px;background:none;border:0;padding:0;cursor:pointer;font:500 13px Inter,system-ui,sans-serif;color:#111318;transform:translateY(12px);opacity:0;transition:transform .35s cubic-bezier(.4,0,.2,1),opacity .35s}
+.ppsheet .apps{display:flex;gap:clamp(8px,2.6vw,28px);flex-wrap:wrap;justify-content:center}
+.ppsheet .app{display:flex;flex-direction:column;align-items:center;gap:8px;background:none;border:0;padding:0;height:auto;min-height:0;width:auto;max-width:none;margin:0;cursor:pointer;font:500 13px Inter,system-ui,sans-serif;color:#111318;transform:translateY(12px);opacity:0;transition:transform .35s cubic-bezier(.4,0,.2,1),opacity .35s}
 .ppsheet.on .app{transform:none;opacity:1}
-.ppsheet .app i{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:transform .15s}
+.ppsheet .app i{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:transform .15s}
 .ppsheet .app:hover i{transform:scale(1.08)}
 .ppsheet .app svg{width:28px;height:28px}
 .ppsheet .low{display:flex;gap:28px;margin-top:28px;font-size:14px}
