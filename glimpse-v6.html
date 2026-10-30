@@ -321,7 +321,6 @@ function drawSticker(T){const S=600,c=document.createElement('canvas');c.width=c
   g.fillStyle=CREAM;g.font='700 132px Inter,system-ui';g.fillText(`${T.score}`,m,m+40);g.font='600 34px Inter,system-ui';g.fillStyle='rgba(247,238,221,.7)';g.fillText('ms',m,m+86);
   g.fillStyle=ORANGE;g.font='600 32px Inter,system-ui';g.fillText(part?`under ${part[1]}${part[2]?' '+part[2].replace('.',''):''}`.replace(' a blink',' a blink'):'vs a blink',m,m+140);
   return c;}
-$('#sticker').addEventListener('click',async()=>{const T=LAST||H[NUM];try{const blob=await new Promise(r=>drawSticker(T).toBlob(r,'image/png'));await shareFile(blob,`glimpse-${NUM}.png`,'');}catch(e){if(e&&e.name!=='AbortError')toast('Couldn’t share. Try again.');}});
 
 /* ---------- start ---------- */
 requestAnimationFrame(()=>disc());setTimeout(disc,60);addEventListener('resize',()=>{if(!$('.app').classList.contains('playing'))disc();});
