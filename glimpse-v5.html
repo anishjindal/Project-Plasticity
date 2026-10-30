@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>Glimpse</title>
+<meta name="description" content="How fast can your brain see? Thirty seconds of flashes, then the research and your speed.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ease:cubic-bezier(.4,0,.2,1);--bounce:cubic-bezier(.34,1.56,.64,1);--bg:#fff;--ink:#111318;--ink2:#5a5e68;--rule:#e6e6e3;--accent:#e4572e;--gold:#F5C63C;--navy:#131E4A;--cream:#F7EEDD;
+  --safeb:env(safe-area-inset-bottom,0px);--safet:env(safe-area-inset-top,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#fff}}
+:root[data-theme="dark"]{--bg:#fff}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Inter",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body{max-width:440px;margin:0 auto;overflow:hidden;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+button,a{font:inherit;color:inherit;touch-action:manipulation;cursor:pointer}
+.app{height:100svh;display:flex;flex-direction:column;align-items:center;padding:calc(12px + var(--safet)) 16px calc(20px + var(--safeb))}
+header{width:100%;display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:8px;font-weight:600;font-size:20px;letter-spacing:-.02em}
+.eye{width:26px;height:26px;border-radius:50%;background:var(--navy);position:relative}
+.eye::after{content:"";position:absolute;inset:8px;border-radius:50%;background:var(--accent);animation:blinkdot 3.4s infinite}
+@keyframes blinkdot{0%,90%,100%{transform:scale(1)}94%{transform:scale(.2)}}
+.day{font-size:13px;color:var(--ink2);font-variant-numeric:tabular-nums}
+/* thirty seconds, one line: it fills as you play */
+.time{width:100%;height:4px;border-radius:2px;background:var(--rule);margin-top:14px;overflow:hidden}
+.time i{display:block;height:100%;width:0;background:var(--accent);border-radius:2px}
+.stage{flex:1;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0}
+.say{font-weight:600;font-size:clamp(22px,6vw,26px);letter-spacing:-.025em;margin:0;min-height:1.3em;text-align:center}
+.sub{font-size:15px;color:var(--ink2);margin:6px 0 0;min-height:1.4em;text-align:center;font-variant-numeric:tabular-nums}
+.world{position:relative;width:min(100%,calc(100svh - 360px),380px);aspect-ratio:1;margin-top:18px}
+.world canvas{position:absolute;inset:0;width:100%;height:100%}
+.playc{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:92px;height:92px;border-radius:50%;border:0;background:var(--accent);color:#fff;font-size:28px;padding-left:6px;z-index:2;box-shadow:0 10px 30px rgba(228,87,46,.4);animation:breathe 2.4s var(--ease) infinite}
+@keyframes breathe{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.06)}}
+.playc[hidden]{display:none}
+/* four answers, always in the same place under the thumb */
+.choices{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;width:100%;max-width:340px;margin-top:22px;min-height:76px;transition:opacity .2s}
+.choices button{aspect-ratio:1;border-radius:50%;border:0;background:var(--navy);padding:0;transition:transform .15s var(--bounce),box-shadow .2s,opacity .25s}
+.choices button:active{transform:scale(.9)}
+.choices button.right{box-shadow:0 0 0 4px #fff,0 0 0 7px var(--accent);transform:scale(1.08)}
+.choices button.wrong{opacity:.3}
+.choices canvas{width:100%;height:100%;display:block;pointer-events:none}
+.choices.off{opacity:0;pointer-events:none}
+.hint{font-size:14px;color:var(--ink2);margin:22px 0 0;text-align:center;min-height:76px;line-height:1.45}
+.app.playing .hint{display:none}.app:not(.playing) .choices{display:none}
+/* full-screen sheets: research, then impact */
+.sheet{position:fixed;inset:0;z-index:12;overflow-y:auto;background:#fff;padding:calc(26px + var(--safet)) 22px calc(120px + var(--safeb));opacity:0;pointer-events:none;transition:opacity .45s var(--ease)}
+.sheet.on{opacity:1;pointer-events:auto}
+.cap{font-size:13px;color:var(--accent);margin:0;font-weight:500}
+.sheet h2{margin:6px 0 0;font-weight:600;font-size:clamp(26px,7.4vw,32px);letter-spacing:-.03em;line-height:1.08}
+/* the research: three numbers, one under the other, each with its paper */
+.finds{display:flex;flex-direction:column;gap:26px;margin-top:26px}
+.find{display:grid;grid-template-columns:108px 1fr;gap:4px 14px;align-items:start;animation:rise .55s var(--ease) both}
+.find:nth-child(2){animation-delay:.12s}.find:nth-child(3){animation-delay:.24s}.find:nth-child(4){animation-delay:.36s}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.find .num{grid-row:span 2;font-weight:700;font-size:34px;letter-spacing:-.04em;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums}
+.find .num small{display:block;font-size:12px;font-weight:500;letter-spacing:0;color:var(--ink2);margin-top:5px}
+.find .head{font-weight:500;font-size:16px;line-height:1.35}
+.study{display:inline-flex;align-items:center;gap:8px;margin-top:8px;border:0;padding:6px 12px 6px 6px;border-radius:999px;background:#f5f3ee;font-size:12.5px;color:var(--ink);justify-self:start;transition:transform .15s var(--bounce)}
+.study:active{transform:scale(.96)}
+.study i{width:22px;height:26px;position:relative;flex:none}
+.study i::before{content:"";position:absolute;inset:0;border-radius:3px 9px 3px 3px;background:#fff;box-shadow:0 1px 3px rgba(19,30,74,.25)}
+.study i::after{content:"";position:absolute;left:5px;right:6px;top:8px;height:2px;background:var(--accent);box-shadow:0 5px 0 #c9c9c4,0 10px 0 #c9c9c4}
+.honest{display:grid;grid-template-columns:108px 1fr;gap:4px 14px;margin-top:30px;padding-top:20px;border-top:1px solid var(--rule);font-size:14px;color:var(--ink2);line-height:1.45}
+.honest span{font-size:12px;font-weight:500;color:var(--ink2);padding-top:2px}
+.honest p{margin:0}.honest .study{grid-column:2}
+.gobar{position:fixed;left:0;right:0;bottom:0;z-index:13;display:flex;justify-content:center;padding:44px 0 calc(22px + var(--safeb));background:linear-gradient(rgba(255,255,255,0),#fff 55%);opacity:0;pointer-events:none;transition:opacity .4s}
+.gobar.on{opacity:1;pointer-events:auto}
+.gobtn{border:0;background:var(--accent);color:#fff;border-radius:999px;padding:15px 40px;font-weight:600;font-size:18px;white-space:nowrap;box-shadow:0 8px 24px rgba(228,87,46,.3)}
+/* impact: the card is the result */
+#impact{display:flex;flex-direction:column;align-items:center;text-align:center}
+.cardimg{width:min(100%,340px);aspect-ratio:4/5;border-radius:22px;margin-top:14px;box-shadow:0 18px 44px rgba(19,30,74,.28);display:block;animation:rise .6s var(--ease) both}
+.meaning{font-size:15px;color:var(--ink2);line-height:1.45;margin:20px 0 0;max-width:330px}
+.meaning b{color:var(--ink);font-weight:500}
+.acts{display:flex;gap:12px;margin-top:20px}
+.share{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#fff;border:0;border-radius:999px;padding:15px 34px;font-weight:600;font-size:18px;box-shadow:0 8px 24px rgba(228,87,46,.3)}
+.ghost{background:#f5f3ee;color:var(--ink);border:0;border-radius:999px;padding:15px 22px;font-weight:500;font-size:16px}
+.toast{position:fixed;left:50%;bottom:calc(30px + var(--safeb));transform:translate(-50%,20px);background:var(--navy);color:var(--cream);padding:10px 18px;border-radius:999px;font-size:14px;opacity:0;transition:opacity .3s,transform .3s var(--bounce);z-index:40;pointer-events:none}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.stats{display:flex;justify-content:center;gap:34px;margin-top:24px}
+.stats div{display:flex;flex-direction:column;align-items:center}
+.stats b{font-weight:600;font-size:24px;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums}
+.stats span{font-size:12px;color:var(--ink2);margin-top:5px}
+.links{display:flex;justify-content:center;gap:22px;margin-top:22px}
+.links a,.links button{background:none;border:0;padding:0 0 2px;font-size:14px;color:var(--ink2);text-decoration:none;border-bottom:1px solid var(--rule)}
+/* the study sheet */
+.veil{position:fixed;inset:0;background:rgba(17,19,24,.28);opacity:0;pointer-events:none;transition:opacity .3s;z-index:30}
+.veil.on{opacity:1;pointer-events:auto}
+.paper{position:fixed;left:50%;bottom:0;width:min(100%,440px);transform:translate(-50%,105%);background:#fff;border-radius:26px 26px 0 0;padding:12px 22px calc(26px + var(--safeb));z-index:31;transition:transform .45s cubic-bezier(.34,1.3,.64,1);box-shadow:0 -10px 40px rgba(19,30,74,.18)}
+.paper.on{transform:translate(-50%,0)}
+.grab{width:40px;height:5px;border-radius:3px;background:#dcdcd6;margin:0 auto 14px}
+.pp-k{font-size:13px;color:var(--accent);margin:0}
+.paper h3{margin:4px 0 0;font-weight:600;font-size:22px;letter-spacing:-.02em;line-height:1.15}
+.pp-meta{font-size:13px;color:var(--ink2);margin:6px 0 0}
+.pp-rows{list-style:none;margin:16px 0 0;padding:0;display:flex;flex-direction:column;gap:12px}
+.pp-rows li{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;font-size:15px;line-height:1.4}
+.pp-rows .ic{width:28px;height:28px;border-radius:50%;background:#f5f3ee;display:flex;align-items:center;justify-content:center;font-size:14px}
+.pp-rows b{display:block;font-weight:500;font-size:12px;color:var(--ink2);letter-spacing:.02em}
+.pp-open{display:inline-block;margin-top:18px;font-size:14px;color:var(--ink2);text-decoration:none;border-bottom:1px solid var(--rule)}
+.pp-ok{display:block;margin:18px auto 0;background:var(--accent);color:#fff;border:0;border-radius:999px;padding:14px 44px;font-weight:600;font-size:17px}
+@media (prefers-reduced-motion:reduce){.eye::after,.playc{animation:none}}
+/* v5: three numbers, a few words each */
+.find{display:block}
+.find .num{font-size:52px;line-height:1;margin-bottom:6px}
+.finds{gap:30px}
+.find .line{margin:0;font-weight:600;font-size:20px;letter-spacing:-.015em;line-height:1.25}
+.find .study,.honest .study{display:inline-block;margin-top:8px;padding:0 0 1px;border-radius:0;background:none;border-bottom:1px solid var(--rule);font-size:13px;color:var(--ink2);grid-column:2;justify-self:start}
+.honest{display:block;margin-top:34px;padding-top:0;border-top:0;font-size:14px}
+.honest .study{margin:0 0 0 4px}
+.pp-take{margin:10px 0 0;font-weight:600;font-size:24px;letter-spacing:-.02em;line-height:1.2}
+.pp-how{margin:12px 0 0;font-size:15px;color:var(--ink2);line-height:1.45}
+</style>
+</head>
+<body>
+<main class="app">
+  <header>
+    <div class="brand"><span class="eye" aria-hidden="true"></span>Glimpse</div>
+    <span class="day" id="day"></span>
+  </header>
+  <div class="time" aria-hidden="true"><i id="time"></i></div>
+  <div class="stage">
+    <p class="say" id="say" aria-live="polite">How fast can your brain see?</p>
+    <p class="sub" id="sub">30 seconds. It gets faster as you do.</p>
+    <div class="world"><canvas id="cv" aria-label="Flash area"></canvas><button class="playc" type="button" id="play" aria-label="Start">▶</button></div>
+    <p class="hint" id="hint">A shape flashes in the middle.<br>Tap the one you saw.</p>
+    <div class="choices off" id="choices"></div>
+  </div>
+</main>
+
+<!-- after playing: the research first -->
+<section class="sheet" id="research" aria-labelledby="rh">
+  <p class="cap">Why speed?</p>
+  <h2 id="rh">Three things to remember.</h2>
+  <div class="finds" id="finds"></div>
+  <p class="honest">Tested in adults over 65. <button class="study" type="button" data-k="simons">What we don’t know yet ›</button></p>
+</section>
+<div class="gobar" id="gobar"><button class="gobtn" type="button" id="to-impact">See your impact →</button></div>
+
+<!-- then the impact -->
+<section class="sheet" id="impact" aria-labelledby="ih">
+  <p class="cap" id="ih">Today’s glimpse</p>
+  <img class="cardimg" id="cardimg" alt="">
+  <p class="meaning" id="meaning"></p>
+  <div class="acts"><button class="share" type="button" id="share">Share ↗</button><button class="ghost" type="button" id="sticker">Sticker</button></div>
+  <div class="stats"><div><b id="s-days">0</b><span>days</span></div><div><b id="s-best">–</b><span>best ms</span></div><div><b id="s-streak">0</b><span>streak</span></div></div>
+  <div class="links"><button type="button" id="again">Play again</button><button type="button" id="again-research">The research</button><a href="odyssey-v13.html">See your brain</a></div>
+</section>
+<div class="toast" id="toast" role="status"></div>
+
+<div class="veil" id="veil"></div>
+<section class="paper" id="paper" role="dialog" aria-modal="true" aria-labelledby="pp-take">
+  <div class="grab" aria-hidden="true"></div>
+  <p class="pp-k" id="pp-meta"></p>
+  <p class="pp-take" id="pp-take"></p>
+  <p class="pp-how" id="pp-how"></p>
+  <a class="pp-open" id="pp-open" target="_blank" rel="noopener">Read the full paper ↗</a>
+  <button class="pp-ok" type="button" id="pp-ok">Got it</button>
+</section>
+
+<script src="brain.js?v=7"></script>
+<script>
+(function(){
+const B=PPBrain,$=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const store={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d;}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
+const buzz=ms=>{try{navigator.vibrate&&navigator.vibrate(ms);}catch(e){}};
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const ME=store.get('pp9.profile',null)||{};
+const NAVY='#131E4A',DEEP='#0B1233',CREAM='#F7EEDD',ORANGE='#E4572E',FLASH='#F28C28',GOLD='#F5C63C';
+
+const today=new Date(),NUM=Math.round((new Date(today.getFullYear(),today.getMonth(),today.getDate())-new Date(2026,9,1))/864e5)+1;
+$('#day').textContent='#'+NUM;
+const H=store.get('glimpse.v4',{});
+
+/* shapes with clearly different outlines, so speed is the only hard part */
+const SHAPES=['heart','star','bolt','note','gear','key','flower','magnifier','question','leaf','ball','bubble'];
+const PLAY_MS=30000,START=420,MIN=33,MAX=900;
+/* a blink lasts roughly a third of a second (Harvard BioNumbers: 100 to 400 ms) */
+const BLINK=300;
+
+/* ---------- drawing ---------- */
+const cv=$('#cv');
+function ctx(){const dpr=Math.min(2,devicePixelRatio||1),w=cv.clientWidth;if(cv.width!==Math.round(w*dpr))cv.width=cv.height=Math.round(w*dpr);const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);return {g,w,c:w/2,R:w*.48};}
+function disc(){const {g,w,c,R}=ctx();g.clearRect(0,0,w,w);const gr=g.createRadialGradient(c,c*.85,8,c,c,R);gr.addColorStop(0,'#1F2F66');gr.addColorStop(1,NAVY);
+  g.fillStyle=gr;g.beginPath();g.arc(c,c,R,0,7);g.fill();return {g,w,c,R};}
+function fixation(){const {g,c}=disc();g.fillStyle=CREAM;g.beginPath();g.arc(c,c,5,0,7);g.fill();g.strokeStyle='rgba(247,238,221,.25)';g.lineWidth=1.5;g.beginPath();g.arc(c,c,16,0,7);g.stroke();}
+function flash(kind){const {g,c,R}=disc();B.drawMotif(g,{kind,x:c,y:c,s:R*.3,c:FLASH,c2:GOLD});}
+function mask(seed){const {g,c,R}=disc();const r=B.rng(seed),C=Object.values(B.C);
+  for(let i=0;i<90;i++){const a=r()*7,d=Math.sqrt(r())*R*.88;B.drawMotif(g,{kind:SHAPES[i%SHAPES.length],x:c+Math.cos(a)*d,y:c+Math.sin(a)*d,s:R*(.04+r()*.07),rot:r()*6,c:C[i%C.length],c2:GOLD});}}
+function ask(){const {g,c}=disc();g.fillStyle='rgba(247,238,221,.9)';g.font='600 44px Inter,system-ui';g.textAlign='center';g.textBaseline='middle';g.fillText('?',c,c+2);}
+function result(ok,kind){const {g,c,R}=disc();B.drawMotif(g,{kind,x:c,y:c,s:R*.3,c:ok?FLASH:'rgba(247,238,221,.35)',c2:ok?GOLD:'rgba(247,238,221,.35)'});}
+function shapeArt(cn,kind){const dpr=Math.min(2,devicePixelRatio||1),w=cn.clientWidth||70;cn.width=cn.height=Math.round(w*dpr);const g=cn.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);B.drawMotif(g,{kind,x:w/2,y:w/2,s:w*.27,c:FLASH,c2:GOLD});}
+
+/* ---------- one flash: watch, see, masked, pick ---------- */
+function pick(opts){return new Promise(res=>{const el=$('#choices');
+  el.innerHTML=opts.map((k,i)=>`<button type="button" data-i="${i}" aria-label="${k}"><canvas></canvas></button>`).join('');
+  $$('#choices canvas').forEach((cn,i)=>shapeArt(cn,opts[i]));el.classList.remove('off');
+  const h=e=>{const b=e.target.closest('button');if(!b)return;el.removeEventListener('click',h);res({i:+b.dataset.i,b});};el.addEventListener('click',h);});}
+/* hold the flash for whole screen refreshes, and measure what was really shown */
+function show(kind,ms){return new Promise(res=>{flash(kind);const t0=performance.now();let done=false;
+  const end=()=>{if(done)return;done=true;res(performance.now()-t0);};
+  const f=now=>{if(done)return;if(performance.now()-t0>=ms-6)end();else requestAnimationFrame(f);};requestAnimationFrame(f);setTimeout(end,ms+40);});}
+
+const say=(t,s)=>{$('#say').textContent=t;if(s!=null)$('#sub').textContent=s;};
+let timer=0,t0=0;
+function clock(){const p=Math.min(1,(performance.now()-t0)/PLAY_MS);$('#time').style.width=(p*100)+'%';if(p<1)timer=requestAnimationFrame(clock);}
+async function game(){$('#play').hidden=true;$('.app').classList.add('playing');$$('.sheet').forEach(s=>s.classList.remove('on'));
+  const rng=B.rng(NUM*7919+(Date.now()%9973)),trials=[];let E=START;
+  say('Watch the dot.','');fixation();await wait(700);t0=performance.now();clock();
+  while(performance.now()-t0<PLAY_MS||trials.length<6){
+    const pool=SHAPES.slice().sort(()=>rng()-.5),opts=pool.slice(0,4),ti=Math.floor(rng()*4),kind=opts[ti];
+    fixation();await wait(450+rng()*250);
+    const shown=await show(kind,E);mask(trials.length*31+NUM);await wait(260);ask();
+    say(`${Math.round(shown)} ms`,'Which one?');
+    const c=await pick(opts),ok=c.i===ti;c.b.classList.add(ok?'right':'wrong');if(!ok)$$('#choices button')[ti].classList.add('right');
+    result(ok,kind);buzz(ok?8:[4,40,4]);trials.push({ms:Math.round(shown),ok});
+    say(ok?['Got it.','Sharp.','Quick eyes.','Yes.'][trials.length%4]:'Missed. A little slower.',null);
+    /* faster after a hit, much slower after a miss: settles near 80% right, close to the 85% sweet spot */
+    E=ok?Math.max(MIN,E*.84):Math.min(MAX,E*1.9);
+    await wait(reduced?300:520);$('#choices').classList.add('off');}
+  cancelAnimationFrame(timer);$('#time').style.width='100%';
+  /* the score: the fastest flash you saw right, out of your last few, so one lucky guess can't set it */
+  const hits=trials.filter(t=>t.ok),tail=trials.slice(-6).filter(t=>t.ok),pool=tail.length?tail:hits.length?hits:trials;
+  const score=Math.min(...pool.map(t=>t.ms)),out={score,trials,start:trials[0].ms,at:Date.now()};
+  const prev=H[NUM];if(!prev||score<prev.score)H[NUM]=out;else H[NUM]={...prev,last:out};store.set('glimpse.v4',H);LAST=out;
+  $('.app').classList.remove('playing');say(`${score} ms`,'Your sight speed.');disc();research();}
+let LAST=null;
+
+/* ---------- research ---------- */
+const FIND=[
+  {num:'#1',line:'Biggest gains of three brain trainings.',k:'ball02'},
+  {num:'10 years',line:'Later, the gains were still there.',k:'rebok'},
+  {num:'½',line:'Half the car crashes.',k:'ball10'}];
+const PAPER={
+  ball02:{take:'Of three brain trainings, speed training gave the biggest gains.',how:'2,832 adults aged 65 to 94 did ten sessions of memory, reasoning or speed training, or none.',a:'Ball et al.',y:2002,j:'JAMA',doi:'10.1001/jama.288.18.2271'},
+  rebok:{take:'Ten years later, the speed gains were still there.',how:'The same adults were tested a decade after training. Trained groups also reported less trouble with daily tasks.',a:'Rebok et al.',y:2014,j:'J Am Geriatr Soc',doi:'10.1111/jgs.12607'},
+  ball10:{take:'Speed-trained drivers caused about half as many crashes.',how:'908 older drivers from the trial had six years of state crash records checked against the untrained group.',a:'Ball et al.',y:2010,j:'J Am Geriatr Soc',doi:'10.1111/j.1532-5415.2010.03138.x'},
+  simons:{take:'Training makes you better at what you train. Wider benefits have less proof.',how:'A review of the studies that brain-training companies cite.',a:'Simons et al.',y:2016,j:'Psychol Sci Public Interest',doi:'10.1177/1529100616661983'}};
+function research(){const R=$('#research');R.scrollTop=0;
+  $('#finds').innerHTML=FIND.map(f=>{const P=PAPER[f.k];return `<div class="find"><div class="num">${f.num}</div><p class="line">${f.line}</p><button class="study" type="button" data-k="${f.k}">${P.a} ${P.y} ›</button></div>`;}).join('');
+  R.classList.add('on');setTimeout(()=>$('#gobar').classList.add('on'),reduced?0:1800);}
+function openPaper(k){const f=PAPER[k];$('#pp-meta').textContent=`${f.a} · ${f.j} · ${f.y}`;$('#pp-take').textContent=f.take;$('#pp-how').textContent=f.how;
+  $('#pp-open').href='https://doi.org/'+f.doi;$('#veil').classList.add('on');$('#paper').classList.add('on');buzz(8);}
+const closePaper=()=>{$('#veil').classList.remove('on');$('#paper').classList.remove('on');};
+$('#research').addEventListener('click',e=>{const b=e.target.closest('.study');if(b)openPaper(b.dataset.k);});
+$('#pp-ok').addEventListener('click',closePaper);$('#veil').addEventListener('click',closePaper);addEventListener('keydown',e=>{if(e.key==='Escape')closePaper();});
+$('#to-impact').addEventListener('click',()=>{$('#gobar').classList.remove('on');$('#research').classList.remove('on');impact();});
+$('#again-research').addEventListener('click',()=>{$('#impact').classList.remove('on');research();});
+$('#again').addEventListener('click',()=>{$('#impact').classList.remove('on');$('#time').style.width='0';game();});
+
+/* ---------- the card: every flash you saw, falling under the length of a blink ---------- */
+/* the honest headline: the smallest everyday fraction of a blink that the flash fits under */
+function blinkLine(ms){const f=ms/BLINK;if(f>=1)return null;return [[.1,'a tenth','of a blink.'],[.2,'a fifth','of a blink.'],[.25,'a quarter','of a blink.'],[1/3,'a third','of a blink.'],[.5,'half','a blink.'],[1,'a blink.','']].find(x=>f<=x[0]);}
+function drawCard(T){const W=1080,Hh=1350,c=document.createElement('canvas');c.width=W;c.height=Hh;const g=c.getContext('2d');
+  const bg=g.createLinearGradient(0,0,0,Hh);bg.addColorStop(0,'#1A2A5E');bg.addColorStop(1,DEEP);g.fillStyle=bg;g.fillRect(0,0,W,Hh);
+  /* the website's motifs, faint, as a texture */
+  const r=B.rng(T.score*13+NUM),Cs=Object.values(B.C);g.globalAlpha=.12;for(let i=0;i<70;i++){const x=r()*W,y=r()*Hh;if(y>300&&y<1060&&x>60&&x<1020)continue;B.drawMotif(g,{kind:SHAPES[i%SHAPES.length],x,y,s:10+r()*18,rot:r()*6,c:Cs[i%Cs.length],c2:GOLD});}g.globalAlpha=1;
+  g.textBaseline='alphabetic';g.textAlign='left';
+  g.fillStyle='rgba(247,238,221,.6)';g.font='600 34px Inter,system-ui';g.fillText(`GLIMPSE #${NUM}`,80,120);
+  const part=blinkLine(T.score);
+  g.fillStyle=CREAM;g.font='700 92px Inter,system-ui';
+  if(part){g.fillText('I saw it in',80,236);g.fillStyle=ORANGE;g.fillText('under '+part[1],80,336);g.fillStyle=CREAM;if(part[2])g.fillText(part[2],80,436);}
+  else{g.fillText('I saw it in',80,236);g.fillStyle=ORANGE;g.fillText(`${T.score} ms.`,80,336);g.fillStyle=CREAM;g.font='600 52px Inter,system-ui';g.fillText('Tomorrow, under a blink.',80,420);}
+  /* the chart: one bar per flash, its height the time it was on screen */
+  const top=540,base=1010,left=80,right=W-80,n=T.trials.length,maxMs=Math.max(BLINK*1.25,...T.trials.map(t=>t.ms)),y=ms=>base-(ms/maxMs)*(base-top);
+  const gap=n>18?6:10,bw=(right-left-gap*(n-1))/n;
+  T.trials.forEach((t,i)=>{const x=left+i*(bw+gap),h=base-y(t.ms);g.fillStyle=t.ok?(t.ms<BLINK?ORANGE:'#F2A07F'):'rgba(247,238,221,.22)';
+    const rr=Math.min(bw/2,14);g.beginPath();g.roundRect?g.roundRect(x,base-h,bw,h,[rr,rr,4,4]):g.rect(x,base-h,bw,h);g.fill();});
+  /* the blink line */
+  const by=y(BLINK);g.strokeStyle=CREAM;g.lineWidth=4;g.setLineDash([16,12]);g.beginPath();g.moveTo(left,by);g.lineTo(right,by);g.stroke();g.setLineDash([]);
+  g.fillStyle=CREAM;g.font='600 30px Inter,system-ui';g.textAlign='right';g.fillText('one blink',right,by-16);
+  g.strokeStyle='rgba(247,238,221,.3)';g.lineWidth=2;g.beginPath();g.moveTo(left,base+2);g.lineTo(right,base+2);g.stroke();
+  g.textAlign='left';g.fillStyle='rgba(247,238,221,.6)';g.font='500 28px Inter,system-ui';g.fillText('first flash',left,base+48);g.textAlign='right';g.fillText('30 seconds later',right,base+48);
+  /* the number, and the ask */
+  g.textAlign='left';g.fillStyle=CREAM;g.font='700 120px Inter,system-ui';g.fillText(`${T.score}`,80,1240);const nw=g.measureText(`${T.score}`).width;
+  g.font='600 44px Inter,system-ui';g.fillStyle='rgba(247,238,221,.7)';g.fillText('ms',80+nw+16,1240);
+  g.textAlign='right';g.fillStyle=ORANGE;g.font='600 40px Inter,system-ui';g.fillText('Can you?',W-80,1240);
+  return c;}
+
+/* ---------- impact ---------- */
+function stats(){const days=Object.keys(H).map(Number).sort((a,b)=>a-b);let streak=0;for(let n=NUM;H[n];n--)streak++;return {days,best:days.length?Math.min(...days.map(n=>H[n].score)):null,streak};}
+let CARD=null;
+function impact(){const T=LAST||H[NUM],{days,best,streak}=stats(),first=H[days[0]];$('#impact').classList.add('on');$('#impact').scrollTop=0;
+  CARD=drawCard(T);$('#cardimg').src=CARD.toDataURL('image/png');
+  const part=blinkLine(T.score),faster=days.length>1&&first.score>T.score?Math.round((1-T.score/first.score)*100):0;
+  $('#cardimg').alt=`Glimpse #${NUM}: every flash, falling to ${T.score} ms${part?`, under ${part[1]} ${part[2]}`:'.'}`;
+  $('#meaning').innerHTML=(part?`Your brain read a shape in <b>${T.score} ms</b>, before a blink could even finish. `:`Your starting line is <b>${T.score} ms</b>. Most people drop fast with practice. `)
+    +(faster?`That’s <b>${faster}% faster</b> than your first day.`:'Come back tomorrow and watch it fall.');
+  $('#s-days').textContent=days.length;$('#s-best').textContent=best??'–';$('#s-streak').textContent=streak;}
+
+/* ---------- share: the card itself, through the phone's own share sheet ---------- */
+const URL_='https://anishjindal.github.io/Project-Plasticity/v9.html';
+function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('on'),2200);}
+/* the message: the whole bar is one blink, the orange part is how long you needed */
+function message(){const T=LAST||H[NUM],part=blinkLine(T.score),n=Math.min(10,Math.max(1,Math.ceil(T.score/BLINK*10)));
+  const head=part?`I saw it in under ${(part[1]+' '+part[2]).replace('.','').trim()}.`:`I saw it in ${T.score} ms.`;
+  return `Glimpse #${NUM} 👁\n${head}\n${'🟧'.repeat(n)}${'⬜'.repeat(10-n)}\n${T.score} ms · a blink is ~${BLINK}\nCan you? ${URL_}`;}
+async function shareFile(blob,name,text){const file=new File([blob],name,{type:'image/png'});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],text});return true;}
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();toast('Saved.');return false;}
+$('#share').addEventListener('click',async()=>{const text=message();
+  try{if(navigator.share){await navigator.share({text});return;}await navigator.clipboard.writeText(text);toast('Copied. Paste it in any chat.');}
+  catch(e){if(e&&e.name!=='AbortError'){try{await navigator.clipboard.writeText(text);toast('Copied. Paste it in any chat.');}catch(_){toast('Couldn’t share. Try again.');}}}});
+/* the sticker: a die-cut badge on a clear background, so it sits on top of a chat like a sticker */
+function drawSticker(T){const S=600,c=document.createElement('canvas');c.width=c.height=S;const g=c.getContext('2d'),m=S/2,part=blinkLine(T.score);
+  g.shadowColor='rgba(11,18,51,.35)';g.shadowBlur=24;g.shadowOffsetY=8;g.fillStyle='#fff';g.beginPath();g.arc(m,m,m-28,0,7);g.fill();g.shadowColor='transparent';
+  const bg=g.createLinearGradient(0,60,0,S-60);bg.addColorStop(0,'#1F2F66');bg.addColorStop(1,DEEP);g.fillStyle=bg;g.beginPath();g.arc(m,m,m-48,0,7);g.fill();
+  /* a ring: the whole ring is one blink, the orange arc is your glimpse */
+  const f=Math.min(1,T.score/BLINK),R=m-82;g.lineCap='round';g.lineWidth=22;g.strokeStyle='rgba(247,238,221,.16)';g.beginPath();g.arc(m,m,R,0,7);g.stroke();
+  g.strokeStyle=ORANGE;g.beginPath();g.arc(m,m,R,-Math.PI/2,-Math.PI/2+Math.PI*2*f);g.stroke();
+  g.textAlign='center';g.fillStyle='rgba(247,238,221,.65)';g.font='600 30px Inter,system-ui';g.fillText('GLIMPSE',m,m-92);
+  g.fillStyle=CREAM;g.font='700 132px Inter,system-ui';g.fillText(`${T.score}`,m,m+40);g.font='600 34px Inter,system-ui';g.fillStyle='rgba(247,238,221,.7)';g.fillText('ms',m,m+86);
+  g.fillStyle=ORANGE;g.font='600 32px Inter,system-ui';g.fillText(part?`under ${part[1]}${part[2]?' '+part[2].replace('.',''):''}`.replace(' a blink',' a blink'):'vs a blink',m,m+140);
+  return c;}
+$('#sticker').addEventListener('click',async()=>{const T=LAST||H[NUM];try{const blob=await new Promise(r=>drawSticker(T).toBlob(r,'image/png'));await shareFile(blob,`glimpse-${NUM}.png`,'');}catch(e){if(e&&e.name!=='AbortError')toast('Couldn’t share. Try again.');}});
+
+/* ---------- start ---------- */
+requestAnimationFrame(()=>disc());setTimeout(disc,60);addEventListener('resize',()=>{if(!$('.app').classList.contains('playing'))disc();});
+$('#play').addEventListener('click',game);
+if(H[NUM]){say(`${H[NUM].score} ms today`,'Play again to beat it.');setTimeout(impact,300);}
+else if(ME.name)say(`${ME.name}, how fast can your brain see?`);
+})();
+</script>
+</body>
+</html>
