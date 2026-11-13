@@ -1,0 +1,231 @@
+<meta charset="utf-8">
+<title>Plasticity Journey</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* One brain, pinned. One line per step. One tap = one step. Frame stays white, ink and one orange; all colour lives in the brain. */
+  :root{
+    --bg:#ffffff; --bg2:#f5f5f3; --ink:#111318; --ink2:#5a5e68; --line:#1b2a5c; --accent:#e4572e; --rule:#e6e6e3;
+    --font:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif; --ease:cubic-bezier(.4,0,.2,1); --t:.6s;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg2);color:var(--ink);font-family:var(--font);font-weight:400;line-height:1.45;
+    padding-block:0;padding-left:max(0px,env(safe-area-inset-left,0px));padding-right:max(0px,env(safe-area-inset-right,0px))}
+  .app{max-width:430px;height:100%;margin:0 auto;background:var(--bg);display:grid;grid-template-rows:auto 1fr auto;position:relative;overflow:hidden}
+  @media (min-width:480px){.app{height:calc(100% - 32px);margin-block:16px;box-shadow:0 1px 0 var(--rule),0 24px 60px rgba(17,19,24,.08)}}
+  h1,h2{font-weight:500;letter-spacing:-.02em;margin:0;text-wrap:balance}
+  h1{font-size:clamp(24px,6.5vw,30px);line-height:1.15}
+  h2{font-size:17px}
+  p{margin:0}
+  .top{display:flex;justify-content:space-between;align-items:center;padding:16px 20px 0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)}
+  .top b{color:var(--accent);font-weight:500}
+  .top button{background:none;border:0;font:inherit;letter-spacing:inherit;text-transform:inherit;color:var(--ink2);cursor:pointer;padding:6px 0;border-bottom:1px solid transparent}
+  .top button[aria-pressed="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+  .top button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .stage{position:relative;display:grid;grid-template-rows:minmax(0,1fr) auto;min-height:0}
+  .brainwrap{display:flex;align-items:center;justify-content:center;height:100%;min-height:0;padding:8px 28px 0}
+  canvas{height:100%;width:auto;max-width:100%;max-height:100%;aspect-ratio:5/4;display:block;cursor:pointer}
+  .sheet{padding:16px 24px 20px;display:grid;gap:12px;align-content:start;min-height:190px}
+  .sheet .cap{display:grid;gap:6px}
+  .sub{color:var(--ink2)}
+  .src{background:none;border:0;padding:0;font:inherit;font-size:13px;color:var(--ink2);cursor:pointer;text-align:left;border-bottom:1px solid var(--rule);width:fit-content}
+  .src:hover,.src:focus-visible{color:var(--ink);border-bottom-color:var(--accent);outline:none}
+  .cue{font-size:12px;color:var(--ink2);letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+  .cue i{display:inline-block;width:18px;height:2px;background:var(--accent)}
+  .btn{background:var(--ink);color:#fff;border:0;padding:13px 18px;font:inherit;font-weight:500;cursor:pointer;border-radius:0;width:100%}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .cards{display:grid;gap:8px}
+  .card{display:grid;grid-template-columns:1fr auto;align-items:center;gap:2px 12px;text-align:left;background:#fff;border:1px solid var(--rule);padding:13px 14px;font:inherit;cursor:pointer;color:var(--ink)}
+  .card:hover,.card:focus-visible{border-color:var(--ink);outline:none}
+  .card .n{font-weight:500}
+  .card .d{font-size:13px;color:var(--ink2);grid-column:1}
+  .card .sw{width:12px;height:12px;border-radius:50%;grid-row:1/3}
+  .dots{position:absolute;right:10px;top:50%;transform:translateY(-50%);display:grid;gap:8px}
+  .dots i{width:5px;height:5px;border-radius:50%;border:1px solid var(--line);opacity:.5}
+  .dots i.on{background:var(--accent);border-color:var(--accent);opacity:1}
+  .play{display:grid;gap:10px}
+  .eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:500}
+  .hold{height:3px;background:var(--rule);overflow:hidden}
+  .hold i{display:block;height:100%;background:var(--accent);transform-origin:left;animation:hold linear forwards}
+  @keyframes hold{to{transform:scaleX(0)}}
+  .tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+  .tile{background:var(--bg2);padding:10px 12px;display:grid;gap:1px}
+  .tile small{font-size:12px;color:var(--ink2)} .tile b{font-size:20px;font-weight:500;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .people{display:grid;gap:6px}
+  .person{display:flex;align-items:center;gap:12px;background:var(--bg2);padding:9px 12px}
+  .av{width:32px;height:32px;border-radius:50%;background:var(--line);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:500}
+  .person small{color:var(--ink2);font-size:13px;display:block}
+  .msg{background:var(--bg2);padding:12px 14px;font-size:15px}
+  .msg small{display:block;color:var(--ink2);font-size:12px;margin-bottom:3px;letter-spacing:.04em;text-transform:uppercase}
+  .q{font-size:17px;font-weight:500;letter-spacing:-.01em}
+  .opts{display:grid;gap:6px}
+  .opt{text-align:left;background:#fff;border:1px solid var(--rule);padding:10px 12px;font:inherit;cursor:pointer;color:var(--ink)}
+  .opt.ok{border-color:#4CAF6E} .opt.bad{border-color:#E8472E}
+  .opt:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .big{font-size:40px;font-weight:500;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+  .stat{display:flex;align-items:baseline;gap:10px}.stat span{color:var(--ink2);font-size:14px}
+  .paper{position:absolute;inset:auto 0 0;background:#fff;border-top:1px solid var(--rule);padding:18px 24px max(22px,env(safe-area-inset-bottom,0px));display:none;gap:8px;z-index:5}
+  .paper.on{display:grid}
+  .paper b{font-weight:500}.paper .m{font-size:13px;color:var(--ink2)}
+  .paper .sd{font-size:14px;display:grid;grid-template-columns:auto 1fr;gap:3px 10px}.paper .sd em{font-style:normal;color:var(--accent);font-weight:500}
+  .paper a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--rule);font-size:13px;width:fit-content}
+  .paper button{justify-self:end;background:none;border:0;font:inherit;color:var(--ink2);cursor:pointer}
+  .fade{animation:fade var(--t) var(--ease)}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="app">
+  <div class="top"><span><b>Plasticity</b></span><button id="snd" aria-pressed="false">Sound off</button></div>
+  <div class="stage">
+    <div class="brainwrap"><canvas id="c" role="img" aria-label="A brain. A path forms, thickens, thins, then the brain fills in."></canvas></div>
+    <div class="dots" id="dots" aria-hidden="true"></div>
+    <div class="sheet" id="sheet" aria-live="polite"></div>
+    <div class="paper" id="paper"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const $=s=>document.querySelector(s);
+  const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  const C={orange:'#F28C28',blue:'#2E86DE',purple:'#8E5BD6',cream:'rgb(255,240,190)'};
+
+  const PAPERS={
+    draganski:{t:'Changes in grey matter induced by training',a:'Draganski et al., 2004, Nature',doi:'10.1038/427311a',shows:'Adults who learned to juggle for three months grew grey matter in motion-processing areas. It receded when they stopped.',not:'Any effect on general ability. Anything from short bouts of practice.'},
+    lovden:{t:'A theoretical framework for the study of adult cognitive plasticity',a:'Lövdén et al., 2010, Psychological Bulletin',doi:'10.1037/a0020080',shows:'Change is triggered when a demand stays above current ability for a long stretch. Too small a gap, or too large, and nothing changes.',not:'A number of minutes or a target accuracy. It is a framework, not a trial.'},
+    walker:{t:'Sleep-dependent learning and memory consolidation',a:'Walker & Stickgold, 2004, Neuron',doi:'10.1016/j.neuron.2004.08.031',shows:'Sleep after learning stabilises and strengthens new skills and memories.',not:'That anything done in an app at bedtime adds to this.'},
+    roediger:{t:'Test-enhanced learning',a:'Roediger & Karpicke, 2006, Psychological Science',doi:'10.1111/j.1467-9280.2006.01693.x',shows:'Recalling material improved retention a week later more than rereading it.',not:'Anything about the brain.'},
+    karbach:{t:'How useful is executive control training?',a:'Karbach & Kray, 2009, Developmental Science',doi:'10.1111/j.1467-7687.2009.00846.x',shows:'Four sessions of task-switching practice reduced switch costs, with some carry-over to other tasks, across ages.',not:'Lasting change, or effects beyond the lab tasks.'}
+  };
+
+  /* ---------- the story, then the pick ---------- */
+  const STEPS=[
+    {h:'Your brain changes with what you do.',brain:'outline'},
+    {h:'Try something hard. A path forms.',brain:'path'},
+    {h:'Try again tomorrow. The path thickens.',brain:'thick'},
+    {h:'Stop, and it thins.',brain:'thin'},
+    {h:'Keep at something you can’t yet do, for weeks, and the brain itself changes.',s:'Seen in adults who learned to juggle for three months.',src:'draganski',brain:'fill'},
+    {h:'Pick something you can’t do yet.',s:'Thirty seconds a day. One rung at a time.',brain:'fill',pick:true}
+  ];
+  const LADDERS=[
+    {id:'glance',name:'Read a dashboard at a glance',skill:'eyes',color:C.orange,hub:[150,78],play:playGlance,src:'lovden',after:'Each rung shows more numbers for less time.'},
+    {id:'names',name:'Remember every name in a room',skill:'memory',color:C.purple,hub:[106,96],play:playNames,src:'roediger',after:'Each rung adds a person and takes away time.'},
+    {id:'switch',name:'Switch rules without losing the thread',skill:'attention',color:C.blue,hub:[62,66],play:playSwitch,src:'karbach',after:'Each rung changes the question more often.'}
+  ];
+
+  /* ---------- sound: one quiet tick per step ---------- */
+  let AC=null,soundOn=false;
+  function tick(){if(!soundOn)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type='square';o.frequency.value=1800;g.gain.setValueAtTime(.04,AC.currentTime);g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+.04);o.connect(g).connect(AC.destination);o.start();o.stop(AC.currentTime+.05);}catch(e){}}
+  $('#snd').onclick=()=>{soundOn=!soundOn;$('#snd').setAttribute('aria-pressed',soundOn);$('#snd').textContent=soundOn?'Sound on':'Sound off';tick();};
+
+  /* ---------- brain ---------- */
+  const SHAPE='M62 32 C72 12 112 10 126 24 C146 14 176 27 176 57 C191 72 186 102 166 112 C161 137 126 142 111 127 C96 142 61 137 56 117 C31 112 21 82 36 67 C26 47 41 30 62 32 Z';
+  const STEM='M104 128 L104 150 C104 156 116 156 116 150 L114 128 Z';
+  const FOLDS=['M70 60 C85 50 100 70 118 58','M60 90 C80 80 95 100 120 92','M125 45 C140 60 150 55 165 70','M85 115 C100 105 120 120 140 108'];
+  const shape=new Path2D(SHAPE),stem=new Path2D(STEM),folds=FOLDS.map(d=>new Path2D(d));
+  const STORY={x0:50,y0:90,cx:100,cy:30,x1:155,y1:70}; // the one story path
+  const bez=(b,t)=>{const u=1-t;return[u*u*b.x0+2*u*t*b.cx+t*t*b.x1,u*u*b.y0+2*u*t*b.cy+t*t*b.y1]};
+  const cv=$('#c'),ctx=cv.getContext('2d');let W=0,H=0,SC=1,OX=0,OY=0;
+  function resize(){const r=cv.getBoundingClientRect();const dpr=Math.min(devicePixelRatio||1,2);cv.width=r.width*dpr;cv.height=r.height*dpr;W=r.width;H=r.height;SC=Math.min(W/210,H/168);OX=(W-200*SC)/2;OY=(H-160*SC)/2-4*SC;ctx.setTransform(dpr,0,0,dpr,0,0);}
+  addEventListener('resize',resize);
+  // animated values
+  const A={fill:0,pathP:0,pathW:0,pulse:0};const target={fill:0,pathP:0,pathW:0};
+  let rung=null,rungP=0,signalT=-1,breath=0,last=performance.now();
+  function lerp(a,b,k){return a+(b-a)*k}
+  function draw(){ctx.clearRect(0,0,W,H);ctx.save();ctx.translate(OX,OY);ctx.scale(SC,SC);
+    const bs=1+Math.sin(breath)*.005;ctx.translate(105,80);ctx.scale(bs,bs);ctx.translate(-105,-80);
+    const f=A.fill;
+    // white brain with navy outline, fading to navy fill
+    ctx.fillStyle='#ffffff';ctx.fill(shape);ctx.fill(stem);
+    if(f>0){ctx.globalAlpha=f;ctx.fillStyle='#0B1233';ctx.save();ctx.translate(0,1.5);ctx.fill(shape);ctx.fill(stem);ctx.restore();
+      const g=ctx.createRadialGradient(105,80,10,105,80,95);g.addColorStop(0,'#1B2A5C');g.addColorStop(1,'#131E4A');ctx.fillStyle=g;ctx.fill(shape);ctx.fill(stem);ctx.globalAlpha=1;}
+    ctx.strokeStyle=f>.5?'#0B1233':'#1b2a5c';ctx.lineWidth=1.4;ctx.stroke(shape);ctx.stroke(stem);
+    ctx.save();ctx.clip(shape);
+    // folds: navy lines on white, faint cream on navy
+    ctx.lineWidth=1;ctx.strokeStyle=`rgba(${f>.5?'244,241,232':'27,42,92'},${f>.5?.12:.55})`;folds.forEach(p=>ctx.stroke(p));
+    // the story path: orange on white, cream once navy
+    if(A.pathP>0){const col=f>.5?C.cream:'rgb(228,87,46)';ctx.strokeStyle=col;ctx.lineCap='round';ctx.lineWidth=Math.max(.6,A.pathW);ctx.beginPath();ctx.moveTo(STORY.x0,STORY.y0);for(let i=1;i<=24;i++){const [x,y]=bez(STORY,A.pathP*i/24);ctx.lineTo(x,y);}ctx.stroke();
+      if(A.pathW>3){ctx.strokeStyle='rgba(255,247,220,.4)';ctx.lineWidth=A.pathW*.35;ctx.stroke();}
+      if(A.pulse>0&&A.pulse<1){const [x,y]=bez(STORY,A.pulse);ctx.fillStyle='#FFF7DC';ctx.shadowColor='#FFF7DC';ctx.shadowBlur=8;ctx.beginPath();ctx.arc(x,y,2,0,7);ctx.fill();ctx.shadowBlur=0;}}
+    // the rung path: the player's own line, in the ladder's colour
+    if(rung){ctx.strokeStyle=rung.color;ctx.lineCap='round';ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(rung.path.x0,rung.path.y0);for(let i=1;i<=24;i++){const [x,y]=bez(rung.path,rungP*i/24);ctx.lineTo(x,y);}ctx.stroke();
+      if(rungP>=1){const [x,y]=bez(rung.path,1);ctx.fillStyle=rung.color;ctx.beginPath();ctx.arc(x,y,2.4,0,7);ctx.fill();}
+      if(signalT>=0&&signalT<1){const [x,y]=bez(rung.path,signalT);ctx.fillStyle='#FFF7DC';ctx.shadowColor='#FFF7DC';ctx.shadowBlur=8;ctx.beginPath();ctx.arc(x,y,2,0,7);ctx.fill();ctx.shadowBlur=0;}
+      ctx.strokeStyle='rgba(255,247,220,.25)';ctx.lineWidth=1;ctx.setLineDash([2,3]);ctx.beginPath();ctx.arc(rung.hub[0],rung.hub[1],6,0,7);ctx.stroke();ctx.setLineDash([]);}
+    ctx.restore();ctx.restore();}
+  function loop(now){const dt=Math.min(50,now-last);last=now;breath+=dt/2000;const k=reduce?1:1-Math.exp(-dt/180);
+    A.fill=lerp(A.fill,target.fill,k);A.pathP=lerp(A.pathP,target.pathP,k*.8);A.pathW=lerp(A.pathW,target.pathW,k);
+    if(A.pulse>=0&&A.pulse<1)A.pulse+=dt/1400;
+    if(rung&&rungP<1)rungP=Math.min(1,rungP+dt/(reduce?1:1100));if(signalT>=0&&signalT<1)signalT+=dt/1300;
+    draw();requestAnimationFrame(loop);}
+  function setBrain(mode){if(mode==='outline'){target.fill=0;target.pathP=0;target.pathW=0;}
+    if(mode==='path'){target.fill=0;target.pathP=1;target.pathW=1.4;}
+    if(mode==='thick'){target.pathP=1;target.pathW=4.2;A.pulse=0;}
+    if(mode==='thin'){target.pathP=1;target.pathW=1;}
+    if(mode==='fill'){target.fill=1;target.pathP=1;target.pathW=3.2;}}
+
+  /* ---------- steps ---------- */
+  const sheet=$('#sheet'),dots=$('#dots');let step=0,locked=false,busy=false;
+  dots.innerHTML=STEPS.map(()=>'<i></i>').join('');
+  function src(k){return `<button class="src" data-p="${k}">${PAPERS[k].a}</button>`;}
+  function render(){const s=STEPS[step];setBrain(s.brain);[...dots.children].forEach((d,i)=>d.classList.toggle('on',i===step));dots.style.display=s.pick?'none':'grid';
+    sheet.innerHTML=`<div class="fade cap"><h1>${s.h}</h1>${s.s?`<p class="sub">${s.s}</p>`:''}${s.src?src(s.src):''}</div>`+
+      (s.pick?`<div class="cards fade">${LADDERS.map(l=>`<button class="card" data-l="${l.id}"><span class="n">${l.name}</span><span class="sw" style="background:${l.color}"></span><span class="d">${l.skill}</span></button>`).join('')}</div>`:
+       `<p class="cue"><i></i>${step===0?'Tap, scroll or press →':'Next'}</p>`);
+    wire();if(s.pick){locked=true;sheet.querySelectorAll('.card').forEach(b=>b.onclick=()=>start(LADDERS.find(l=>l.id===b.dataset.l)));}}
+  function wire(){sheet.querySelectorAll('.src').forEach(b=>b.onclick=e=>{e.stopPropagation();openPaper(b.dataset.p);});}
+  function next(){if(locked||busy)return;busy=true;setTimeout(()=>busy=false,reduce?0:650);if(step<STEPS.length-1){step++;tick();render();}}
+  function prev(){if(locked||busy)return;busy=true;setTimeout(()=>busy=false,reduce?0:650);if(step>0){step--;tick();render();}}
+  cv.addEventListener('click',next);sheet.addEventListener('click',e=>{if(!e.target.closest('button'))next();});
+  addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '||e.key==='ArrowDown'){e.preventDefault();next();}if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();prev();}});
+  addEventListener('wheel',e=>{if(Math.abs(e.deltaY)<8)return;e.deltaY>0?next():prev();},{passive:true});
+  let ty=null;addEventListener('touchstart',e=>ty=e.touches[0].clientY,{passive:true});addEventListener('touchend',e=>{if(ty===null)return;const d=ty-e.changedTouches[0].clientY;if(Math.abs(d)>40)d>0?next():prev();ty=null;},{passive:true});
+
+  /* ---------- paper card ---------- */
+  const paper=$('#paper');
+  function openPaper(k){const p=PAPERS[k];paper.innerHTML=`<b>${p.t}</b><span class="m">${p.a}</span><div class="sd"><em>Shows</em><span>${p.shows}</span><em>Doesn’t</em><span>${p.not}</span></div><a href="https://doi.org/${p.doi}" target="_blank" rel="noopener">doi.org/${p.doi}</a><button id="pc">Close</button>`;paper.classList.add('on');$('#pc').onclick=()=>paper.classList.remove('on');}
+
+  /* ---------- the rung ---------- */
+  function start(l){tick();rung={color:l.color,hub:l.hub,path:null};rungP=0;
+    show(`<div class="play fade"><span class="eyebrow">${l.name}</span><h2>Rung 1 of 10</h2><p class="sub">Thirty seconds. Expect to miss some.</p><button class="btn" id="go">Begin</button></div>`);
+    $('#go').onclick=()=>l.play(l,(score,summary)=>finish(l,score,summary));}
+  function show(html){sheet.innerHTML=html;wire();}
+  function finish(l,score,summary){tick();const r=Math.random;const ang=r()*Math.PI*2,len=22+score*18;const x0=l.hub[0],y0=l.hub[1];let x1=x0+Math.cos(ang)*len,y1=y0+Math.sin(ang)*len;const mx=(x0+x1)/2,my=(y0+y1)/2,bend=(r()-.5)*18;
+    rung.path={x0,y0,x1,y1,cx:mx-Math.sin(ang)*bend,cy:my+Math.cos(ang)*bend};rungP=0;signalT=0;
+    show(`<div class="fade" style="display:grid;gap:12px"><div class="stat"><span class="big">${summary}</span><span>rung 1</span></div>
+      <p>${score>=.75?'Up a rung. Tomorrow asks for a little more.':'Not yet. Same rung tomorrow.'} ${l.after}</p>
+      <p class="sub">The line in your brain is your practice, drawn. Kept up for weeks, this is the kind of gap that has changed adult brains.</p>${src('lovden')}
+      <button class="btn" id="done">Done for today</button></div>`);
+    $('#done').onclick=()=>{tick();show(`<div class="fade" style="display:grid;gap:12px"><h1>Sleep works on it tonight.</h1><p class="sub">Nothing else to do. Tomorrow, rung ${score>=.75?2:1}.</p>${src('walker')}</div>`);};}
+
+  /* ---------- three first rungs ---------- */
+  const METRICS=[['Churn','2.1%'],['MRR','$48k'],['Signups','312'],['NPS','41'],['Latency','180ms'],['Uptime','99.9%'],['CAC','$96'],['Trials','57']];
+  function playGlance(l,cb){const n=3,ms=1800,trials=4;let i=0,ok=0;
+    function trial(){if(i>=trials){cb(ok/trials,`${ok} of ${trials}`);return;}const pick=[...METRICS].sort(()=>Math.random()-.5).slice(0,n);
+      show(`<div class="play"><span class="eyebrow">${n} numbers · ${(ms/1000).toFixed(1)}s</span><div class="hold"><i style="animation-duration:${ms}ms"></i></div><div class="tiles">${pick.map(([k,v])=>`<div class="tile"><small>${k}</small><b>${v}</b></div>`).join('')}</div></div>`);
+      setTimeout(()=>{const [k,v]=pick[Math.floor(Math.random()*n)];const wrong=METRICS.filter(m=>m[0]!==k).sort(()=>Math.random()-.5).slice(0,2).map(m=>m[1]);const opts=[v,...wrong].sort(()=>Math.random()-.5);
+        show(`<div class="play"><span class="eyebrow">${i+1} of ${trials}</span><p class="q">What was ${k}?</p><div class="opts">${opts.map(o=>`<button class="opt">${o}</button>`).join('')}</div></div>`);
+        answer(b=>b.textContent===v,()=>{if(true)ok++;},()=>{i++;trial();});},ms);}
+    trial();}
+  const PEOPLE=[['Priya','Head of Growth'],['Marcus','Backend'],['Lena','Design'],['Tomas','Sales'],['Aisha','Finance'],['Jonah','Support']];
+  function playNames(l,cb){const n=3,ms=7000,trials=3;let i=0,ok=0;const pick=[...PEOPLE].sort(()=>Math.random()-.5).slice(0,n);
+    show(`<div class="play"><span class="eyebrow">${n} people · ${ms/1000}s</span><div class="hold"><i style="animation-duration:${ms}ms"></i></div><div class="people">${pick.map(([nm,ro])=>`<div class="person"><span class="av">${nm[0]}</span><span>${nm}<small>${ro}</small></span></div>`).join('')}</div></div>`);
+    setTimeout(trial,ms);
+    function trial(){if(i>=trials){cb(ok/trials,`${ok} of ${trials}`);return;}const [nm,ro]=pick[i];const opts=[nm,...pick.filter(p=>p[0]!==nm).map(p=>p[0])].sort(()=>Math.random()-.5);
+      show(`<div class="play"><span class="eyebrow">${i+1} of ${trials}</span><p class="q">Who is ${ro}?</p><div class="opts">${opts.map(o=>`<button class="opt">${o}</button>`).join('')}</div></div>`);
+      answer(b=>b.textContent===nm,()=>ok++,()=>{i++;trial();});}}
+  const MSGS=[['Deploy failed on prod, rolling back','eng','app'],['Signup page copy A/B results in','growth','web'],['API latency up 40% since 9am','eng','app'],['Newsletter open rate hit 41%','growth','web'],['Push notifications delayed on iOS','eng','app'],['Pricing page loads slow in Safari','eng','web']];
+  const RULES={who:['Who owns it?',[['Engineering','eng'],['Growth','growth']],1],where:['Which product?',[['Mobile app','app'],['Website','web']],2]};
+  function playSwitch(l,cb){const n=4;let i=0,ok=0,rule='who';const msgs=[...MSGS].sort(()=>Math.random()-.5).slice(0,n);
+    function trial(){if(i>=n){cb(ok/n,`${ok} of ${n}`);return;}if(i===2)rule='where';const [m,a1,a2]=msgs[i];const [q,opts,idx]=RULES[rule];const ans=idx===1?a1:a2;
+      show(`<div class="play"><span class="eyebrow">${i+1} of ${n}</span><div class="msg"><small>#${a1} · ${a2}</small>${m}</div><p class="q">${q}</p><div class="opts">${opts.map(([t,v])=>`<button class="opt" data-v="${v}">${t}</button>`).join('')}</div></div>`);
+      answer(b=>b.dataset.v===ans,()=>ok++,()=>{i++;trial();});}
+    trial();}
+  function answer(isGood,onGood,then){sheet.querySelectorAll('.opt').forEach(b=>b.onclick=e=>{e.stopPropagation();const good=isGood(b);if(good)onGood();b.classList.add(good?'ok':'bad');sheet.querySelectorAll('.opt').forEach(x=>x.disabled=true);setTimeout(then,420);});}
+
+  resize();render();requestAnimationFrame(t=>{last=t;loop(t);});
+})();
+</script>

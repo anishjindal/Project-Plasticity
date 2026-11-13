@@ -1,0 +1,370 @@
+<meta charset="utf-8">
+<title>Plasticity</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* One brain, pinned. One line per step. White frame, ink, one orange; all colour inside the brain. */
+  :root{
+    --bg:#ffffff; --bg2:#f5f5f3; --ink:#111318; --ink2:#5a5e68; --line:#1b2a5c; --accent:#e4572e; --rule:#e6e6e3;
+    --font:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif; --ease:cubic-bezier(.4,0,.2,1); --t:.6s; --fs:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg2);color:var(--ink);font-family:var(--font);font-size:var(--fs);font-weight:400;line-height:1.45;
+    padding-block:0;padding-left:max(0px,env(safe-area-inset-left,0px));padding-right:max(0px,env(safe-area-inset-right,0px))}
+  .app{max-width:430px;height:100%;margin:0 auto;background:var(--bg);display:grid;grid-template-rows:auto 1fr;position:relative;overflow:hidden}
+  @media (min-width:480px){.app{height:calc(100% - 32px);margin-block:16px;box-shadow:0 1px 0 var(--rule),0 24px 60px rgba(17,19,24,.08)}}
+  h1,h2{font-weight:500;letter-spacing:-.02em;margin:0;text-wrap:balance}
+  h1{font-size:clamp(23px,6.2vw,29px);line-height:1.15}
+  h2{font-size:17px}
+  p{margin:0}
+  .top{display:flex;justify-content:space-between;align-items:center;padding:16px 20px 0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)}
+  .top b{color:var(--accent);font-weight:500}
+  .top .r{display:flex;gap:16px}
+  .top button{background:none;border:0;font:inherit;letter-spacing:inherit;text-transform:inherit;color:var(--ink2);cursor:pointer;padding:6px 0;border-bottom:1px solid transparent}
+  .top button[aria-pressed="true"],.top button:hover{color:var(--ink);border-bottom-color:var(--accent)}
+  .top button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .stage{position:relative;display:grid;grid-template-rows:minmax(0,1fr) auto;min-height:0}
+  .brainwrap{display:flex;align-items:center;justify-content:center;height:100%;min-height:0;padding:8px 28px 0}
+  canvas{height:100%;width:auto;max-width:100%;max-height:100%;aspect-ratio:5/4;display:block;cursor:pointer}
+  .floor{text-align:center;font-size:12px;color:var(--ink2);padding:0 24px}
+  .floor button{background:none;border:0;font:inherit;color:inherit;cursor:pointer;border-bottom:1px solid var(--rule);padding:0}
+  .floor button:hover,.floor button:focus-visible{border-bottom-color:var(--accent);color:var(--ink);outline:none}
+  .sheet{padding:14px 24px 20px;display:grid;gap:12px;align-content:start;min-height:200px;max-height:62%;overflow:auto}
+  .cap{display:grid;gap:6px}
+  .sub{color:var(--ink2)}
+  .src{background:none;border:0;padding:0;font:inherit;font-size:13px;color:var(--ink2);cursor:pointer;text-align:left;border-bottom:1px solid var(--rule);width:fit-content}
+  .src:hover,.src:focus-visible{color:var(--ink);border-bottom-color:var(--accent);outline:none}
+  .srcs{display:flex;gap:12px;flex-wrap:wrap}
+  .cue{font-size:12px;color:var(--ink2);letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+  .cue i{display:inline-block;width:18px;height:2px;background:var(--accent)}
+  .btn{background:var(--ink);color:#fff;border:0;padding:13px 18px;font:inherit;font-weight:500;cursor:pointer;border-radius:0;width:100%}
+  .btn.ghost{background:none;color:var(--ink);border:1px solid var(--ink)}
+  .btn.small{padding:8px 12px;font-size:13px;width:auto}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .btn:disabled{opacity:.4;cursor:default}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .cards{display:grid;gap:8px}
+  .card{display:grid;grid-template-columns:1fr auto;align-items:center;gap:2px 12px;text-align:left;background:#fff;border:1px solid var(--rule);padding:12px 14px;font:inherit;cursor:pointer;color:var(--ink)}
+  .card:hover,.card:focus-visible{border-color:var(--ink);outline:none}
+  .card[aria-pressed="true"]{border-color:var(--ink);background:var(--bg2)}
+  .card .n{font-weight:500}
+  .card .d{font-size:13px;color:var(--ink2);grid-column:1}
+  .card .sw{width:12px;height:12px;border-radius:50%;grid-row:1/3}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{border:1px solid var(--rule);background:#fff;padding:8px 13px;font:inherit;cursor:pointer;color:var(--ink)}
+  .chip[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:#fff}
+  .chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .dots{position:absolute;right:10px;top:50%;transform:translateY(-50%);display:grid;gap:8px}
+  .dots i{width:5px;height:5px;border-radius:50%;border:1px solid var(--line);opacity:.5}
+  .dots i.on{background:var(--accent);border-color:var(--accent);opacity:1}
+  .play{display:grid;gap:10px}
+  .eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:500}
+  .hold{height:3px;background:var(--rule);overflow:hidden}
+  .hold i{display:block;height:100%;background:var(--accent);transform-origin:left;animation:hold linear forwards}
+  @keyframes hold{to{transform:scaleX(0)}}
+  .tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+  .tile{background:var(--bg2);padding:10px 12px;display:grid;gap:1px}
+  .tile small{font-size:12px;color:var(--ink2)} .tile b{font-size:20px;font-weight:500;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .people{display:grid;gap:6px}
+  .person{display:flex;align-items:center;gap:12px;background:var(--bg2);padding:9px 12px}
+  .av{width:32px;height:32px;border-radius:50%;background:var(--line);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:500}
+  .person small{color:var(--ink2);font-size:13px;display:block}
+  .msg{background:var(--bg2);padding:12px 14px;font-size:15px}
+  .msg small{display:block;color:var(--ink2);font-size:12px;margin-bottom:3px;letter-spacing:.04em;text-transform:uppercase}
+  .q{font-size:17px;font-weight:500;letter-spacing:-.01em}
+  .opts{display:grid;gap:6px}
+  .opt{text-align:left;background:#fff;border:1px solid var(--rule);padding:10px 12px;font:inherit;cursor:pointer;color:var(--ink)}
+  .opt.ok{border-color:#4CAF6E} .opt.bad{border-color:#E8472E}
+  .opt:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .arena{position:relative;height:140px;background:var(--bg2);overflow:hidden}
+  .flash{position:absolute;width:30px;height:30px;border-radius:50%;background:var(--accent);border:0;cursor:pointer;display:none}
+  .big{font-size:40px;font-weight:500;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+  .stat{display:flex;align-items:baseline;gap:10px}.stat span{color:var(--ink2);font-size:14px}
+  .rungs{display:flex;gap:4px}.rung{flex:1;height:4px;background:var(--rule)}.rung.on{background:var(--ink)}.rung.now{background:var(--accent)}
+  .plan{display:grid;gap:4px;font-size:14px}
+  .plan div{display:grid;grid-template-columns:88px 1fr;gap:10px;padding:6px 0;border-top:1px solid var(--rule)}
+  .plan span:first-child{color:var(--ink2)}
+  .hist{display:flex;gap:6px;align-items:flex-end;height:44px}.hist i{display:block;width:16px;background:var(--rule)}.hist i.now{background:var(--accent)}
+  .share{background:var(--bg2);padding:12px;font-size:14px;white-space:pre-wrap}
+  .ov{position:absolute;inset:0;background:rgba(17,19,24,.35);display:none;align-items:flex-end;z-index:20}
+  .ov.on{display:flex}
+  .ovs{background:#fff;width:100%;max-height:88%;overflow:auto;padding:18px 24px max(22px,env(safe-area-inset-bottom,0px));display:grid;gap:12px;align-content:start}
+  .ovs h2{display:flex;justify-content:space-between;align-items:center}.ovs h2 button{background:none;border:0;font:inherit;font-size:14px;color:var(--ink2);cursor:pointer}
+  .paper{display:grid;gap:4px;padding:12px 0;border-top:1px solid var(--rule)}.paper b{font-weight:500}.paper .m{font-size:13px;color:var(--ink2)}
+  .paper .sd{font-size:13px;display:grid;grid-template-columns:auto 1fr;gap:2px 10px}.paper .sd em{font-style:normal;color:var(--accent);font-weight:500}
+  .paper a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--rule);font-size:13px;width:fit-content}
+  .fade{animation:fade var(--t) var(--ease)}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="app" id="app">
+  <div class="top"><span><b>Plasticity</b> <span id="dayTag"></span></span><span class="r"><button id="evBtn">Evidence</button><button id="snd" aria-pressed="false">Sound off</button></span></div>
+  <div class="stage">
+    <div class="brainwrap"><canvas id="c" role="img" aria-label="Your brain, drawn by what you practise"></canvas></div>
+    <div class="dots" id="dots" aria-hidden="true"></div>
+    <div><p class="floor" id="floor" hidden><button id="floorBtn">Training improves what you train. Carry-over to daily life is contested.</button></p>
+    <div class="sheet" id="sheet" aria-live="polite"></div></div>
+    <div class="ov" id="ov"><div class="ovs" id="ovs"></div></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const $=s=>document.querySelector(s);
+  const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  const C={orange:'#F28C28',blue:'#2E86DE',purple:'#8E5BD6',green:'#4CAF6E',yellow:'#F5C63C',pink:'#E8508A',sky:'#7ED0E0',red:'#E8472E',cream:'rgb(255,240,190)'};
+
+  /* ---------- papers: every claim's source ---------- */
+  const PAPERS={
+    draganski:{t:'Changes in grey matter induced by training',a:'Draganski et al., 2004, Nature',doi:'10.1038/427311a',shows:'Adults who learned to juggle for three months grew grey matter in motion-processing areas. It receded when they stopped.',not:'Any effect on general ability. Anything from short bouts of practice.'},
+    scholz:{t:'Training induces changes in white-matter architecture',a:'Scholz et al., 2009, Nature Neuroscience',doi:'10.1038/nn.2412',shows:'Six weeks of juggling practice changed white matter, the brain’s wiring, in adults.',not:'Benefits beyond the skill itself.'},
+    woollett:{t:'Acquiring “the Knowledge” of London’s layout drives structural brain changes',a:'Woollett & Maguire, 2011, Current Biology',doi:'10.1016/j.cub.2011.11.018',shows:'Taxi trainees who passed showed hippocampal change over years of study. Those who failed showed none.',not:'Transfer. The drivers did worse on some other spatial tasks.'},
+    park:{t:'The impact of sustained engagement on cognitive function in older adults',a:'Park et al., 2013, Psychological Science',doi:'10.1177/0956797613499592',shows:'Older adults who spent 15 hours a week for three months learning photography or quilting improved memory. Passive activities did not.',not:'Younger adults, or smaller doses.'},
+    lovden:{t:'A theoretical framework for the study of adult cognitive plasticity',a:'Lövdén et al., 2010, Psychological Bulletin',doi:'10.1037/a0020080',shows:'Change is triggered when a demand stays above current ability for a long stretch. Too small a gap, or too large, and nothing changes.',not:'A number of minutes or a target accuracy. It is a framework, not a trial.'},
+    wilson:{t:'The Eighty Five Percent Rule for optimal learning',a:'Wilson et al., 2019, Nature Communications',doi:'10.1038/s41467-019-12552-4',shows:'For simple learning systems, learning is fastest at about 85% correct.',not:'That 85% is the right target for complex human skills. We use it as a guide for difficulty.'},
+    bjork:{t:'Memory and metamemory considerations in the training of human beings',a:'Bjork, 1994, in Metacognition (MIT Press)',doi:'10.7551/mitpress/4561.003.0011',shows:'Practice that is harder now, through spacing, testing and mixing, is retained better later.',not:'Anything about brain structure.'},
+    recanzone:{t:'Plasticity in the frequency representation of primary auditory cortex following discrimination training',a:'Recanzone, Schreiner & Merzenich, 1993, Journal of Neuroscience',doi:'10.1523/jneurosci.13-01-00087.1993',shows:'In adult monkeys, cortical maps changed only when the sound was attended to for a task. Unattended, the same sound changed nothing.',not:'Human data. The principle is widely replicated.'},
+    cepeda:{t:'Distributed practice in verbal recall tasks',a:'Cepeda et al., 2006, Psychological Bulletin',doi:'10.1037/0033-2909.132.3.354',shows:'Across 254 studies, practice spread over days beat the same practice in one sitting.',not:'Motor or perceptual skills specifically.'},
+    roediger:{t:'Test-enhanced learning',a:'Roediger & Karpicke, 2006, Psychological Science',doi:'10.1111/j.1467-9280.2006.01693.x',shows:'Recalling material improved retention a week later more than rereading it.',not:'Anything about the brain.'},
+    karbach:{t:'How useful is executive control training?',a:'Karbach & Kray, 2009, Developmental Science',doi:'10.1111/j.1467-7687.2009.00846.x',shows:'Four sessions of task-switching practice reduced switch costs, with some carry-over to other tasks.',not:'Lasting change, or effects beyond lab tasks.'},
+    walker:{t:'Sleep-dependent learning and memory consolidation',a:'Walker & Stickgold, 2004, Neuron',doi:'10.1016/j.neuron.2004.08.031',shows:'Sleep after learning stabilises and strengthens new skills and memories.',not:'That anything done in an app at bedtime adds to this.'},
+    erickson:{t:'Exercise training increases size of hippocampus and improves memory',a:'Erickson et al., 2011, PNAS',doi:'10.1073/pnas.1015950108',shows:'A year of regular walking increased hippocampal volume by about 2% in older adults.',not:'Younger adults, or short-term effects.'},
+    simons:{t:'Do “brain-training” programs work?',a:'Simons et al., 2016, Psychological Science in the Public Interest',doi:'10.1177/1529100616661983',shows:'Brain-training games reliably improve the trained task. Evidence that they improve everyday thinking is weak.',not:'—'},
+    owen:{t:'Putting brain training to the test',a:'Owen et al., 2010, Nature',doi:'10.1038/nature09042',shows:'11,430 people trained online for six weeks. Trained tasks improved; untrained tests did not.',not:'—'},
+    sala:{t:'Cognitive training does not enhance general cognition',a:'Sala & Gobet, 2019, Trends in Cognitive Sciences',doi:'10.1016/j.tics.2018.10.004',shows:'Meta-analytic consensus: training a cognitive task does not raise general cognition.',not:'—'}
+  };
+
+  /* ---------- your world: the material each ladder is built from ---------- */
+  const FIELDS={
+    startup:{name:'Startups',motif:'bars',color:C.yellow,metrics:[['Churn','2.1%'],['MRR','$48k'],['Signups','312'],['NPS','41'],['Latency','180ms'],['Uptime','99.9%'],['CAC','$96'],['Trials','57'],['Refunds','4'],['Open rate','38%']],
+      people:[['Priya','Head of Growth'],['Marcus','Backend'],['Lena','Design'],['Tomas','Sales'],['Aisha','Finance'],['Jonah','Support'],['Mei','Data'],['Diego','Product'],['Sara','Legal'],['Kofi','Ops']],
+      rules:[['Who owns it?',[['Engineering','a'],['Growth','b']]],['Which product?',[['Mobile app','a'],['Website','b']]]],
+      msgs:[['Deploy failed on prod, rolling back','a','a'],['Signup page copy A/B results in','b','b'],['API latency up 40% since 9am','a','a'],['Newsletter open rate hit 41%','b','b'],['Push notifications delayed on iOS','a','a'],['Pricing page loads slow in Safari','a','b'],['Referral campaign doubled trials','b','b'],['Android crash on login screen','a','a']]},
+    medicine:{name:'Medicine',motif:'cross',color:C.red,metrics:[['HR','112'],['BP','178/104'],['SpO2','94%'],['Temp','38.6'],['RR','22'],['Glucose','6.1'],['GCS','14'],['Lactate','2.8'],['Hb','11.2'],['K+','5.3']],
+      people:[['Dr Rao','Cardiology'],['Nurse Ellis','Triage'],['Dr Okafor','Neurology'],['Dr Lim','Anaesthetics'],['Sam','Pharmacy'],['Dr Haddad','ED consultant'],['Jo','Physio'],['Dr Weiss','Radiology'],['Ana','Social work'],['Dr Chen','Paediatrics']],
+      rules:[['Who sees it first?',[['ED','a'],['Ward','b']]],['How is it given?',[['IV','a'],['Oral','b']]]],
+      msgs:[['Chest pain, onset 20 min, diaphoretic','a','a'],['Day-3 post-op, mild fever, eating well','b','b'],['Stroke call, last known well 7:50','a','a'],['Routine insulin review','b','b'],['Anaphylaxis, bay 4','a','a'],['Discharge meds for Mr Hale','b','b'],['Sepsis screen positive, ED','a','a'],['Repeat paracetamol','b','b']]},
+    music:{name:'Music',motif:'note',color:C.sky,metrics:[['Tempo','132'],['Key','Bb'],['Bars','16'],['Swing','62%'],['Set','2'],['Tune','7'],['Solo','8 bars'],['Count','4/4'],['Encore','1'],['Break','20 min']],
+      people:[['Nadia','Drums'],['Theo','Bass'],['Imani','Tenor sax'],['Ravi','Keys'],['Luca','Trumpet'],['Hana','Vocals'],['Ben','Guitar'],['Zoe','Trombone'],['Omar','Sound'],['Ines','Promoter']],
+      rules:[['Who solos?',[['Horns','a'],['Rhythm','b']]],['Which set?',[['First','a'],['Second','b']]]],
+      msgs:[['Caravan: sax takes the first solo','a','a'],['Autumn Leaves closes set one','b','a'],['Trumpet trades fours on Blue Bossa','a','b'],['Drum feature on Take Five','b','b'],['Sax ballad to open','a','a'],['Piano intro on Misty, set two','b','b'],['Trombone solo, bar 33','a','a'],['Bass walks the encore','b','b']]}
+  };
+  const LADDERS=[
+    {id:'glance',name:'Read numbers at a glance',skill:'eyes',color:C.orange,hub:[150,78],motif:'spark',src:'lovden',how:'Each rung shows more numbers for less time.',play:playGlance},
+    {id:'names',name:'Remember every name in a room',skill:'memory',color:C.purple,hub:[106,96],motif:'ring',src:'roediger',how:'Each rung adds a person and takes away time.',play:playNames},
+    {id:'switch',name:'Switch rules without losing the thread',skill:'attention',color:C.blue,hub:[62,66],motif:'fork',src:'karbach',how:'Each rung changes the question more often and removes the hints.',play:playSwitch}
+  ];
+  const byId=Object.fromEntries(LADDERS.map(l=>[l.id,l]));
+  const TIMES={short:{n:'30 seconds',trials:4},mid:{n:'2 minutes',trials:8},long:{n:'5 minutes',trials:14},unsure:{n:'30 seconds to start',trials:4}};
+
+  /* ---------- state ---------- */
+  const fresh=()=>({screen:'story',step:0,day:1,field:null,ladder:null,time:null,when:null,bigText:false,rung:1,lastDay:0,done:[],moved:[],probes:[],history:[],baseline:null,asked7:false});
+  let S=fresh();try{const s=localStorage.getItem('plasticity.app.v1');if(s)S=Object.assign(fresh(),JSON.parse(s));}catch(e){}
+  function save(){try{localStorage.setItem('plasticity.app.v1',JSON.stringify(S));}catch(e){}}
+  function rnd(seed){let s=seed|0;return function(){s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+
+  /* ---------- sound ---------- */
+  let AC=null,soundOn=false;
+  function tick(){if(!soundOn)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type='square';o.frequency.value=1800;g.gain.setValueAtTime(.04,AC.currentTime);g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+.04);o.connect(g).connect(AC.destination);o.start();o.stop(AC.currentTime+.05);}catch(e){}}
+  $('#snd').onclick=()=>{soundOn=!soundOn;$('#snd').setAttribute('aria-pressed',soundOn);$('#snd').textContent=soundOn?'Sound on':'Sound off';tick();};
+
+  /* ---------- brain ---------- */
+  const SHAPE='M62 32 C72 12 112 10 126 24 C146 14 176 27 176 57 C191 72 186 102 166 112 C161 137 126 142 111 127 C96 142 61 137 56 117 C31 112 21 82 36 67 C26 47 41 30 62 32 Z';
+  const STEM='M104 128 L104 150 C104 156 116 156 116 150 L114 128 Z';
+  const FOLDS=['M70 60 C85 50 100 70 118 58','M60 90 C80 80 95 100 120 92','M125 45 C140 60 150 55 165 70','M85 115 C100 105 120 120 140 108'];
+  const shape=new Path2D(SHAPE),stem=new Path2D(STEM),folds=FOLDS.map(d=>new Path2D(d));
+  const STORY={x0:50,y0:90,cx:100,cy:30,x1:155,y1:70};
+  const bez=(b,t)=>{const u=1-t;return[u*u*b.x0+2*u*t*b.cx+t*t*b.x1,u*u*b.y0+2*u*t*b.cy+t*t*b.y1]};
+  const ctxTest=document.createElement('canvas').getContext('2d');const inside=(x,y)=>ctxTest.isPointInPath(shape,x,y);
+  const cv=$('#c'),ctx=cv.getContext('2d');let W=0,H=0,SC=1,OX=0,OY=0;
+  function resize(){const r=cv.getBoundingClientRect();const dpr=Math.min(devicePixelRatio||1,2);cv.width=r.width*dpr;cv.height=r.height*dpr;W=r.width;H=r.height;SC=Math.min(W/210,H/168);OX=(W-200*SC)/2;OY=(H-160*SC)/2-4*SC;ctx.setTransform(dpr,0,0,dpr,0,0);}
+  addEventListener('resize',resize);
+  const A={fill:0,pathP:0,pathW:0,pulse:1,ring:0};const T={fill:0,pathP:0,pathW:0,ring:0};
+  let branches=[],growing=[],signals=[],breath=0,last=performance.now();
+  const lerp=(a,b,k)=>a+(b-a)*k;
+  function buildBranches(){branches=[];for(const d of S.done){const l=d.ladder==='move'?MOVE:byId[d.ladder];addBranch(l,d,rnd(1000+d.day*7+d.ladder.length),false);}}
+  const MOVE={id:'move',color:C.green,hub:[106,44],motif:'leaf'};
+  function addBranch(l,d,r,animate){const mine=branches.filter(b=>b.act===l.id);let x0,y0,ang,parent=null;
+    if(mine.length&&r()<.85){parent=mine[Math.floor(r()*mine.length)];const t=.35+r()*.65;[x0,y0]=bez(parent,t);ang=parent.ang+(r()-.5)*2.2;}
+    else{x0=l.hub[0]+(r()-.5)*8;y0=l.hub[1]+(r()-.5)*8;ang=r()*Math.PI*2;}
+    const len=16+(d.score||.5)*26;let x1=x0+Math.cos(ang)*len,y1=y0+Math.sin(ang)*len,tries=0;
+    while(!inside(x1,y1)&&tries<6){ang+=1.1;x1=x0+Math.cos(ang)*len;y1=y0+Math.sin(ang)*len;tries++;}
+    const bend=(r()-.5)*22,mx=(x0+x1)/2,my=(y0+y1)/2;
+    const b={act:l.id,x0,y0,x1,y1,cx:mx-Math.sin(ang)*bend,cy:my+Math.cos(ang)*bend,ang,parent,progress:animate?0:1,motif:l.motif,color:l.color};
+    branches.push(b);if(animate){growing.push(b);signals.push({b,t:0});}return b;}
+  function widths(){const w=new Map();branches.forEach(b=>w.set(b,1.7));branches.forEach(b=>{let p=b.parent,n=0;while(p&&n<12){w.set(p,Math.min(6,w.get(p)+.45));p=p.parent;n++;}});return w;}
+  function motif(x,y,m,c,s=1){ctx.save();ctx.translate(x,y);ctx.scale(s,s);ctx.fillStyle=c;ctx.strokeStyle=c;ctx.lineWidth=.9;
+    if(m==='spark'){ctx.beginPath();for(let i=0;i<8;i++){const r=i%2?1.2:3.4,t=i*Math.PI/4;ctx.lineTo(Math.cos(t)*r,Math.sin(t)*r);}ctx.closePath();ctx.fill();}
+    else if(m==='fork'){ctx.beginPath();ctx.moveTo(-2.5,2);ctx.lineTo(0,-1);ctx.lineTo(2.5,2);ctx.moveTo(0,-1);ctx.lineTo(0,-3.5);ctx.stroke();}
+    else if(m==='ring'){ctx.beginPath();ctx.arc(0,0,2.6,0,7);ctx.lineWidth=1.1;ctx.stroke();}
+    else if(m==='leaf'){ctx.beginPath();ctx.moveTo(0,-3.5);ctx.quadraticCurveTo(3.5,-1,0,3.5);ctx.quadraticCurveTo(-3.5,-1,0,-3.5);ctx.fill();}
+    else if(m==='bars'){ctx.fillRect(-4,0,2,4);ctx.fillRect(-1,-2,2,6);ctx.fillRect(2,-4,2,8);}
+    else if(m==='cross'){ctx.fillRect(-1.2,-4,2.4,8);ctx.fillRect(-4,-1.2,8,2.4);}
+    else if(m==='note'){ctx.beginPath();ctx.ellipse(-1.5,2.5,2.6,1.8,-.5,0,7);ctx.fill();ctx.fillRect(.6,-5,1.2,7.5);ctx.beginPath();ctx.moveTo(1.8,-5);ctx.quadraticCurveTo(5,-4,4,-1);ctx.lineWidth=1.2;ctx.stroke();}
+    else{ctx.beginPath();ctx.arc(0,0,2.2,0,7);ctx.fill();}ctx.restore();}
+  function draw(){ctx.clearRect(0,0,W,H);ctx.save();ctx.translate(OX,OY);ctx.scale(SC,SC);
+    const bs=1+Math.sin(breath)*.005;ctx.translate(105,80);ctx.scale(bs,bs);ctx.translate(-105,-80);
+    const f=A.fill;ctx.fillStyle='#ffffff';ctx.fill(shape);ctx.fill(stem);
+    if(f>0){ctx.globalAlpha=f;ctx.fillStyle='#0B1233';ctx.save();ctx.translate(0,1.5);ctx.fill(shape);ctx.fill(stem);ctx.restore();const g=ctx.createRadialGradient(105,80,10,105,80,95);g.addColorStop(0,'#1B2A5C');g.addColorStop(1,'#131E4A');ctx.fillStyle=g;ctx.fill(shape);ctx.fill(stem);ctx.globalAlpha=1;}
+    ctx.strokeStyle=f>.5?'#0B1233':'#1b2a5c';ctx.lineWidth=1.4;ctx.stroke(shape);ctx.stroke(stem);
+    ctx.save();ctx.clip(shape);
+    ctx.lineWidth=1;ctx.strokeStyle=`rgba(${f>.5?'244,241,232':'27,42,92'},${f>.5?.12:.55})`;folds.forEach(p=>ctx.stroke(p));
+    if(A.pathP>0.01){ctx.strokeStyle=f>.5?C.cream:'rgb(228,87,46)';ctx.lineCap='round';ctx.lineWidth=Math.max(.6,A.pathW);ctx.beginPath();ctx.moveTo(STORY.x0,STORY.y0);for(let i=1;i<=24;i++){const [x,y]=bez(STORY,A.pathP*i/24);ctx.lineTo(x,y);}ctx.stroke();
+      if(A.pathW>3){ctx.strokeStyle='rgba(255,247,220,.4)';ctx.lineWidth=A.pathW*.35;ctx.stroke();}
+      if(A.pulse<1){const [x,y]=bez(STORY,A.pulse);ctx.fillStyle='#FFF7DC';ctx.shadowColor='#FFF7DC';ctx.shadowBlur=8;ctx.beginPath();ctx.arc(x,y,2,0,7);ctx.fill();ctx.shadowBlur=0;}}
+    // your world, drawn inside the brain
+    if(S.field&&f>.5){const fd=FIELDS[S.field];const r=rnd(77);for(let i=0;i<7;i++){const x=45+r()*120,y=35+r()*90;if(inside(x,y))motif(x,y,fd.motif,fd.color,.9+r()*.5);}}
+    // the goal region
+    if(A.ring>.01&&S.ladder){const l=byId[S.ladder];ctx.globalAlpha=A.ring;ctx.strokeStyle=l.color;ctx.lineWidth=1;ctx.setLineDash([2,3]);ctx.beginPath();ctx.arc(l.hub[0],l.hub[1],9,0,7);ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;}
+    const w=widths();ctx.lineCap='round';ctx.lineJoin='round';
+    for(const b of branches){const lw=w.get(b);ctx.strokeStyle=b.color;ctx.lineWidth=lw;ctx.beginPath();ctx.moveTo(b.x0,b.y0);
+      if(b.progress>=1)ctx.quadraticCurveTo(b.cx,b.cy,b.x1,b.y1);else{for(let i=1;i<=12;i++){const [x,y]=bez(b,b.progress*i/12);ctx.lineTo(x,y);}}ctx.stroke();
+      if(lw>3){ctx.strokeStyle='rgba(255,247,220,.35)';ctx.lineWidth=lw*.35;ctx.stroke();}
+      if(b.progress>.6){const [x,y]=bez(b,b.progress);motif(x,y,b.motif,lw>3?'#FFF7DC':b.color);}}
+    for(const s of signals){const [x,y]=bez(s.b,s.t);ctx.fillStyle='#FFF7DC';ctx.shadowColor='#FFF7DC';ctx.shadowBlur=6;ctx.beginPath();ctx.arc(x,y,1.6,0,7);ctx.fill();ctx.shadowBlur=0;}
+    ctx.restore();ctx.restore();}
+  function loop(now){const dt=Math.min(50,now-last);last=now;breath+=dt/2000;const k=reduce?1:1-Math.exp(-dt/180);
+    A.fill=lerp(A.fill,T.fill,k);A.pathP=lerp(A.pathP,T.pathP,k*.8);A.pathW=lerp(A.pathW,T.pathW,k);A.ring=lerp(A.ring,T.ring,k);
+    if(A.pulse<1)A.pulse+=dt/1400;
+    for(const b of growing)b.progress=Math.min(1,b.progress+dt/(reduce?1:1000));growing=growing.filter(b=>b.progress<1);
+    for(const s of signals)s.t+=dt/1200;signals=signals.filter(s=>s.t<1);
+    if(signals.length<1&&branches.length&&Math.random()<.008)signals.push({b:branches[Math.floor(Math.random()*branches.length)],t:0});
+    draw();requestAnimationFrame(loop);}
+  function setBrain(m){if(m==='outline'){T.fill=0;T.pathP=0;T.pathW=0;}if(m==='path'){T.fill=0;T.pathP=1;T.pathW=1.4;}if(m==='thick'){T.pathP=1;T.pathW=4.2;A.pulse=0;}if(m==='thin'){T.pathP=1;T.pathW=1;}if(m==='fill'){T.fill=1;T.pathP=1;T.pathW=3.2;}}
+
+  /* ---------- helpers ---------- */
+  const sheet=$('#sheet'),dots=$('#dots'),floor=$('#floor');
+  const src=keys=>`<div class="srcs">${[].concat(keys).map(k=>`<button class="src" data-p="${k}">${PAPERS[k].a}</button>`).join('')}</div>`;
+  const line=(t,k)=>`<p class="sub">${t}</p>${k?src(k):''}`;
+  function show(html,opts={}){sheet.innerHTML=`<div class="fade" style="display:grid;gap:12px">${html}</div>`;sheet.querySelectorAll('.src').forEach(b=>b.onclick=e=>{e.stopPropagation();openEvidence(b.dataset.p);});dots.style.display=opts.dots?'grid':'none';floor.hidden=!opts.floor;$('#dayTag').textContent=opts.day?'· day '+S.day:'';save();}
+  const rungBar=()=>`<div class="rungs">${Array.from({length:10},(_,i)=>`<i class="rung ${i+1<S.rung?'on':i+1===S.rung?'now':''}"></i>`).join('')}</div>`;
+  const trials=()=>TIMES[S.time||'unsure'].trials;
+
+  /* ---------- 1. story ---------- */
+  const STORY_STEPS=[
+    {h:'Your brain changes with what you do.',b:'outline'},
+    {h:'Try something hard. A path forms.',b:'path'},
+    {h:'Try again tomorrow. The path thickens.',b:'thick'},
+    {h:'Stop, and it thins.',b:'thin'},
+    {h:'Keep at something you can’t yet do, for weeks, and the brain itself changes.',s:'Seen in adults who learned to juggle for three months.',src:'draganski',b:'fill'}
+  ];
+  dots.innerHTML=STORY_STEPS.map(()=>'<i></i>').join('');
+  let busy=false;
+  function story(){const s=STORY_STEPS[S.step];setBrain(s.b);[...dots.children].forEach((d,i)=>d.classList.toggle('on',i===S.step));
+    show(`<div class="cap"><h1>${s.h}</h1>${s.s?`<p class="sub">${s.s}</p>`:''}${s.src?src(s.src):''}</div><p class="cue"><i></i>${S.step===0?'Tap, scroll or press →':S.step===STORY_STEPS.length-1?'Tap to begin':'Next'}</p>`,{dots:true});}
+  function storyNext(){if(S.screen!=='story'||busy)return;busy=true;setTimeout(()=>busy=false,reduce?0:650);tick();if(S.step<STORY_STEPS.length-1){S.step++;story();}else{S.screen='baseline';baseline();}}
+  function storyPrev(){if(S.screen!=='story'||busy||S.step===0)return;busy=true;setTimeout(()=>busy=false,reduce?0:650);tick();S.step--;story();}
+  cv.addEventListener('click',storyNext);sheet.addEventListener('click',e=>{if(!e.target.closest('button'))storyNext();});
+  addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '||e.key==='ArrowDown'){if(S.screen==='story'){e.preventDefault();storyNext();}}if(e.key==='ArrowLeft'||e.key==='ArrowUp'){if(S.screen==='story'){e.preventDefault();storyPrev();}}});
+  addEventListener('wheel',e=>{if(Math.abs(e.deltaY)<8)return;e.deltaY>0?storyNext():storyPrev();},{passive:true});
+  let ty=null;addEventListener('touchstart',e=>ty=e.touches[0].clientY,{passive:true});addEventListener('touchend',e=>{if(ty===null)return;const d=ty-e.changedTouches[0].clientY;if(Math.abs(d)>40)d>0?storyNext():storyPrev();ty=null;},{passive:true});
+
+  /* ---------- 2. baseline: thirty seconds before any question ---------- */
+  function baseline(){setBrain('fill');show(`<div class="cap"><h1>First, thirty seconds.</h1><p class="sub">Catch the flashes. This is your starting line, so expect to miss some.</p></div><button class="btn" id="go">Begin</button>`);
+    $('#go').onclick=()=>probeRound(8,(caught,n)=>{S.baseline=caught/n;S.lastDay=S.day;S.done.push({ladder:'glance',day:S.day,score:caught/n});addBranch(byId.glance,{score:caught/n},rnd(1000+7+6),true);tick();
+      show(`<div class="stat"><span class="big">${caught} of ${n}</span><span>starting line</span></div>${line('That line in your brain is your practice, drawn. Tomorrow it gets a little harder, on purpose.',['lovden'])}<p>Three questions, so tomorrow is built for you.</p><button class="btn" id="on">Go on</button>`);
+      $('#on').onclick=()=>{S.screen='ob';S.step=0;onboard();};});}
+
+  /* ---------- 3. onboarding: one question per step, each one changes the brain or the plan ---------- */
+  function onboard(){tick();
+    if(S.step===0){show(`<div class="cap"><h1>What’s your world?</h1><p class="sub">Every rung is built from it.</p></div><div class="chips">${Object.entries(FIELDS).map(([k,f])=>`<button class="chip" data-k="${k}" aria-pressed="${S.field===k}">${f.name}</button>`).join('')}</div>${S.field?`<button class="btn" id="n">Next</button>`:''}`);
+      sheet.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{S.field=b.dataset.k;onboard();});}
+    if(S.step===1){T.ring=S.ladder?1:0;show(`<div class="cap"><h1>Sharper at what?</h1><p class="sub">One ladder at a time. The others wait.</p></div><div class="cards">${LADDERS.map(l=>`<button class="card" data-l="${l.id}" aria-pressed="${S.ladder===l.id}"><span class="n">${l.name}</span><span class="sw" style="background:${l.color}"></span><span class="d">${l.skill} · ${l.how}</span></button>`).join('')}</div>${S.ladder?`<button class="btn" id="n">Next</button>`:''}`);
+      sheet.querySelectorAll('.card').forEach(b=>b.onclick=()=>{S.ladder=b.dataset.l;S.rung=1;T.ring=1;onboard();});}
+    if(S.step===2){show(`<div class="cap"><h1>How long, each day?</h1><p class="sub">Most people guess high. We ask again after a week.</p></div><div class="chips">${Object.entries(TIMES).map(([k,t])=>`<button class="chip" data-k="${k}" aria-pressed="${S.time===k}">${k==='unsure'?'Not sure':t.n}</button>`).join('')}</div>${S.time?line(S.time==='unsure'?'We start at thirty seconds. Showing up is the hard part; length comes later.':'Rungs lengthen as you keep showing up. Spread over days beats one long sitting.',['cepeda'])+`<button class="btn" id="n">Next</button>`:''}`);
+      sheet.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{S.time=b.dataset.k;onboard();});}
+    if(S.step===3){show(`<div class="cap"><h1>Morning or evening?</h1><p class="sub">We’ll remind you once. Never twice.</p></div><div class="chips">${[['morning','Morning'],['evening','Evening']].map(([k,n])=>`<button class="chip" data-k="${k}" aria-pressed="${S.when===k}">${n}</button>`).join('')}</div>${S.when?line(S.when==='evening'?'Evening practice goes straight into sleep, which is when it gets stored.':'Morning practice gets a full day, then sleep, which is when it gets stored.',['walker'])+`<button class="btn" id="n">Next</button>`:''}`);
+      sheet.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{S.when=b.dataset.k;onboard();});}
+    if(S.step===4){show(`<div class="cap"><h1>Anything to make it easier?</h1></div><div class="chips"><button class="chip" id="bt" aria-pressed="${S.bigText}">Larger text</button><button class="chip" id="sn" aria-pressed="${soundOn}">Tick sound</button></div><p class="sub">Reduced motion follows your phone’s setting. Change any of this later, any time.</p><button class="btn" id="n">Show my ladder</button>`);
+      $('#bt').onclick=()=>{S.bigText=!S.bigText;applyText();onboard();};$('#sn').onclick=()=>{$('#snd').click();onboard();};}
+    const n=$('#n');if(n)n.onclick=()=>{if(S.step<4){S.step++;onboard();}else{S.screen='plan';plan();}};}
+  function applyText(){document.documentElement.style.setProperty('--fs',S.bigText?'18px':'16px');}
+
+  /* ---------- 4. the plan ---------- */
+  function plan(){tick();const l=byId[S.ladder],f=FIELDS[S.field];
+    show(`<div class="cap"><span class="eyebrow">Your ladder</span><h1>${l.name}</h1></div>
+      <div class="plan"><div><span>Built from</span><span>${f.name}: the numbers, people and messages of your world</span></div><div><span>Each day</span><span>${TIMES[S.time].n}, ${S.when}</span></div><div><span>Ten rungs</span><span>${l.how}</span></div><div><span>Starting line</span><span>${Math.round(S.baseline*100)}% today. Rung 2 tomorrow.</span></div><div><span>Each week</span><span>A sixty-second probe that measures and doesn’t train</span></div></div>
+      ${line('The practice is the same whatever you aim it at: a gap you can’t quite close, full attention, one rung a day, sleep. The skill is the content. The practice is the point.',['lovden','recanzone'])}
+      <button class="btn" id="go">Done for today</button>`);
+    $('#go').onclick=()=>{S.rung=2;S.screen='home';home();};}
+
+  /* ---------- 5. the daily loop ---------- */
+  function home(){const l=byId[S.ladder];const playedToday=S.lastDay===S.day;const probeDue=S.day%7===0&&!S.probes.some(p=>p.day===S.day);const reask=S.day===8&&!S.asked7;
+    if(reask){show(`<div class="cap"><h1>One week in. How long, really?</h1><p class="sub">You said ${TIMES[S.time].n}. You showed up ${S.done.filter(d=>d.ladder!=='move').length} of 7 days.</p></div><div class="chips">${Object.entries(TIMES).filter(([k])=>k!=='unsure').map(([k,t])=>`<button class="chip" data-k="${k}" aria-pressed="${S.time===k}">${t.n}</button>`).join('')}</div>`,{day:true,floor:true});
+      sheet.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{S.time=b.dataset.k;S.asked7=true;home();});return;}
+    const mins=S.done.filter(d=>d.day>S.day-7&&d.ladder!=='move').length*(trials()/8)+S.probes.filter(p=>p.day>S.day-7).length;
+    show(`<div class="cap"><span class="eyebrow">${l.name}</span><h2>Rung ${S.rung} of 10</h2></div>${rungBar()}
+      ${playedToday?`<p class="sub">Done for today. Sleep works on it tonight.</p>`:`<p class="sub">${S.rung<=2?'A little harder than yesterday. Full attention.':'Harder again. In the lab, practice that isn’t attended leaves the map unchanged.'}</p>`}
+      ${playedToday?'':`<button class="btn" id="climb">Climb rung ${S.rung}</button>`}
+      ${probeDue?`<button class="btn ghost" id="probe">Weekly probe · 60 seconds</button>`:''}
+      <div class="chips"><button class="chip" id="move" aria-pressed="${S.moved.includes(S.day)}">${S.moved.includes(S.day)?'Moved today':'+ I moved today'}</button>${playedToday?`<button class="chip" id="tomorrow">Tomorrow →</button>`:''}</div>
+      ${line(`This week: about ${Math.max(1,Math.round(mins))} minutes. The studies that changed brains used hours a week for months. This is the habit. The dose comes as rungs lengthen.`,['draganski','park'])}
+      <p class="sub" style="font-size:13px"><button class="src" id="reset">Start over</button></p>`,{day:true,floor:true});
+    const c=$('#climb');if(c)c.onclick=()=>l.play(l,rungDone);
+    const p=$('#probe');if(p)p.onclick=probe;
+    $('#move').onclick=()=>{if(S.moved.includes(S.day))return;S.moved.push(S.day);S.done.push({ladder:'move',day:S.day,score:.6});addBranch(MOVE,{score:.6},rnd(500+S.day),true);home();};
+    const t=$('#tomorrow');if(t)t.onclick=()=>{S.day++;tick();home();};
+    $('#reset').onclick=()=>{S=fresh();save();branches=[];T.fill=0;T.pathP=0;T.pathW=0;T.ring=0;S.screen='story';story();};}
+  function rungDone(l,score,summary){tick();S.lastDay=S.day;const passed=score>=.75;S.history.push({day:S.day,rung:S.rung,score});S.done.push({ladder:l.id,day:S.day,score});addBranch(l,{score},rnd(1000+S.day*7+l.id.length),true);
+    const finished=passed&&S.rung===10;if(passed)S.rung=Math.min(10,S.rung+1);
+    if(finished){complete(l);return;}
+    show(`<div class="stat"><span class="big">${summary}</span><span>rung ${passed?S.rung-1:S.rung}</span></div>${rungBar()}
+      ${passed?line('Up a rung. Tomorrow asks for a little more, on purpose.',['lovden']):line('Not yet. A round you nearly get is worth more than one you breeze through. Same rung tomorrow.',['bjork','wilson'])}
+      ${line('Sleep works on it tonight. Nothing else to do.',['walker'])}<button class="btn" id="tomorrow">Tomorrow →</button>`,{day:true,floor:true});
+    $('#tomorrow').onclick=()=>{S.day++;tick();home();};}
+  function complete(l){tick();const first=S.baseline,lastS=S.history[S.history.length-1].score;
+    show(`<span class="eyebrow">Rung 10</span><h1>You can do a thing you couldn’t.</h1><p class="sub">${l.name}: ${Math.round(first*100)}% on day one, ${Math.round(lastS*100)}% today, over ${S.day} days.</p>
+      ${line('The skill is yours. The brain change the studies saw took months. Whether this makes you sharper at other things is the open question in this field, and we won’t claim it.',['simons','woollett'])}
+      <div class="share" id="shareTxt">${S.day} days. One thing I couldn't do. My brain, drawn by practice.</div><div class="row"><button class="btn small" id="copy">Copy</button><span class="sub" id="copied" style="font-size:13px"></span></div>
+      <h2>Next: something else you can’t do</h2><div class="cards">${LADDERS.filter(x=>x.id!==l.id).map(x=>`<button class="card" data-l="${x.id}"><span class="n">${x.name}</span><span class="sw" style="background:${x.color}"></span><span class="d">${x.skill}</span></button>`).join('')}</div>${line('A new skill keeps the gap open. A finished one, repeated, lets it close.',['lovden','park'])}`,{day:true,floor:true});
+    $('#copy').onclick=()=>{const t=$('#shareTxt').textContent;navigator.clipboard&&navigator.clipboard.writeText(t).then(()=>$('#copied').textContent='Copied').catch(()=>{const r=document.createRange();r.selectNodeContents($('#shareTxt'));getSelection().removeAllRanges();getSelection().addRange(r);});};
+    sheet.querySelectorAll('.card').forEach(b=>b.onclick=()=>{S.ladder=b.dataset.l;S.rung=1;S.day++;home();});}
+
+  /* ---------- 6. the weekly probe ---------- */
+  function probe(){show(`<div class="play"><span class="eyebrow">Weekly probe</span><p class="sub">Catch 8 flashes. This measures; it doesn’t train. A real shift is a line that climbs across three or four weeks, not one good day.</p><div class="arena" id="ar"><button class="flash" id="fl" aria-label="Catch"></button></div></div>`,{day:true});
+    runFlashes(8,(caught,n)=>{S.probes.push({day:S.day,score:caught/n});tick();
+      show(`<div class="stat"><span class="big">${caught} of ${n}</span><span>week ${S.day/7}</span></div><div class="hist"><i style="height:${Math.max(4,S.baseline*44)}px"></i>${S.probes.map((p,i)=>`<i style="height:${Math.max(4,p.score*44)}px" class="${i===S.probes.length-1?'now':''}"></i>`).join('')}</div>
+        ${line(S.probes.length<3?'Starting line, then one point a week. Not a trend yet.':'Flat is normal. Most studies find change in the trained task and little elsewhere; this probe looks for the elsewhere.',['simons','owen'])}<button class="btn" id="back">Back</button>`,{day:true,floor:true});
+      $('#back').onclick=home;});}
+  function probeRound(n,cb){show(`<div class="play"><span class="eyebrow">Starting line</span><div class="arena" id="ar"><button class="flash" id="fl" aria-label="Catch"></button></div></div>`);runFlashes(n,cb);}
+  function runFlashes(n,cb){const ar=$('#ar'),fl=$('#fl');let caught=0,shown=0;
+    function next(){fl.style.display='none';if(shown>=n){cb(caught,n);return;}setTimeout(()=>{const rr=ar.getBoundingClientRect();fl.style.left=(Math.random()*(rr.width-40)+5)+'px';fl.style.top=(Math.random()*(rr.height-40)+5)+'px';fl.style.display='block';shown++;setTimeout(()=>{if(fl.style.display==='block')next();},450);},400+Math.random()*900);}
+    fl.onclick=e=>{e.stopPropagation();caught++;fl.style.display='none';next();};next();}
+
+  /* ---------- 7. the rungs, built from your world ---------- */
+  function answer(isGood,onGood,then){sheet.querySelectorAll('.opt').forEach(b=>b.onclick=e=>{e.stopPropagation();const good=isGood(b);if(good)onGood();b.classList.add(good?'ok':'bad');sheet.querySelectorAll('.opt').forEach(x=>x.disabled=true);setTimeout(then,420);});}
+  function playGlance(l,cb){const f=FIELDS[S.field],r=S.rung,n=Math.min(8,2+Math.ceil(r/2)),ms=Math.max(500,1900-r*140),tr=trials();let i=0,ok=0;
+    function trial(){if(i>=tr){cb(l,ok/tr,`${ok} of ${tr}`);return;}const pick=[...f.metrics].sort(()=>Math.random()-.5).slice(0,n);
+      show(`<div class="play"><span class="eyebrow">Rung ${r} · ${n} numbers · ${(ms/1000).toFixed(1)}s</span><div class="hold"><i style="animation-duration:${ms}ms"></i></div><div class="tiles">${pick.map(([k,v])=>`<div class="tile"><small>${k}</small><b>${v}</b></div>`).join('')}</div></div>`,{day:true});
+      setTimeout(()=>{const [k,v]=pick[Math.floor(Math.random()*n)];const wrong=f.metrics.filter(m=>m[0]!==k&&m[1]!==v).sort(()=>Math.random()-.5).slice(0,2).map(m=>m[1]);const opts=[v,...wrong].sort(()=>Math.random()-.5);
+        show(`<div class="play"><span class="eyebrow">Rung ${r} · ${i+1} of ${tr}</span><p class="q">What was ${k}?</p><div class="opts">${opts.map(o=>`<button class="opt">${o}</button>`).join('')}</div></div>`,{day:true});
+        answer(b=>b.textContent===v,()=>ok++,()=>{i++;trial();});},ms);}
+    trial();}
+  function playNames(l,cb){const f=FIELDS[S.field],r=S.rung,n=Math.min(8,3+Math.floor(r/2)),ms=Math.max(2500,7000-r*450),tr=Math.min(n,Math.max(3,Math.round(trials()/2)));let i=0,ok=0;const pick=[...f.people].sort(()=>Math.random()-.5).slice(0,n);
+    show(`<div class="play"><span class="eyebrow">Rung ${r} · ${n} people · ${(ms/1000).toFixed(0)}s</span><div class="hold"><i style="animation-duration:${ms}ms"></i></div><div class="people">${pick.map(([nm,ro])=>`<div class="person"><span class="av">${nm.replace(/^(Dr|Nurse) /,'')[0]}</span><span>${nm}<small>${ro}</small></span></div>`).join('')}</div></div>`,{day:true});
+    setTimeout(trial,ms);
+    function trial(){if(i>=tr){cb(l,ok/tr,`${ok} of ${tr}`);return;}const [nm,ro]=pick[i];const opts=[nm,...pick.filter(p=>p[0]!==nm).sort(()=>Math.random()-.5).slice(0,2).map(p=>p[0])].sort(()=>Math.random()-.5);
+      show(`<div class="play"><span class="eyebrow">Rung ${r} · ${i+1} of ${tr}</span><p class="q">Who is ${ro}?</p><div class="opts">${opts.map(o=>`<button class="opt">${o}</button>`).join('')}</div></div>`,{day:true});
+      answer(b=>b.textContent===nm,()=>ok++,()=>{i++;trial();});}}
+  function playSwitch(l,cb){const f=FIELDS[S.field],r=S.rung,n=Math.min(12,trials()),every=Math.max(1,3-Math.floor(r/4)),hints=r<4;let i=0,ok=0,ri=0;const msgs=Array.from({length:n},(_,k)=>f.msgs[k%f.msgs.length]).sort(()=>Math.random()-.5);
+    function trial(){if(i>=n){cb(l,ok/n,`${ok} of ${n}`);return;}if(i>0&&i%every===0)ri=1-ri;const [m,a1,a2]=msgs[i];const [q,opts]=f.rules[ri];const ans=ri===0?a1:a2;
+      show(`<div class="play"><span class="eyebrow">Rung ${r} · ${i+1} of ${n}</span><div class="msg">${hints?`<small>${f.rules[0][1][a1==='a'?0:1][0]} · ${f.rules[1][1][a2==='a'?0:1][0]}</small>`:''}${m}</div><p class="q">${q}</p><div class="opts">${opts.map(([t,v])=>`<button class="opt" data-v="${v}">${t}</button>`).join('')}</div></div>`,{day:true});
+      answer(b=>b.dataset.v===ans,()=>ok++,()=>{i++;trial();});}
+    trial();}
+
+  /* ---------- evidence ---------- */
+  const ov=$('#ov'),ovs=$('#ovs');
+  function paper(k){const p=PAPERS[k];return `<div class="paper" id="p-${k}"><b>${p.t}</b><span class="m">${p.a}</span><div class="sd"><em>Shows</em><span>${p.shows}</span><em>Doesn’t</em><span>${p.not}</span></div><a href="https://doi.org/${p.doi}" target="_blank" rel="noopener">doi.org/${p.doi}</a></div>`;}
+  function openEvidence(focus){ovs.innerHTML=`<h2>Evidence <button id="evClose">Close</button></h2><p class="sub">Every claim this app makes, the paper behind it, and what that paper doesn’t show. Each DOI was resolved on Crossref on 6 Nov 2026.</p><p class="sub">What this is not: a medical or diagnostic tool. The brain picture shows your practice. Nothing here measures your brain. Most of these studies are in adults over 60 or in one trained skill; younger working adults are less studied.</p>${Object.keys(PAPERS).map(paper).join('')}`;ov.classList.add('on');$('#evClose').onclick=()=>ov.classList.remove('on');if(focus){const el=$('#p-'+focus);if(el){el.scrollIntoView({block:'start'});el.style.background='var(--bg2)';}}}
+  $('#evBtn').onclick=()=>openEvidence();$('#floorBtn').onclick=()=>openEvidence('simons');ov.addEventListener('click',e=>{if(e.target===ov)ov.classList.remove('on');});
+
+  /* ---------- boot ---------- */
+  resize();applyText();buildBranches();
+  if(S.screen==='story')story();else if(S.screen==='baseline')baseline();else if(S.screen==='ob'){setBrain('fill');onboard();}else if(S.screen==='plan'){setBrain('fill');T.ring=1;plan();}else{setBrain('fill');T.ring=1;home();}
+  if(S.screen!=='story'){A.fill=1;A.pathP=1;A.pathW=3.2;}
+  requestAnimationFrame(t=>{last=t;loop(t);});
+})();
+</script>

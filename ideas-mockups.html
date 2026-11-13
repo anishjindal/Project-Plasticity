@@ -1,0 +1,286 @@
+<meta charset="utf-8">
+<title>Plasticity Five Directions</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* Layout: one quiet frame, five tabs, one phone-sized stage. Palette and type follow the project's own system. */
+  :root{
+    --bg:#ffffff; --bg2:#f5f5f3; --ink:#111318; --ink2:#5a5e68; --line:#1b2a5c; --accent:#e4572e; --rule:#e6e6e3;
+    --navy:#131E4A; --navy2:#1B2A5C; --halo:#0B1233; --cream:#FFF7DC; --path:rgb(255,240,190);
+    --red:#E8472E; --orange:#F28C28; --yellow:#F5C63C; --green:#4CAF6E; --blue:#2E86DE; --sky:#7ED0E0; --purple:#8E5BD6; --pink:#E8508A;
+    --font:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-weight:400;line-height:1.5;
+    padding-block:28px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .wrap{max-width:960px;margin:0 auto;display:grid;gap:28px}
+  h1,h2,h3{font-weight:500;letter-spacing:-.02em;margin:0;text-wrap:balance}
+  h1{font-size:clamp(26px,4vw,38px);line-height:1.1}
+  h2{font-size:clamp(20px,3vw,26px);line-height:1.2}
+  h3{font-size:17px}
+  p{margin:0}
+  .sub{color:var(--ink2);max-width:60ch}
+  .eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:500}
+  .tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--rule)}
+  .tab{background:none;border:0;border-bottom:2px solid transparent;padding:10px 12px;font:inherit;font-weight:500;color:var(--ink2);cursor:pointer;margin-bottom:-1px}
+  .tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+  .tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .stagewrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:32px;align-items:start}
+  @media (max-width:760px){.stagewrap{grid-template-columns:1fr}}
+  .about{display:grid;gap:14px}
+  .about dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0;font-size:14px}
+  .about dt{color:var(--accent);font-weight:500}
+  .about dd{margin:0;color:var(--ink2)}
+  .stage{background:var(--bg2);border:1px solid var(--rule);padding:22px;min-height:560px;display:flex;flex-direction:column;gap:18px}
+  .panel{display:none}
+  .panel.on{display:flex;flex-direction:column;gap:16px;flex:1}
+  .brain{width:100%;max-width:300px;margin:0 auto;display:block}
+  .brain .fill{fill:var(--navy)}
+  .brain .edge{fill:none;stroke:var(--halo);stroke-width:2}
+  .brain .pw{fill:none;stroke:var(--path);stroke-linecap:round;stroke-linejoin:round;transition:stroke-width .6s cubic-bezier(.4,0,.2,1),opacity .6s}
+  .btn{background:var(--ink);color:#fff;border:0;padding:11px 18px;font:inherit;font-weight:500;cursor:pointer;border-radius:0}
+  .btn.ghost{background:none;color:var(--ink);border:1px solid var(--ink)}
+  .btn:disabled{opacity:.4;cursor:default}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{border:1px solid var(--rule);background:#fff;padding:7px 12px;font:inherit;cursor:pointer}
+  .chip[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:#fff}
+  textarea,.card{width:100%;font:inherit;border:1px solid var(--rule);background:#fff;padding:14px;color:var(--ink)}
+  textarea{min-height:110px;resize:vertical}
+  .card{display:grid;gap:10px}
+  .opt{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--rule);padding:10px 12px;font:inherit;cursor:pointer}
+  .opt.ok{border-color:var(--green)} .opt.bad{border-color:var(--red)}
+  .note{font-size:14px;color:var(--ink2)}
+  .inbrain{border-left:2px solid var(--accent);padding-left:12px;font-size:14px}
+  .big{font-size:28px;font-weight:500;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .dots{display:flex;gap:6px}
+  .dot{width:14px;height:14px;border:1px solid var(--line);border-radius:50%}
+  .dot.on{background:var(--navy);border-color:var(--navy)}
+  input[type=range]{width:100%;accent-color:var(--accent)}
+  .legend{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:13px}
+  .legend div{border-top:2px solid var(--rule);padding-top:6px}
+  .legend b{display:block;font-weight:500}
+  .duo{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+  .duo .brain{max-width:150px}
+  .duo .who{text-align:center;font-size:13px;color:var(--ink2)}
+  .arena{position:relative;height:150px;background:#fff;border:1px solid var(--rule);overflow:hidden}
+  .target{position:absolute;width:30px;height:30px;border-radius:50%;background:var(--accent);border:0;cursor:pointer;display:none}
+  .night{background:var(--navy);color:var(--cream);padding:22px;display:grid;gap:16px;min-height:360px;align-content:start}
+  .night .note{color:rgba(255,247,220,.7)}
+  .breath{width:90px;height:90px;border-radius:50%;background:var(--path);opacity:.9;margin:8px auto;transition:transform 4s ease-in-out}
+  .breath.in{transform:scale(1.35)}
+  .fade{transition:opacity .6s}
+  .ideas{border-top:1px solid var(--rule);padding-top:24px;display:grid;gap:16px}
+  details summary{cursor:pointer;font-weight:500}
+  .cols{columns:2;column-gap:40px;font-size:14px;color:var(--ink2)}
+  @media (max-width:640px){.cols{columns:1}}
+  .cols h3{color:var(--ink);break-after:avoid;margin:14px 0 6px}
+  .cols ol{margin:0;padding-left:22px}
+  .cols li{break-inside:avoid;margin-bottom:3px}
+  .cols li.star{color:var(--ink)}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header style="display:grid;gap:10px">
+    <span class="eyebrow">Project Plasticity</span>
+    <h1>Five directions, built just enough to feel</h1>
+    <p class="sub">Out of a hundred ideas, these five are the furthest from each other: one changes <em>what</em> you train on, one takes training off the screen, one shows your brain changing, one adds a second person, one moves training to bedtime. Each mockup is a rough, working slice. Example data throughout.</p>
+  </header>
+
+  <div class="tabs" role="tablist" id="tabs">
+    <button class="tab" role="tab" aria-selected="true" data-p="p1">1 · Field feed</button>
+    <button class="tab" role="tab" aria-selected="false" data-p="p2">2 · Daily dare</button>
+    <button class="tab" role="tab" aria-selected="false" data-p="p3">3 · Living record</button>
+    <button class="tab" role="tab" aria-selected="false" data-p="p4">4 · Duet</button>
+    <button class="tab" role="tab" aria-selected="false" data-p="p5">5 · Night replay</button>
+  </div>
+
+  <div class="stagewrap">
+    <aside class="about" id="about"></aside>
+    <div class="stage">
+
+      <!-- 1 FIELD FEED -->
+      <section class="panel on" id="p1" aria-label="Field feed">
+        <div class="chips" id="fields"></div>
+        <textarea id="fieldText" aria-label="Your material"></textarea>
+        <div class="row"><button class="btn" id="buildRep">Build today's rep →</button><span class="note" id="repHint">Your own words become a recall drill.</span></div>
+        <div id="repArea"></div>
+      </section>
+
+      <!-- 2 DAILY DARE -->
+      <section class="panel" id="p2" aria-label="Daily dare">
+        <svg class="brain" viewBox="0 0 200 160" aria-hidden="true"><use href="#brainShape"/><path class="pw" id="motor" d="M70 60 C90 40 120 50 135 80 C140 100 125 118 105 120" stroke-width="0" opacity=".9"/></svg>
+        <div class="card" id="dare"></div>
+        <div class="row"><button class="btn" id="didIt">Did it</button><button class="btn ghost" id="another">Another one</button></div>
+        <div class="row" style="justify-content:space-between"><div class="dots" id="weekDots"></div><span class="note">this week</span></div>
+        <p class="inbrain" id="dareBrain">Doing a routine thing a new way makes your brain stop running on autopilot. That attention is the raw material for change.</p>
+      </section>
+
+      <!-- 3 LIVING RECORD -->
+      <section class="panel" id="p3" aria-label="Living brain record">
+        <svg class="brain" viewBox="0 0 200 160" aria-hidden="true"><use href="#brainShape"/>
+          <path class="pw" id="pwA" d="M50 70 C70 55 110 70 150 55" />
+          <path class="pw" id="pwM" d="M60 100 C85 85 120 110 150 92" />
+          <path class="pw" id="pwS" d="M70 45 C95 90 115 90 135 45" />
+        </svg>
+        <div class="row" style="justify-content:space-between"><span class="eyebrow">Week <span id="wkNum">1</span> of 8</span><span class="note" id="wkMins"></span></div>
+        <input type="range" id="week" min="1" max="8" value="1" aria-label="Week">
+        <div class="legend">
+          <div><b>Attention</b><span id="lA"></span></div>
+          <div><b>Memory</b><span id="lM"></span></div>
+          <div><b>Speed</b><span id="lS"></span></div>
+        </div>
+        <p class="inbrain" id="wkNote"></p>
+      </section>
+
+      <!-- 4 DUET -->
+      <section class="panel" id="p4" aria-label="Duet">
+        <div class="duo">
+          <div><svg class="brain" viewBox="0 0 200 160" aria-hidden="true"><use href="#brainShape"/><path class="pw" id="pwYou" d="M60 50 C90 80 120 80 145 50" stroke-width="0"/></svg><div class="who">You</div></div>
+          <div><svg class="brain" viewBox="0 0 200 160" aria-hidden="true"><use href="#brainShape"/><path class="pw" id="pwMaya" d="M60 50 C90 80 120 80 145 50" stroke-width="3"/></svg><div class="who">Maya · played this morning</div></div>
+        </div>
+        <div class="arena" id="arena"><button class="target" id="target" aria-label="Catch"></button></div>
+        <div class="row" style="justify-content:space-between"><span id="duetMsg" class="note">Tap the dot three times, as fast as you can.</span><button class="btn" id="duetStart">Play your turn</button></div>
+        <div class="card" id="duetResult" hidden></div>
+      </section>
+
+      <!-- 5 NIGHT REPLAY -->
+      <section class="panel" id="p5" aria-label="Night replay">
+        <div class="night">
+          <span class="eyebrow" style="color:var(--path)">Tonight · 60 seconds</span>
+          <h2 id="nightTitle">Before you sleep, run today back once.</h2>
+          <div class="breath" id="breath"></div>
+          <p id="nightLine" class="fade">Three reps today: a Glimpse round, a Triage round, and brushing with your other hand.</p>
+          <p class="note" id="nightNote">Sleep is when the day's practice gets stored. A slow replay in the evening is a small, low-cost way to mark what mattered.</p>
+          <div class="row"><button class="btn" id="nightGo" style="background:var(--path);color:var(--navy)">Start replay</button><span class="note" id="nightStep"></span></div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <section class="ideas">
+    <details>
+      <summary>All 100 ideas</summary>
+      <div class="cols" id="ideasList"></div>
+    </details>
+  </section>
+</div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="brainShape">
+      <path fill="#131E4A" d="M62 32 C72 12 112 10 126 24 C146 14 176 27 176 57 C191 72 186 102 166 112 C161 137 126 142 111 127 C96 142 61 137 56 117 C31 112 21 82 36 67 C26 47 41 30 62 32 Z"/>
+      <path fill="none" stroke="#0B1233" stroke-width="2" d="M62 32 C72 12 112 10 126 24 C146 14 176 27 176 57 C191 72 186 102 166 112 C161 137 126 142 111 127 C96 142 61 137 56 117 C31 112 21 82 36 67 C26 47 41 30 62 32 Z"/>
+      <path fill="#131E4A" d="M104 128 L104 150 C104 156 116 156 116 150 L114 128 Z"/>
+    </g>
+  </defs>
+</svg>
+
+<script>
+(function(){
+  const $=s=>document.querySelector(s);
+  const motion=!matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+  /* ---------- about text per tab ---------- */
+  const about={
+    p1:{t:"Your world becomes the gym",w:"Paste anything from your own work. The app turns it into today's recall drill, so the material you're strengthening is material you actually care about.",d:["Trains","Working memory and recall","Different because","Content comes from you, not a stimulus bank","Science","Memory is better for material you find meaningful and process deeply (Craik & Tulving 1975). Keep the claim modest: better recall of this text, not a stronger memory in general."]},
+    p2:{t:"Training that happens off the screen",w:"One small real-world novelty a day. No score. The app's job is to pick the dare, explain it, and keep the week honest.",d:["Trains","Attention to routine; motor novelty","Different because","Nothing to play. The phone is only a witness","Science","Novel motor learning changes brain structure in adults (Draganski et al. 2004, juggling). Whether a daily micro-novelty does the same is unproven; say so in the app."]},
+    p3:{t:"See your brain change",w:"The onboarding brain becomes your record. Each goal is a pathway that thickens with practice and fades a little when ignored. Scrub through the weeks.",d:["Trains","Nothing. This is the mirror","Different because","Progress as one living picture, not a chart wall","Science","Pathway thickness is a metaphor for practice, not a measurement. The app should say that plainly, and keep real numbers one tap away."]},
+    p4:{t:"A second brain in the room",w:"You and a friend play the same round on your own time. Two brains, side by side, no leaderboard. The point is showing up together.",d:["Trains","Reaction speed (this round)","Different because","Social, asynchronous, no ranking","Science","Social accountability improves adherence to exercise programs broadly; evidence specific to cognitive training is thin. Frame it as motivation, not as a brain benefit."]},
+    p5:{t:"Train at bedtime, slowly",w:"A 60-second evening replay of what you practised. Nothing new, nothing fast. It ends the day and hands the rest to sleep.",d:["Trains","Consolidation, indirectly","Different because","It's a ritual, not an exercise","Science","Sleep after learning helps store the day's practice (Walker & Stickgold 2004). A slow review before bed is plausible but not the same as the studied effect; don't promise it."]}
+  };
+  function renderAbout(id){
+    const a=about[id];
+    $('#about').innerHTML=`<span class="eyebrow">Direction ${id.slice(1)}</span><h2>${a.t}</h2><p class="sub">${a.w}</p><dl>${a.d.map((x,i)=>i%2?`<dd>${x}</dd>`:`<dt>${x}</dt>`).join('')}</dl>`;
+  }
+  renderAbout('p1');
+  $('#tabs').addEventListener('click',e=>{
+    const b=e.target.closest('.tab'); if(!b) return;
+    document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected',t===b));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id===b.dataset.p));
+    renderAbout(b.dataset.p);
+  });
+
+  /* ---------- 1 field feed ---------- */
+  const fields={
+    "Startup founder":{text:"Q3 pipeline: 14 qualified leads, 3 closed. Churn dropped to 2.1% after the onboarding rewrite. Priya owns the pricing test; it ships Thursday. Board deck due the 19th.",
+      q:[["How many leads closed?","3",["3","14","5","2"]],["Who owns the pricing test?","Priya",["Priya","Marcus","Lena","You"]],["When is the board deck due?","the 19th",["the 19th","Thursday","the 9th","Friday"]]]},
+    "Med student":{text:"Patient, 54, presents with sudden unilateral weakness, facial droop, and slurred speech starting 40 minutes ago. BP 178/104. No anticoagulants. Last known well: 7:50.",
+      q:[["How long ago did symptoms start?","40 minutes",["40 minutes","4 hours","14 minutes","90 minutes"]],["Blood pressure?","178/104",["178/104","148/94","170/110","188/100"]],["Last known well?","7:50",["7:50","7:15","8:50","7:05"]]]},
+    "Jazz pianist":{text:"Set two opens with Autumn Leaves in G minor, then Blue Bossa up a half step. Drummer takes the first solo on Caravan. Trade fours before the out-head. Encore if they call it: Misty.",
+      q:[["Key for Autumn Leaves?","G minor",["G minor","E minor","A minor","G major"]],["Who takes the first solo on Caravan?","the drummer",["the drummer","the bassist","you","the sax"]],["The encore tune?","Misty",["Misty","Caravan","Blue Bossa","Round Midnight"]]]}
+  };
+  let field="Startup founder";
+  const chipsEl=$('#fields');
+  Object.keys(fields).forEach(k=>{const b=document.createElement('button');b.className='chip';b.textContent=k;b.setAttribute('aria-pressed',k===field);b.onclick=()=>{field=k;[...chipsEl.children].forEach(c=>c.setAttribute('aria-pressed',c===b));$('#fieldText').value=fields[k].text;$('#repArea').innerHTML='';};chipsEl.appendChild(b);});
+  $('#fieldText').value=fields[field].text;
+  $('#buildRep').onclick=()=>{
+    const area=$('#repArea'); const qs=fields[field].q; let i=0,score=0,secs=8;
+    area.innerHTML=`<div class="card"><span class="eyebrow">Read it once</span><p>${$('#fieldText').value}</p><p class="note">Hides in <b id="cd">${secs}</b>s</p></div>`;
+    const t=setInterval(()=>{secs--;const c=$('#cd');if(c)c.textContent=secs;if(secs<=0){clearInterval(t);ask();}},1000);
+    function ask(){
+      if(i>=qs.length){area.innerHTML=`<div class="card"><span class="big">${score} of ${qs.length}</span><p class="inbrain">You held details from your own work in mind and pulled them back out. The next rep uses what you missed, spaced a day apart.</p><p class="note">Built from your text. The three questions were generated for this mockup by hand; in the product, the AI writes them.</p></div>`;return;}
+      const [q,ans,opts]=qs[i];
+      area.innerHTML=`<div class="card"><span class="eyebrow">${i+1} of ${qs.length}</span><h3>${q}</h3>${opts.map(o=>`<button class="opt">${o}</button>`).join('')}</div>`;
+      area.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const ok=b.textContent===ans;b.classList.add(ok?'ok':'bad');if(ok)score++;area.querySelectorAll('.opt').forEach(x=>x.disabled=true);setTimeout(()=>{i++;ask();},700);});
+    }
+  };
+
+  /* ---------- 2 daily dare ---------- */
+  const dares=[["Brush your teeth with your other hand.","Your motor cortex has a well-worn program for this. Switching hands forces it to build a clumsy new one. Clumsy is the point."],
+    ["Take a different route for one leg of your day.","Familiar routes run on autopilot. A new one wakes up the spatial memory system, the same one London taxi drivers build up."],
+    ["Eat one meal without your phone, noticing every flavour.","Attention is a muscle you point. Pointing it at something ordinary is the cheapest rep there is."],
+    ["Learn one new word today and use it out loud twice.","Saying a word out loud links the sound, the meaning and the motor act. Three hooks instead of one."]];
+  let di=0,done=0;
+  const weekEl=$('#weekDots'); for(let k=0;k<7;k++){const d=document.createElement('span');d.className='dot'+(k<3?' on':'');weekEl.appendChild(d);} done=3;
+  function showDare(){const [d,why]=dares[di];$('#dare').innerHTML=`<span class="eyebrow">Today's dare</span><h3>${d}</h3>`;$('#dareBrain').textContent=why;$('#motor').setAttribute('stroke-width',0);$('#didIt').disabled=false;$('#didIt').textContent='Did it';}
+  showDare();
+  $('#another').onclick=()=>{di=(di+1)%dares.length;showDare();};
+  $('#didIt').onclick=()=>{$('#motor').setAttribute('stroke-width',4);$('#didIt').textContent='Logged';$('#didIt').disabled=true;const dots=weekEl.children;if(done<7){dots[done].classList.add('on');done++;}};
+
+  /* ---------- 3 living record ---------- */
+  const weeks=[ // attention, memory, speed (0-6), minutes, note
+    [1,1,1,9,"You started. Three short baselines. Every line is thin on purpose."],
+    [2,1,2,24,"Glimpse most days. Speed pathway thickening first; it usually does."],
+    [3,2,2,31,"First Triage week. Switch cost dropped from 410 ms to 350 ms."],
+    [3,2,3,18,"Short week. Nothing was lost; skills fade slowly, not overnight."],
+    [4,3,3,35,"Memory joined in with Field feed. Recall of your own notes: 7 of 9."],
+    [4,3,4,29,"Plateau on speed. Normal around now; we held difficulty steady."],
+    [5,4,4,33,"Attention pathway is your thickest. That matches what you asked for in week one."],
+    [5,4,5,30,"Eight weeks. Thickness is practice, not proof; your numbers are one tap away."]];
+  const w=$('#week');
+  function renderWeek(){const k=+w.value-1,[a,m,s,min,note]=weeks[k];$('#wkNum').textContent=k+1;$('#wkMins').textContent=min+' min practised';$('#pwA').setAttribute('stroke-width',a);$('#pwM').setAttribute('stroke-width',m);$('#pwS').setAttribute('stroke-width',s);$('#lA').textContent=['','thin','forming','defined','steady','strong'][a]||'';$('#lM').textContent=['','thin','forming','defined','steady','strong'][m]||'';$('#lS').textContent=['','thin','forming','defined','steady','strong'][s]||'';$('#wkNote').textContent=note;}
+  w.addEventListener('input',renderWeek); renderWeek();
+
+  /* ---------- 4 duet ---------- */
+  const arena=$('#arena'),target=$('#target');let times=[],t0=0,trial=0,timer=null;
+  function place(){const r=arena.getBoundingClientRect();target.style.left=(Math.random()*(r.width-40)+5)+'px';target.style.top=(Math.random()*(r.height-40)+5)+'px';target.style.display='block';t0=performance.now();}
+  function next(){target.style.display='none';if(trial>=3){finish();return;}$('#duetMsg').textContent='Trial '+(trial+1)+' of 3…';timer=setTimeout(place,600+Math.random()*1400);}
+  target.onclick=()=>{times.push(Math.round(performance.now()-t0));trial++;next();};
+  $('#duetStart').onclick=()=>{times=[];trial=0;$('#duetResult').hidden=true;$('#pwYou').setAttribute('stroke-width',0);$('#duetStart').disabled=true;next();};
+  function finish(){const me=Math.round(times.reduce((a,b)=>a+b)/times.length);$('#pwYou').setAttribute('stroke-width',3);$('#duetMsg').textContent='Sent to Maya.';$('#duetStart').disabled=false;$('#duetStart').textContent='Play again';
+    const r=$('#duetResult');r.hidden=false;r.innerHTML=`<div class="row" style="justify-content:space-between"><div><span class="note">You</span><div class="big">${me} ms</div></div><div><span class="note">Maya</span><div class="big">312 ms</div></div></div><p class="inbrain">Two brains, same round, two different mornings. Your turn is done; Maya sees it next time she opens the app. There's no rank, only the pair of you keeping it going: 9 days so far.</p>`;}
+
+  /* ---------- 5 night replay ---------- */
+  const steps=["Glimpse. Six flashes caught out of eight. Let that one sit.","Triage. You switched rules eleven times without losing the thread.","The other hand. Awkward for two minutes, and that was the rep.","That's today. Sleep stores what you practised. Nothing else to do."];
+  let ni=0,nt=null;
+  $('#nightGo').onclick=()=>{ni=0;$('#nightGo').disabled=true;const b=$('#breath');function go(){if(ni>=steps.length){$('#nightStep').textContent='';$('#nightGo').disabled=false;$('#nightGo').textContent='Replay again';$('#nightLine').textContent='See you tomorrow.';return;}const line=$('#nightLine');line.style.opacity=0;setTimeout(()=>{line.textContent=steps[ni];line.style.opacity=1;},motion?600:0);b.classList.toggle('in');$('#nightStep').textContent=(ni+1)+' of '+steps.length+' · breathe';ni++;nt=setTimeout(go,motion?5000:1200);}go();};
+
+  /* ---------- 100 ideas ---------- */
+  const groups=[["Your world becomes the gym",["★ Field feed: paste a paragraph from your own work and it becomes a recall drill","Calendar-aware sessions","Standup recall in your team's vocabulary","Field vocabulary drills for memory span","Founder mode with real-looking metrics","Medical differential-diagnosis puzzles","Athlete reaction and tracking drills","Artist visual-processing drills","Language-learner listening span","Bring your own slides; the app builds spaced recall"]],
+    ["Off-screen reps",["★ Daily dare: one real-world novelty a day with a one-tap Did it","Walk-and-think audio prompts","Juggling and balance progressions","Non-dominant handwriting, photographed weekly","Talk-to-a-stranger prompts","Cook a recipe without reading it twice","Navigate home without maps once a week","Learn a 30-second drum pattern","Reading-aloud reps","A no-autopilot morning"]],
+    ["See your brain change",["★ Living brain record: pathways thicken with practice; scrub through weeks","A weekly what-wired letter","Trend lines with honest noise bands","Before/after replay of your own rounds","Personal bests that decay if unused","A consolidation meter fed by sleep and spacing","Plateaus explained, not hidden","One-page progress PDF for a coach","Milestones tied to research-sized effects","A calm year view, no streak shaming"]],
+    ["Train together",["★ Duet: two brains, asynchronous turns, no leaderboard","Team gym for startups","Teach-back in 30 seconds","Accountability pairs by goal and time zone","Family mode","Co-op puzzles with split information","A spotter who nudges once a week","Classroom mode for professors","Opt-in anonymous percentile","Share a pathway, never a score"]],
+    ["The day's rhythm",["★ Night replay: a 60-second evening wind-down before sleep","Morning 90-second primer","Spaced-repetition scheduler across exercises","Micro-sessions for a kettle boil","Rest days the app proposes","Weekend longer session","Jet-lag mode","Pre-exam taper","Commute mode, audio only","Pause-and-resume that remembers"]],
+    ["The coach",["Re-ask the commitment question at week one and two","Why this exercise today, always visible","Difficulty explained in a sentence","Weekly five-question review","Pick a coach voice","Reflection after each session","Confusion detector rewrites instructions","Goal drift check","Research digest matched to practice","Ask the coach, every answer cited"]],
+    ["New exercises",["Triage (built)","Glimpse (built)","Wired (built)","Spot the diff on dashboards","Dual n-back with your field's icons","Roadmap logic under time pressure","Voice-note recall","Peripheral vision sweep","Go/no-go with tempting wrong answers","Mental rotation with your field's objects"]],
+    ["Make it honest",["A can-and-can't page with citations","Every claim linked to a verified paper","Transfer-effect honesty","Replication-status tags","A critics' corner (Simons et al. 2016)","Your own n-of-1 experiment","Effect sizes in plain words","No medical claims; when to see a clinician","Open data export","A changelog of what the algorithm changed for you"]],
+    ["Make it felt",["Haptic tick with the same toggle as sound","One hand-drawn motif unlocked per week","Very quiet ambient sound beds","Dark-room mode for night replay only","Large-type and high-contrast variants","One-handed phone layouts","A printable paper edition","Screen-reader-first listening tasks","A reduced-motion story as good as the animated one","Lock-screen widget"]],
+    ["Growing the thing",["Free daily rep forever; paid personalised plan","Company plans where the employer never sees scores","University pilots","A public exercise lab","Creator mode for any field","Opt-in integrations: calendar, sleep, Obsidian","A research partnership","One verified finding a week","Referral gives a friend a Duet","A kill-switch when it stops helping"]]];
+  let n=0;$('#ideasList').innerHTML=groups.map(([h,items])=>`<h3>${h}</h3><ol start="${n+1}">${items.map(x=>{n++;return `<li class="${x.startsWith('★')?'star':''}">${x}</li>`;}).join('')}</ol>`).join('');
+})();
+</script>
