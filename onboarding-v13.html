@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>Project Plasticity</title>
+<meta name="description" content="Project Plasticity: three quick things, then you play.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ease:cubic-bezier(.4,0,.2,1);--bounce:cubic-bezier(.34,1.56,.64,1);--bg:#fff;--ink:#111318;--ink2:#5a5e68;--rule:#e6e6e3;--accent:#e4572e;--navy:#131E4A;
+  --safeb:env(safe-area-inset-bottom,0px);--safet:env(safe-area-inset-top,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#fff}}
+:root[data-theme="dark"]{--bg:#fff}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Inter",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body{max-width:440px;margin:0 auto;overflow:hidden;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+button,a{font:inherit;color:inherit;touch-action:manipulation;cursor:pointer}
+.app{height:100svh;display:flex;flex-direction:column;align-items:center;padding:calc(18px + var(--safet)) 16px calc(18px + var(--safeb))}
+.top{width:100%;position:relative;text-align:center}
+.name{font-weight:600;font-size:16px;letter-spacing:-.01em;color:var(--navy)}
+.count{position:absolute;right:4px;top:2px;font-size:13px;color:var(--ink2);font-variant-numeric:tabular-nums;transition:opacity .4s var(--ease)}
+.world{position:relative;width:min(100%,calc(100svh - 330px),400px);aspect-ratio:1;margin-top:6px;touch-action:none}
+.world canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.say{font-weight:500;font-size:clamp(20px,2.4vw,28px);letter-spacing:-.015em;line-height:1.25;margin:6px 0 0;min-height:1.25em;text-align:center}
+.say.who{font-weight:600;font-size:clamp(26px,7.4vw,32px);letter-spacing:-.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.fact{margin:0;animation:rise .5s var(--ease) both}
+.fact small{display:block;font-size:13px;font-weight:500;color:var(--accent);margin-bottom:4px}
+.fact span{display:block;font-size:16px;line-height:1.4;color:var(--ink2)}
+.zone{width:100%;max-width:320px;min-height:96px;margin-top:8px;text-align:center}
+.grow{flex:1;min-height:0}
+input{width:100%;border:0;border-bottom:2px solid var(--navy);border-radius:0;background:none;font:inherit;font-size:22px;font-weight:500;text-align:center;color:var(--ink);height:46px;outline:none;padding:0;user-select:text;-webkit-user-select:text}
+input::placeholder{color:#b9bcc4;font-weight:400}
+.row{display:flex;align-items:flex-end;gap:14px}
+.word{background:none;border:0;border-bottom:2px solid var(--accent);border-radius:0;padding:12px 2px 6px;min-height:44px;font-weight:500;font-size:17px;color:var(--ink);flex:none}
+.plus{background:none;border:0;padding:12px 6px;min-height:44px;font-size:15px;font-weight:500;color:var(--accent)}
+.tiny{font-size:13px;color:var(--ink2);margin:10px 0 0}
+.tiny button{background:none;border:0;border-bottom:1px solid #b9bcc4;border-radius:0;padding:10px 0 2px;margin-left:8px;color:var(--ink2);font-size:13px}
+.err{font-size:14px;color:#b3261e;min-height:20px;margin:4px 0 0}
+.age{display:flex;align-items:center;justify-content:center;gap:14px}
+.age input{width:104px;height:60px;font-size:42px;font-weight:600;color:var(--navy);font-variant-numeric:tabular-nums}
+.age button{background:none;border:0;width:52px;height:52px;border-radius:50%;font-size:32px;font-weight:400;line-height:1;color:var(--ink2)}
+.age button:active{color:var(--accent)}
+.lead{margin:0;font-size:16px;color:var(--ink2)}
+.app.tight .world{width:min(100%,calc(100svh - 520px),400px)}
+.world{transition:width .4s var(--ease)}
+.say{text-wrap:balance}
+.nums{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:left;margin-top:4px}
+.nums div{opacity:0;animation:rise .55s var(--ease) forwards}
+.nums div:nth-child(1){animation-delay:.15s}.nums div:nth-child(2){animation-delay:.8s}.nums div:nth-child(3){animation-delay:1.45s}
+.nums b{display:block;font-size:30px;font-weight:600;letter-spacing:-.035em;line-height:1.05;color:var(--accent);font-variant-numeric:tabular-nums;white-space:nowrap}
+.nums span{display:block;margin-top:6px;font-size:12.5px;line-height:1.35;color:var(--ink2)}
+.pitch{text-align:center;animation:rise .5s var(--ease) both}
+.demo{display:flex;justify-content:center;gap:34px;margin:6px 0 16px}.demo b{display:block;font-size:34px;font-weight:400;letter-spacing:.08em;line-height:1.2}.demo span{display:block;margin-top:4px;font-size:14px;color:var(--ink2)}
+.pitch p{margin:0 0 14px;font-size:17px;line-height:1.45;color:var(--ink2)}
+.pitch .lead2{color:var(--ink)}
+.pitch .src{margin-top:0}
+.pitch .note{margin:14px 0 0;font-size:14px}
+.why,.figs{margin:0;text-align:left}
+.why div,.figs div{padding:10px 0;border-top:1px solid var(--rule);animation:rise .5s var(--ease) both}
+.why div:first-child,.figs div:first-child{border-top:0;padding-top:2px}
+.why div:nth-child(2),.figs div:nth-child(2){animation-delay:.25s}.why div:nth-child(3),.figs div:nth-child(3){animation-delay:.5s}
+.why dt{font-size:13px;font-weight:500;color:var(--accent);margin-bottom:3px}
+.why dd{margin:0;font-size:15.5px;line-height:1.4;color:var(--ink)}
+.figs div{display:grid;grid-template-columns:76px 1fr;column-gap:14px;align-items:baseline}
+.figs dt{font-size:22px;font-weight:600;letter-spacing:-.03em;color:var(--accent);font-variant-numeric:tabular-nums;white-space:nowrap}
+.figs dd{margin:0;font-size:15px;line-height:1.4;color:var(--ink)}
+.honest{margin:10px 0 0;padding-top:10px;border-top:1px solid var(--rule);text-align:left;font-size:14px;line-height:1.4;color:var(--ink2);animation:rise .5s var(--ease) .75s both}
+.more{background:none;border:0;border-bottom:1px solid #9a9da6;border-radius:0;padding:0 0 1px;font:inherit;font-size:14px;color:var(--ink2);text-decoration:none;white-space:nowrap;position:relative}
+.more::after{content:"";position:absolute;inset:-14px -10px}
+.row.own{margin-top:6px}
+.row.own input{font-size:19px;font-weight:500;border-bottom-color:var(--accent)}
+.row.own input::placeholder{color:#8b8f99;font-weight:400;transition:opacity .3s}
+.src{display:inline-block;margin-top:8px;padding:3px 0;font-size:14px;color:var(--ink2);text-decoration:none;border-bottom:1px solid #b9bcc4}
+.why div{padding:13px 0}.why dd{font-size:17px;line-height:1.4}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.nums div,.honest{animation:none;opacity:1}}
+.go{background:none;border:0;border-bottom:2px solid var(--accent);border-radius:0;padding:12px 4px 6px;min-height:48px;font-weight:500;font-size:20px;transition:opacity .3s var(--ease)}
+.go[hidden]{display:block;visibility:hidden}
+@media (min-width:900px){
+  body{max-width:760px}
+  .world{width:min(100%,calc(100svh - 370px),560px)}
+  .app.tight .world{width:min(100%,calc(100svh - 540px),560px)}
+  .zone{max-width:480px}
+  .name{font-size:18px}.count{font-size:15px}
+  .fact span,.lead{font-size:19px}
+  .why dd{font-size:18px}.figs dd{font-size:17px}.figs dt{font-size:26px}.honest{font-size:15.5px}.more{font-size:15px}
+  input{font-size:28px;height:54px}.age input{font-size:48px;height:68px;width:124px}
+  .go{font-size:22px}.plus{font-size:17px}.err{font-size:15px}
+}
+</style>
+</head>
+<body>
+<main class="app">
+  <div class="top"><div class="name">Project Plasticity</div><div class="count" id="count"></div></div>
+  <div class="world"><canvas id="bc" aria-hidden="true"></canvas><canvas id="cv" aria-label="A dot, with the things you love around it"></canvas></div>
+  <p class="say" id="say" aria-live="polite"></p>
+  <div class="zone" id="zone"></div>
+  <div class="grow"></div>
+  <button class="go" type="button" id="go">Next</button>
+</main>
+<script src="brain.js?v=7"></script>
+<script>
+(function(){
+const B=PPBrain,$=s=>document.querySelector(s);
+const store={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d;}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
+const buzz=ms=>{try{navigator.vibrate&&navigator.vibrate(ms);}catch(e){}};
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const GAME='game-v13.html',ORANGE='#E4572E',GOLD='#F5C63C',GREY='#b4b7bf',GREY2='#d3d5da';
+const OLD=store.get('pp9.profile',null);
+const SYMBOL={music:'note',sport:'ball',code:'gear',startups:'bulb',art:'rainbow',writing:'pencil',science:'magnifier',languages:'bubble',nature:'tulip',food:'egg',games:'puzzle',wellbeing:'heart'};
+const WORD={music:'Music',sport:'Sport',code:'Tech',startups:'Startups',art:'Art',writing:'Writing',science:'Science',languages:'Languages',nature:'Nature',food:'Food',games:'Games',wellbeing:'Wellbeing'};
+const COLS=[B.C.red,B.C.purple,B.C.green2,B.C.blue,B.C.pink,B.C.orange];
+const NEAR=[[/travel|trip|fly|flight|abroad/,'plane'],[/film|movie|cinema|tv|anime|star|space|astro/,'star'],[/run|gym|lift|fit|box|climb|surf|ski|skate|swim|yoga|danc|energy/,'bolt'],[/garden|plant|flower|bloom/,'flower'],[/hik|walk|forest|camp|outdoor|tree/,'leaf'],[/medit|sleep|dream|calm|sky|weather/,'cloud'],[/financ|invest|stock|market|econ|growth|sales/,'arrow'],[/chess|strategy|trivia|quiz|mystery|philosoph|history/,'question'],[/secur|crypto|lock|home|house|car|driv/,'key']];
+const SPARE=['star','key','bolt','flower','cloud','plane','leaf','arrow','question','spark'];
+const ANY=['🎯','🌈','🔥','💎','🍀','⚡','🎈','🌀','🧡','🪁','🎁','🔮'];
+const PICS=[[/boba|bubble tea|milk tea/,'🧋'],[/matcha|chai|green tea|herbal/,'🍵'],[/espresso|latte|cappuccino|caf[eé]|barista/,'☕'],[/smoothie|juice/,'🧃'],[/whisk|bourbon|scotch|rum\b/,'🥃'],[/champagne|prosecco/,'🥂'],[/chocolate|cocoa/,'🍫'],[/ice ?cream|gelato/,'🍦'],[/cookie|biscuit/,'🍪'],[/donut|doughnut/,'🍩'],[/dessert|sweets?\b|candy/,'🍬'],[/burger/,'🍔'],[/taco|burrito|mexican/,'🌮'],[/pasta|spaghetti|italian/,'🍝'],[/ramen|noodle|pho\b/,'🍜'],[/curry|biryani|dal\b|masala/,'🍛'],[/dumpling|momo|dim sum/,'🥟'],[/bbq|barbecue|grill|steak/,'🥩'],[/salad|vegan|vegetarian/,'🥗'],[/cheese/,'🧀'],[/fries/,'🍟'],[/sandwich/,'🥪'],[/avocado/,'🥑'],[/mango/,'🥭'],[/banana/,'🍌'],[/strawberr|berries|berry/,'🍓'],[/fruit|apple/,'🍎'],[/honey|\bbees?\b/,'🐝'],[/spic|chilli|chili|hot sauce/,'🌶️'],[/brunch|breakfast|pancake|waffle/,'🥞'],[/eating|restaurant|dining|foodie/,'🍽️'],[/popcorn/,'🍿'],[/rice\b/,'🍚'],[/egg/,'🥚'],[/water\b|hydrat/,'💧'],
+[/archery|darts/,'🎯'],[/bowling/,'🎳'],[/fencing/,'🤺'],[/wrestl/,'🤼'],[/gymnast|acrobat|parkour/,'🤸'],[/\brow|kayak|canoe|paddle/,'🚣'],[/diving|scuba|snorkel/,'🤿'],[/skydiv|parachut|paraglid/,'🪂'],[/triathlon|ironman|olympic|medal/,'🏅'],[/billiard|snooker/,'🎱'],[/frisbee/,'🥏'],[/pickleball|padel|squash/,'🎾'],[/ice skat|figure skat/,'⛸️'],[/motorcycl|motorbike/,'🏍️'],[/scooter/,'🛴'],[/walk|stroll/,'🚶'],[/sprint|\btrack\b/,'🏃'],[/esports/,'🎮'],
+[/saxophone|jazz/,'🎷'],[/trumpet|brass/,'🎺'],[/\brap\b|hip ?hop|k-?pop/,'🎤'],[/opera|classical|orchestra/,'🎻'],[/rock music|\bmetal\b|\bbands?\b/,'🎸'],[/vinyl|records?\b/,'💿'],[/sculpt/,'🗿'],[/origami|craft|scrapbook/,'✂️'],[/calligraph|lettering/,'🖋️'],[/makeup|make-up|beauty|skincare/,'💄'],[/nails?\b|manicure/,'💅'],[/jewel/,'💍'],[/perfume|fragrance/,'🌸'],[/sneaker|shoes?\b/,'👟'],[/thrift|vintage/,'🧥'],[/lego/,'🧱'],[/woodwork|carpent|diy/,'🔨'],[/3d print|maker|electronics|arduino/,'🔧'],[/comic|marvel|superhero/,'🦸'],[/disney|pixar|cartoon|animation/,'🏰'],[/harry potter|wizard|fantasy/,'🧙'],[/star wars|sci-?fi|alien/,'🛸'],[/horror|ghost/,'👻'],[/true crime|detective|mystery/,'🕵️'],[/documentar/,'🎞️'],[/youtube|vlog|tiktok|instagram|social media|content/,'📱'],[/meme/,'😂'],
+[/sunset|sunrise/,'🌅'],[/\brain\b|monsoon/,'🌧️'],[/snow\b|winter/,'❄️'],[/summer|sunshine|\bsun\b/,'☀️'],[/moon|night sky/,'🌙'],[/forest|trees?\b|woods\b/,'🌲'],[/river|lake|waterfall/,'🏞️'],[/desert/,'🏜️'],[/island|tropical/,'🏝️'],[/volcano/,'🌋'],[/rabbit|bunny/,'🐰'],[/panda/,'🐼'],[/elephant/,'🐘'],[/tiger/,'🐯'],[/\blions?\b/,'🦁'],[/monkey/,'🐒'],[/turtle|tortoise/,'🐢'],[/dolphin|whale/,'🐬'],[/shark/,'🦈'],[/butterfl/,'🦋'],[/penguin/,'🐧'],[/\bowls?\b/,'🦉'],[/\bfox/,'🦊'],[/\bbears?\b/,'🐻'],[/\bcows?\b|farm/,'🐄'],[/dinosaur/,'🦖'],[/dragon/,'🐉'],[/unicorn/,'🦄'],[/animal|wildlife|safari|\bzoo/,'🦁'],[/\bpets?\b/,'🐾'],[/aquarium/,'🐠'],
+[/paris|france/,'🗼'],[/new york|nyc/,'🗽'],[/japan|tokyo/,'🗾'],[/road ?trip/,'🚙'],[/\btrains?\b|railway/,'🚆'],[/plane|aviation|flying|pilot/,'🛩️'],[/rocket|nasa/,'🚀'],[/\bcity|cities|urban/,'🏙️'],[/\bmaps?\b|geograph/,'🗺️'],[/explor|adventure/,'🧭'],
+[/neuro/,'🧠'],[/biolog|genetic|\bdna/,'🧬'],[/data|analytic|statistic/,'📊'],[/engineer/,'⚙️'],[/consult|strategy|business|\bmba/,'💼'],[/sales|negotiat/,'🤝'],[/money|saving|wealth/,'💰'],[/real estate|property/,'🏠'],[/news|journalis/,'📰'],[/public speaking|speech/,'🎤'],[/leader|manag/,'🧭'],[/research|science/,'🔬'],[/climate|sustainab|environment|recycl/,'🌍'],[/energy|solar/,'🔋'],[/quiz|trivia/,'❓'],[/learn|study|cours/,'📖'],[/idea|innovat|invent/,'💡'],[/productiv|planning|organi[sz]/,'🗓️'],[/\bvr\b|virtual reality|metaverse/,'🥽'],[/drone/,'🚁'],[/hack|cyber|security/,'🔐'],[/\bweb\b|internet/,'🌐'],[/\bapps?\b|gadget|\btech/,'📱'],[/product/,'📦'],
+[/romance|dating|relationship|\blove/,'❤️'],[/wedding|marriage/,'💒'],[/baby|babies/,'👶'],[/pray|faith|spiritual|religio|\bgod/,'🙏'],[/astrolog|horoscope|zodiac|tarot/,'🔮'],[/therapy|mental health|self.?care/,'💛'],[/\bspa\b|massage|sauna/,'💆'],[/bath|shower/,'🛁'],[/clean|tidy|declutter/,'🧹'],[/laugh|joke/,'😄'],[/happy|\bjoy/,'😊'],[/dream/,'💭'],[/gratitude|kindness/,'💛'],[/birthday|celebrat|festival|christmas|diwali/,'🎉'],[/gift/,'🎁'],[/candle/,'🕯️'],[/bonfire|\bfire/,'🔥'],[/collect|stamp/,'🪙'],[/antique/,'🏺'],[/culture|anthropolog|people/,'🌍'],[/\bhair/,'💇'],[/night ?life|\bclub|rave/,'🕺'],[/\bart\b|gallery/,'🎨'],[/grape/,'🍇'],[/wood/,'🌲'],[/training|exercise/,'🏋️'],[/compet|winning/,'🏆'],[/grow|self.?improv|habit/,'🌱'],[/hiring|recruit|career|\bjobs?\b|cowork|office/,'💼'],[/knowledge|wisdom/,'🦉'],[/beard|barber/,'💈'],[/chess/,'♟️'],[/danc|ballet|salsa|zumba/,'💃'],[/yoga|pilates|stretch/,'🧘'],[/medit|mindful|breath/,'🧘'],[/swim|pool/,'🏊'],[/surf/,'🏄'],[/\bski|snowboard/,'⛷️'],[/skate/,'🛹'],[/climb|boulder/,'🧗'],[/hik|trek|mountain/,'🥾'],[/camp/,'🏕️'],[/cycl|bik/,'🚴'],[/run|jog|marathon/,'🏃'],[/gym|lift|weights|crossfit|fitness|workout/,'🏋️'],[/box|mma|martial|karate|judo/,'🥊'],[/cricket/,'🏏'],[/basket/,'🏀'],[/tennis/,'🎾'],[/badminton/,'🏸'],[/golf/,'⛳'],[/baseball/,'⚾'],[/rugby|american football/,'🏈'],[/volley/,'🏐'],[/hockey/,'🏒'],[/football|soccer/,'⚽'],[/table tennis|ping/,'🏓'],[/f1|formula|racing|motor/,'🏎️'],[/\bcars?\b|driv/,'🚗'],[/guitar/,'🎸'],[/piano|keyboard/,'🎹'],[/drum/,'🥁'],[/violin|cello/,'🎻'],[/sing|karaoke|choir/,'🎤'],[/podcast|radio/,'🎙️'],[/dj|headphone/,'🎧'],[/film|movie|cinema/,'🎬'],[/tv|series|netflix|anime/,'📺'],[/theat|drama|acting/,'🎭'],[/photo|camera/,'📷'],[/paint|draw|sketch|illustrat/,'🎨'],[/knit|crochet|sew/,'🧶'],[/pottery|ceramic/,'🏺'],[/poker|cards/,'🃏'],[/board game|dice/,'🎲'],[/video game|gaming|xbox|playstation|nintendo/,'🎮'],[/puzzle|sudoku|crossword/,'🧩'],[/cook|chef|recipe/,'🍳'],[/bak|cake|bread/,'🧁'],[/coffee/,'☕'],[/tea\b/,'🍵'],[/wine/,'🍷'],[/beer|brew/,'🍺'],[/cocktail/,'🍸'],[/pizza/,'🍕'],[/sushi/,'🍣'],[/travel|trip|backpack/,'✈️'],[/beach|sea|ocean/,'🏖️'],[/sail|boat/,'⛵'],[/fish/,'🎣'],[/garden|plant/,'🪴'],[/flower/,'🌷'],[/dog|pupp/,'🐶'],[/\bcats?\b|kitten/,'🐱'],[/horse|riding/,'🐴'],[/bird/,'🐦'],[/space|astro|\bstars?\b|planet/,'🪐'],[/physics|chem|lab/,'🧪'],[/math|number/,'🔢'],[/history|museum/,'🏛️'],[/philosoph|psycholog|brain/,'🧠'],[/politic|debat/,'🗳️'],[/law|legal/,'⚖️'],[/medic|health|doctor/,'🩺'],[/financ|invest|stock|trading|econom/,'📈'],[/crypto|bitcoin/,'🪙'],[/startup|founder|entrepreneur/,'🚀'],[/market|brand/,'📣'],[/cod|program|software|develop/,'💻'],[/robot|ai\b|machine learning/,'🤖'],[/design|fashion|style/,'👗'],[/architect|building/,'🏗️'],[/interior|furniture|home/,'🛋️'],[/read|book|novel|literature/,'📚'],[/writ|journal|blog/,'✍️'],[/poet/,'🪶'],[/language|spanish|french|german|hindi|japanese|mandarin/,'🗣️'],[/teach|educat|school/,'🎓'],[/volunteer|charity|community/,'🤝'],[/famil|kids|parent/,'👨‍👩‍👧'],[/friend|social|party/,'🎉'],[/sleep|nap/,'😴'],[/shop/,'🛍️'],[/comed|stand-?up|humou?r/,'😄'],[/magic/,'🎩'],[/music|song|concert/,'🎵']];
+const SLOT=[-75,45,165,-15,105,225,-135,75];
+const items=Object.keys(SYMBOL).map((k,i)=>({key:k,word:WORD[k],kind:SYMBOL[k],a:(-90+i*30)*Math.PI/180,r:.405,grow:1,pop:0,seen:1}));
+const GAMES=[{name:'First game',at:[545,205],ready:true},{name:'',at:[470,385]},{name:'',at:[165,215]},{name:'',at:[215,385]}];
+let step=0,name='',age=null,picks=[],edges=[],parts=[],jolt=0,hold=0,down=false,fade=1,editing=false;
+const colOf=i=>COLS[picks.indexOf(i)%COLS.length];
+const cv=$('#cv');
+function ctx(){const dpr=Math.min(2,devicePixelRatio||1),w=cv.clientWidth||320;if(cv.width!==Math.round(w*dpr))cv.width=cv.height=Math.round(w*dpr);const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);return {g,w,c:w/2};}
+function at(it,i,w,c,now){const bob=reduced?0:Math.sin(now/900+i*1.3)*w*.008;return [c+Math.cos(it.a)*it.r*w,c+Math.sin(it.a)*it.r*w+bob];}
+function burst(x,y,col,n){if(reduced)return;for(let k=0;k<n;k++){const a=Math.random()*6.283,v=1.6+Math.random()*4.2;parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:1,c:Math.random()<.3?GOLD:col});}}
+function connect(i){if(picks.includes(i))return;const now=performance.now(),prev=picks.slice();picks.push(i);jolt=1;buzz(10);
+  edges.push({a:-1,b:i,t0:now,main:true,off:(Math.random()*2-1)*.07,ph:Math.random()*6,done:false});
+  prev.forEach((j,n)=>edges.push({a:j,b:i,t0:now+340+n*110,main:false,off:(Math.random()*2-1)*.05,ph:Math.random()*6,done:false}));
+  const e=$('#err');if(e)e.textContent='';}
+function toggle(i){if(picks.includes(i)){picks=picks.filter(x=>x!==i);edges=edges.filter(e=>e.a!==i&&e.b!==i);}else connect(i);}
+function addOwn(text){const v=text.trim().replace(/\s+/g,' ').slice(0,14);if(!v)return;
+  const hit=items.findIndex(t=>t.word.toLowerCase()===v.toLowerCase());if(hit>=0){connect(hit);return;}
+  const hitPic=PICS.find(([re])=>re.test(v.toLowerCase())),typed=(v.match(/\p{Extended_Pictographic}(️|‍\p{Extended_Pictographic})*/u)||[])[0],emoji=typed||(hitPic?hitPic[1]:ANY[[...v.toLowerCase()].reduce((a,ch)=>a+ch.charCodeAt(0),0)%ANY.length]),letter=null;
+  const n=items.filter(t=>t.own).length,it={key:'own'+n,word:v.charAt(0).toUpperCase()+v.slice(1),kind:null,emoji,letter,own:true,a:SLOT[n%SLOT.length]*Math.PI/180,r:n<6?.215:.3,grow:0,pop:0,seen:1};
+  items.push(it);const i=items.length-1;setTimeout(()=>connect(i),reduced?0:320);}
+const GHOST={};
+function ghost(kind){if(GHOST[kind])return GHOST[kind];const n=120,cn=document.createElement('canvas');cn.width=cn.height=n;const q=cn.getContext('2d');
+  B.drawMotif(q,{kind,x:n/2,y:n/2,s:n*.28,c:'#000',c2:'#000'});q.globalCompositeOperation='source-in';q.fillStyle=GREY;q.fillRect(0,0,n,n);return GHOST[kind]=cn;}
+const brainDraw=B.renderer($('#bc')),BS={motifs:[],fill:0,outline:0,paths:[]};let T0=0,said=false,BF=null;
+const FACT_MS=6000,FACT_T0=900;
+const FACTS=['Your brain has about 86 billion nerve cells','Adults who learned to juggle showed brain changes within three months, and the changes faded when they stopped','Trainee London cab drivers who learned the city by heart showed growth in a memory area of the brain'];
+const T_NAME=FACT_T0+FACTS.length*FACT_MS,T_PATH=T_NAME+1100,T_END=T_PATH+2000;let zips=[],factAt=-1,said2=false;
+const onScreen=p=>BF?[BF.ox+p[0]*BF.fit,BF.oy+p[1]*BF.fit]:[0,0];
+const OWN_AT=[[300,420],[470,140],[200,150],[540,400],[330,110],[610,300]];
+function buildBrain(){const keep={x:360,y:280,s:34},placed=[keep];let own=0;
+  picks.forEach((i,n)=>{const it=items[i],def=B.INTERESTS[it.key],anchor=[360,270],kinds=(it.kind?[it.kind]:[]).concat(def?def.kinds:['spark','dots','star','petal']);
+    const ms=B.scatter(placed,anchor,kinds,9,101+n*17,290);ms.forEach((m,j)=>{m.d=n*130+j*60;if(j===0){m.c=colOf(i);m.c2=GOLD;}});placed.push(...ms);});
+  const more=B.scatter(placed,[360,270],['dots','spark','squig','petal','star','leaf','flower','sprig'],46,977,300);more.forEach((m,j)=>{m.d=450+j*26;});
+  BS.motifs=placed.concat(more).filter(m=>m!==keep);BS.fill=0;BS.outline=0;
+  BS.paths=GAMES.map(t=>{const a=[360,280],b=t.at,m=[(a[0]+b[0])/2+(b[1]-a[1])*.22,(a[1]+b[1])/2-(b[0]-a[0])*.22];return {pts:B.route([a,m,b],18),frac:0,w:t.ready?5:3,alpha:t.ready?1:.5};});}
+function curve(g,ax,ay,mx,my,bx,by,p){g.beginPath();g.moveTo(ax,ay);const n=18;for(let k=1;k<=n;k++){const t=p*k/n,u=1-t;g.lineTo(u*u*ax+2*u*t*mx+t*t*bx,u*u*ay+2*u*t*my+t*t*by);}g.stroke();}
+let last=0;
+function draw(now){requestAnimationFrame(draw);const dt=Math.min(50,now-(last||now));last=now;const {g,w,c}=ctx();g.globalAlpha=1;g.clearRect(0,0,w,w);
+  jolt*=.88;fade+=((step===0?1:0)-fade)*(reduced?1:.1);
+  if(step===3){hold=Math.max(0,Math.min(1,hold+(down?dt/1500:-dt/550)));if(down&&!reduced&&Math.random()<.5)burst(c,c,COLS[Math.floor(Math.random()*6)],1);
+    if(hold>=1){down=false;step=4;T0=reduced?now-T_NAME:now;said=false;said2=false;factAt=-1;zips=[];buildBrain();picks.forEach(i=>{const [x,y]=at(items[i],i,w,c,now);burst(x,y,colOf(i),26);});burst(c,c,ORANGE,44);buzz([10,40,20]);screen();}}
+  const rv=step>=4?now-T0:0,z=step>=4?1-B.sm(rv/1300):1;
+  if(step>=4){BS.outline=B.sm(rv/900);BS.fill=B.sm((rv-2400)/(T_NAME-4200));
+    for(const m of BS.motifs){const was=m.k;m.k=B.clamp((rv-1400-m.d*(T_NAME-3200)/1700)/600,0,1);
+      if(!was&&m.k>0&&rv<T_NAME&&BF&&!reduced){const [x,y]=onScreen([m.x,m.y]);zips.push({x,y,c:m.c||ORANGE,t:now});}}
+    BS.paths.forEach((p,k)=>{p.frac=B.sm((rv-T_PATH-k*280)/800);});BF=brainDraw(BS)||BF;
+    if(step===4){const fi=rv<FACT_T0?-1:Math.min(FACTS.length-1,Math.floor((rv-FACT_T0)/FACT_MS));
+      if(rv<T_NAME&&fi!==factAt&&fi>=0){factAt=fi;$('#zone').innerHTML=`<p class="fact"><span>${FACTS[fi]}</span></p>`;}
+      if(rv<T_NAME&&rv>T_NAME*.6&&!said2){said2=true;$('#say').textContent='Setting up your first game';}
+      if(!said&&rv>=T_NAME){said=true;const s=$('#say');s.classList.add('who');s.textContent=`${name}’s brain`;$('#zone').innerHTML='<p class="fact"><span>Drawn from what you love</span></p>';burst(c,c,GOLD,34);buzz(12);}
+      if(rv>T_END){step=5;screen();}}}
+  zips=zips.filter(q=>now-q.t<260);for(const q of zips){const k=(now-q.t)/260;g.globalAlpha=(1-k)*.8;g.strokeStyle=q.c;g.lineWidth=2;g.lineCap='round';g.beginPath();g.moveTo(c+(q.x-c)*k*.6,c+(q.y-c)*k*.6);g.lineTo(c+(q.x-c)*Math.min(1,k*1.6),c+(q.y-c)*Math.min(1,k*1.6));g.stroke();}g.globalAlpha=1;
+  const P=items.map((it,i)=>at(it,i,w,c,now)),wm=step===3?1+hold*2.2:(step>=4?2.6:1),sp=step===3?1+hold*3:(step>=4?3:1);
+  g.save();g.translate(c,c);g.scale(z,z);g.translate(-c,-c);
+  g.lineCap='round';if(z>.01)for(const e of edges){const p=Math.max(0,Math.min(1,(now-e.t0)/340));if(p<=0)continue;
+    const A=e.a<0?[c,c]:P[e.a],Bp=P[e.b],dx=Bp[0]-A[0],dy=Bp[1]-A[1],d=Math.hypot(dx,dy)||1,ux=dx/d,uy=dy/d,sa=w*(e.a<0?.06:.062),sb=w*.062;
+    const ax=A[0]+ux*sa,ay=A[1]+uy*sa,bx=Bp[0]-ux*sb,by=Bp[1]-uy*sb,o=(e.off+(reduced?0:.018*Math.sin(now/420+e.ph)))*w,mx=(ax+bx)/2-uy*o,my=(ay+by)/2+ux*o,col=colOf(e.b);
+    g.globalAlpha=e.main?1:.5;g.strokeStyle=col;g.lineWidth=(e.main?2.2:1.1)*wm;curve(g,ax,ay,mx,my,bx,by,p);
+    if(p>=1&&!e.done){e.done=true;if(e.main){items[e.b].pop=1;burst(Bp[0],Bp[1],col,24);}else burst(Bp[0],Bp[1],col,7);}
+    if(!reduced||p<1){const t=p<1?p:((now*sp/(e.main?700:1100)+e.ph)%1),u=1-t;g.globalAlpha=1;g.fillStyle=p<1?GOLD:col;g.beginPath();g.arc(u*u*ax+2*u*t*mx+t*t*bx,u*u*ay+2*u*t*my+t*t*by,p<1?5:(e.main?3:2),0,7);g.fill();}}
+  g.globalAlpha=1;
+  if(z>.01)items.forEach((it,i)=>{const on=picks.includes(i);it.grow+=(1-it.grow)*.16;it.pop*=.9;it.seen+=((on?1:fade)-it.seen)*.2;if(it.seen<.02)return;const [x,y]=P[i];
+    g.globalAlpha=it.seen;const sz=w*.04*it.grow*(1+it.pop*.9);
+    if(it.emoji){g.globalAlpha=it.seen*(on?1:.35);g.font=`${Math.round(sz*2.1)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;g.textAlign='center';g.textBaseline='middle';g.fillText(it.emoji,x,y+sz*.1);g.globalAlpha=it.seen;}
+    else if(it.letter){const col=on?colOf(i):GREY;g.strokeStyle=col;g.lineWidth=Math.max(2,sz*.16);g.beginPath();g.arc(x,y,sz*.9,0,7);g.stroke();g.fillStyle=col;g.font=`600 ${Math.round(sz*1.1)}px Inter,system-ui`;g.textAlign='center';g.textBaseline='middle';g.fillText(it.letter,x,y+sz*.05);}
+    else if(on)B.drawMotif(g,{kind:it.kind,x,y,s:sz,rot:it.pop*-.3,c:colOf(i),c2:GOLD});
+    else{const side=sz/.28;g.drawImage(ghost(it.kind),x-side/2,y-side/2,side,side);}
+    g.fillStyle=on?'#131E4A':'#8b8f99';g.font=(on?'600':'500')+' '+(11.5*Math.max(1,w/343)).toFixed(1)+'px Inter,system-ui';g.textAlign='center';const up=y<c-w*.12;g.textBaseline=up?'bottom':'top';g.fillText(it.word,x,up?y-w*.058:y+w*.058);g.globalAlpha=1;});
+  g.restore();g.globalAlpha=1;
+  const thinking=step===4&&rv<T_NAME,beat=reduced?0:(Math.sin(now/(thinking?110:420))+1)/2,base=step>=4?w*(.044-.026*B.sm(rv/1300)):w*.044*(step===3?1.25+hold*.6:1);
+  if(step===3){const R=w*.135;
+    if(!down&&!reduced)for(let k=0;k<2;k++){const u=((now/1500)+k*.5)%1;g.globalAlpha=(1-u)*.5;g.strokeStyle=ORANGE;g.lineWidth=2;g.beginPath();g.arc(c,c,base*1.6+u*(R*1.5-base*1.6),0,7);g.stroke();}
+    g.globalAlpha=1;g.fillStyle='#fff';g.beginPath();g.arc(c,c,R+5,0,7);g.fill();
+    g.strokeStyle='#e6e6e3';g.lineWidth=5;g.beginPath();g.arc(c,c,R,0,7);g.stroke();
+    if(hold>0){g.strokeStyle=ORANGE;g.lineCap='round';g.beginPath();g.arc(c,c,R,-Math.PI/2,-Math.PI/2+Math.PI*2*hold);g.stroke();}
+    g.fillStyle=down?'#5a5e68':ORANGE;g.font='600 '+(13*Math.max(1,w/343)).toFixed(1)+'px Inter,system-ui';g.textAlign='center';g.textBaseline='top';g.fillText(down?'Keep holding':'Hold here',c,c+R+12);}
+  g.fillStyle='rgba(228,87,46,.15)';g.beginPath();g.arc(c,c,base*(2+beat*.35+jolt*1.5),0,7);g.fill();
+  g.fillStyle=ORANGE;g.beginPath();g.arc(c,c,base*(1+beat*.08+jolt*.6),0,7);g.fill();
+  if(step>=4&&BF)GAMES.forEach((t,k)=>{const f=BS.paths[k]?BS.paths[k].frac:0;if(f<.92)return;const a=B.clamp((f-.92)/.08,0,1),[x,y]=onScreen(t.at);
+    if(t.ready&&!reduced){const u=(now/1400)%1;g.globalAlpha=a*(1-u)*.9;g.strokeStyle='#FFF7DC';g.lineWidth=2;g.beginPath();g.arc(x,y,8+u*16,0,7);g.stroke();}
+    g.globalAlpha=a*(t.ready?1:.75);g.textAlign='center';g.textBaseline='top';g.lineJoin='round';
+    g.strokeStyle='#131E4A';g.lineWidth=4;if(t.name){g.font='600 '+(14*Math.max(1,w/343)).toFixed(1)+'px Inter,system-ui';g.strokeText(t.name,x,y+11);g.fillStyle='#FFF7DC';g.fillText(t.name,x,y+11);}
+    const K=Math.max(1,w/343);g.font='500 '+((t.name?10.5:12)*K).toFixed(1)+'px Inter,system-ui';const s=t.ready?'ready':'soon',yy=y+(t.name?30*K:11);g.strokeText(s,x,yy);g.fillStyle=t.ready?'#F5C63C':'rgba(247,238,221,.8)';g.fillText(s,x,yy);g.globalAlpha=1;});
+  parts=parts.filter(p=>p.l>0);for(const p of parts){p.x+=p.vx;p.y+=p.vy;p.vy+=.07;p.vx*=.96;p.vy*=.96;p.l-=.028;if(p.l<=0)continue;g.globalAlpha=p.l;g.fillStyle=p.c;g.beginPath();g.arc(p.x,p.y,4*p.l,0,7);g.fill();}g.globalAlpha=1;}
+let pd=null;
+cv.addEventListener('pointerdown',e=>{const r=cv.getBoundingClientRect();pd={x:e.clientX-r.left,y:e.clientY-r.top,step,at:performance.now()};
+  if(step===3&&Math.hypot(pd.x-r.width/2,pd.y-r.height/2)<r.width*.26){down=true;buzz(8);try{cv.setPointerCapture(e.pointerId);}catch(_){}}});
+cv.addEventListener('pointerup',e=>{down=false;
+  if(step===4){const t=performance.now()-T0;if(pd&&pd.step===4&&pd.at-T0>2500&&t<T_NAME-200)T0=performance.now()-T_NAME+200;pd=null;return;}
+  if(step>=5&&pd){const r=cv.getBoundingClientRect(),[gx,gy]=onScreen(GAMES[0].at);if(Math.hypot(e.clientX-r.left-gx,e.clientY-r.top-gy)<r.width*.13){next();return;}}
+  if(step!==0||!pd)return;const r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;if(Math.hypot(x-pd.x,y-pd.y)>14)return;
+  const w=r.width,c=w/2,now=performance.now();let best=-1,bd=w*.11;items.forEach((it,i)=>{const [ix,iy]=at(it,i,w,c,now),d=Math.hypot(ix-x,iy-y);if(d<bd){bd=d;best=i;}});if(best>=0){commitOwn();toggle(best);}});
+['pointercancel','pointerleave'].forEach(ev=>cv.addEventListener(ev,()=>{down=false;}));
+const LIKE=['chess','salsa','sourdough','anime','cricket','poker','surfing','jazz'];let likeAt=0,likeTimer=0;
+function ownLink(refocus){const z=$('#zone');editing=false;clearInterval(likeTimer);
+  z.innerHTML='<div class="row own"><input id="own" maxlength="14" autocomplete="off" autocapitalize="words" enterkeyhint="done" aria-label="Something else you love"><button class="word" type="button" id="add" hidden>Add</button></div><p class="err" id="err" role="alert"></p>';
+  const i=$('#own'),add=$('#add'),hint=()=>{i.placeholder='Type your own, like '+LIKE[likeAt++%LIKE.length];};hint();
+  likeTimer=setInterval(()=>{if(!document.body.contains(i)){clearInterval(likeTimer);return;}if(!i.value)hint();},2400);
+  i.addEventListener('input',()=>{editing=!!i.value.trim();add.hidden=!editing;const e=$('#err');if(e)e.textContent='';});
+  i.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();commitOwn(true);}});
+  add.addEventListener('pointerdown',e=>{e.preventDefault();commitOwn(true);});
+  i.addEventListener('blur',()=>setTimeout(()=>{if(editing&&document.body.contains(i))commitOwn(false);},140));
+  if(refocus)i.focus();}
+function commitOwn(refocus){const i=$('#own');if(!i||!editing)return false;const v=i.value;ownLink(refocus===true);if(v.trim()){addOwn(v);return true;}return false;}
+function screen(){const z=$('#zone'),go=$('#go');$('#count').textContent=step<3?`${step+1} of 3`:'';go.hidden=step===3||step===4;
+  if(step===0){$('#say').textContent='What do you love?';ownLink();go.textContent='Next';}
+  if(step===1){$('#say').textContent='Whose brain is this?';
+    z.innerHTML='<input id="nm" maxlength="16" placeholder="Maya" autocomplete="given-name" autocapitalize="words" enterkeyhint="next" aria-label="Your first name"><p class="err" id="err" role="alert"></p>';
+    const i=$('#nm');i.value=name;i.addEventListener('input',()=>{name=i.value.trim();$('#err').textContent='';jolt=.6;const {w,c}=ctx();burst(c,c,COLS[name.length%6],5);});
+    i.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();i.blur();next();}});go.textContent='Next';setTimeout(()=>i.focus(),350);}
+  if(step===2){$('#say').textContent='How old are you?';
+    z.innerHTML='<div class="age"><button type="button" id="dn" aria-label="One year younger">−</button><input id="ag" inputmode="numeric" pattern="[0-9]*" maxlength="2" placeholder="30" autocomplete="off" enterkeyhint="next" aria-label="Your age"><button type="button" id="up" aria-label="One year older">+</button></div><p class="err" id="err" role="alert"></p>';
+    const i=$('#ag');i.value=age||'';const read=()=>{i.value=i.value.replace(/\D/g,'').slice(0,2);age=i.value?+i.value:null;$('#err').textContent='';jolt=.35;};
+    const nudge=d=>{age=Math.max(18,Math.min(99,(age||30)+d));i.value=age;$('#err').textContent='';jolt=.35;};
+    i.addEventListener('input',read);i.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();i.blur();next();}});
+    $('#dn').addEventListener('click',()=>nudge(-1));$('#up').addEventListener('click',()=>nudge(1));go.textContent='Next';setTimeout(()=>i.focus(),350);}
+  if(step===3){$('#say').textContent='Press and hold the dot';z.innerHTML='';}
+  if(step===4){$('#say').classList.remove('who');$('#say').textContent='Drawing your brain';z.innerHTML='';}
+  if(step===5){$('#say').classList.remove('who');$('#say').textContent='Hide odd things among what you love';
+    document.querySelector('.app').classList.add('tight');
+    const words=picks.map(i=>items[i].word).slice(0,4),mine=words.length>1?words.slice(0,-1).join(', ')+' and '+words[words.length-1]:words[0];
+    const KE={music:'🎵',sport:'⚽',code:'⚙️',startups:'💡',art:'🎨',writing:'✏️',science:'🔬',languages:'💬',nature:'🌷',food:'🍳',games:'🧩',wellbeing:'❤️'},odd=['🌋','🐙','🚀'];
+    const show=picks.slice(0,3).map((i,k)=>'<div><b>'+(items[i].emoji||KE[items[i].key]||'🧡')+odd[k]+'</b><span>'+esc(items[i].word)+'</span></div>').join('');
+    z.innerHTML='<div class="pitch"><div class="demo">'+show+'</div>'
+      +'<p class="lead2">Then say what was where</p>'
+      +'<a class="src" href="https://doi.org/10.1016/j.neuron.2017.02.003" target="_blank" rel="noopener">A memory trick studied in Neuron, 2017</a></div>';
+    go.hidden=false;go.textContent='Play';go.focus();}}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function next(){
+  if(step===0){if(commitOwn())return;if(!picks.length){$('#err').textContent='Tap at least one';return;}}
+  if(step===1){const i=$('#nm');if(i)name=i.value.trim();if(!name){$('#err').textContent='Type your first name';if(i)i.focus();return;}}
+  if(step===2){const i=$('#ag'),e=$('#err');if(!age){e.textContent='Type your age';if(i)i.focus();return;}
+    if(age<18){e.textContent='Project Plasticity is for adults, 18 and over';return;}}
+  if(step===4)return;
+  if(step===5){const P=picks.map(i=>({key:items[i].key,word:items[i].word,kind:items[i].kind||null,emoji:items[i].emoji||null,letter:items[i].letter||null}));
+    store.set('pp9.profile',{name,age,loves:picks.filter(i=>!items[i].own).map(i=>items[i].key),picks:P,at:Date.now()});location.href=GAME;return;}
+  step++;hold=0;screen();}
+$('#go').addEventListener('pointerdown',e=>{const i=$('#own');if(step===0&&editing&&i&&i.value.trim())e.preventDefault();});
+$('#go').addEventListener('click',next);
+screen();requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>
